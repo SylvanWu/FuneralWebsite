@@ -64,10 +64,10 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
     <div className={`border border-gray-200 rounded-lg shadow-sm p-5 bg-white ${isNew ? 'memory-card-new' : ''}`}>
       <div className="flex items-center">
         <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
-          <span>U</span>
+          <span>{memory.uploaderName ? memory.uploaderName.charAt(0).toUpperCase() : 'U'}</span>
         </div>
         <div className="ml-3 timeline-dot">
-          <p className="font-medium">Uploader</p>
+          <p className="font-medium">{memory.uploaderName || 'Anonymous'}</p>
           <p className="text-sm text-gray-500">{formatDate(memory.uploadTime)}</p>
         </div>
       </div>

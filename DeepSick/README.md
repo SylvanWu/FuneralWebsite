@@ -1,3 +1,71 @@
+# Digital Memorial Hall
+
+The Digital Memorial Hall is a full-stack project that allows users to upload and view images, videos, and text memories to commemorate the deceased.
+
+## Tech Stack
+
+- Frontend: React, TypeScript, TailwindCSS
+- Backend: Express.js, MongoDB, Mongoose
+- File Handling: Multer
+
+## Features
+
+- Upload images, videos, or text as memories
+- All memories displayed in reverse chronological order on a timeline
+- Each memory includes uploader name, upload time, and content
+
+## Installation and Setup
+
+### Prerequisites
+
+- Node.js (v16+)
+- MongoDB (local or remote)
+
+### Installation Steps
+
+1. Clone the project
+
+```bash
+git clone <repository-url>
+cd digital-memorial-hall
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Configure environment variables
+
+Create a file named `.env` and add the following content:
+
+```
+MONGO_URI=mongodb://localhost:27017/memorial
+PORT=5000
+```
+
+4. Start the application
+
+```bash
+# Start the frontend development server
+npm run dev
+
+# In another terminal, start the backend server
+npm run dev:server
+```
+
+The application will run on http://localhost:5173 (frontend) and http://localhost:5000 (backend API).
+
+## API Endpoints
+
+- `GET /memories` - Get all memories in reverse chronological order
+- `POST /memories` - Create a new memory
+
+## Contribution
+
+Pull requests and Issues are welcome to improve this project.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

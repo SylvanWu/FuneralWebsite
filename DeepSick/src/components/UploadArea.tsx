@@ -23,18 +23,24 @@ const UploadArea: React.FC<UploadAreaProps> = ({ onFileUpload }) => {
     e.preventDefault();
     setIsDragging(false);
     
+    if (isUploading) return;
+    
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleUpload(e.dataTransfer.files[0]);
     }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isUploading) return;
+    
     if (e.target.files && e.target.files.length > 0) {
       handleUpload(e.target.files[0]);
     }
   };
 
   const handleUpload = (file: File) => {
+    if (isUploading) return;
+    
     setIsUploading(true);
     setUploadProgress(0);
 
@@ -45,9 +51,14 @@ const UploadArea: React.FC<UploadAreaProps> = ({ onFileUpload }) => {
         if (newProgress >= 100) {
           clearInterval(interval);
           setTimeout(() => {
+            onFileUpload(file);
+            
             setIsUploading(false);
             setUploadProgress(0);
-            onFileUpload(file);
+            
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
           }, 500);
           return 100;
         }
@@ -57,7 +68,9 @@ const UploadArea: React.FC<UploadAreaProps> = ({ onFileUpload }) => {
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!isUploading && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (

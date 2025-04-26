@@ -3,10 +3,11 @@ import MemoryCard from './MemoryCard';
 
 export interface Memory {
   id: string;
-  file: File;
+  file?: File;
   type: 'image' | 'video' | 'text';
   preview: string;
   uploadTime: Date;
+  uploaderName?: string;
 }
 
 interface TimelineProps {
