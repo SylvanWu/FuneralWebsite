@@ -3,7 +3,7 @@ import Header from './components/Header'
 import UploadArea from './components/UploadArea'
 import Timeline, { Memory } from './components/Timeline'
 import './App.css'
-import { fetchMemories, createMemory } from './api/index'
+import { fetchMemories, createMemory, deleteMemory } from './api/index.ts'
 
 // Update Memory interface to match backend model
 export interface BackendMemory {
@@ -98,6 +98,18 @@ function App() {
     }
   }
 
+  const handleDeleteMemory = async (id: string) => {
+    console.log("App: handleDeleteMemory called for ID:", id);
+    try {
+      await deleteMemory(id);
+      console.log("API call successful, removing memory from state");
+      setMemories(prevMemories => prevMemories.filter(memory => memory.id !== id));
+    } catch (error) {
+      console.error('Failed to delete memory:', error);
+      alert('Failed to delete memory. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* Navigation Bar */}
@@ -153,7 +165,10 @@ function App() {
           </div>
           
           <UploadArea onFileUpload={handleFileUpload} />
-          <Timeline memories={memories} />
+          <Timeline 
+            memories={memories} 
+            onDeleteMemory={handleDeleteMemory}
+          />
         </main>
       </div>
     </div>

@@ -3,10 +3,12 @@ import { Memory } from './Timeline';
 
 interface MemoryCardProps {
   memory: Memory;
+  onDelete: (id: string) => void;
 }
 
-const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
+const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onDelete }) => {
   const [isNew, setIsNew] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   useEffect(() => {
     // Remove the "new" animation class after animation completes
@@ -26,6 +28,36 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
       minute: '2-digit'
     });
   };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Delete button clicked for ID:", memory.id);
+    if (window.confirm('Are you sure you want to delete this memory? This action cannot be undone.')) {
+      setIsDeleting(true);
+      onDelete(memory.id);
+    }
+  };
+
+  const renderDeleteButton = () => (
+    <button 
+      onClick={handleDelete}
+      disabled={isDeleting}
+      style={{
+        backgroundColor: 'red',
+        color: 'white',
+        padding: '8px 12px',
+        borderRadius: '4px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        border: 'none',
+        marginTop: '10px',
+        width: '100%'
+      }}
+    >
+      DELETE THIS MEMORY
+    </button>
+  );
 
   const renderContent = () => {
     switch (memory.type) {
@@ -61,7 +93,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
   };
 
   return (
-    <div className={`border border-gray-200 rounded-lg shadow-sm p-5 bg-white ${isNew ? 'memory-card-new' : ''}`}>
+    <div className={`border border-gray-200 rounded-lg shadow-sm p-5 bg-white ${isNew ? 'memory-card-new' : ''} ${isDeleting ? 'opacity-50' : ''}`}>
       <div className="flex items-center">
         <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
           <span>{memory.uploaderName ? memory.uploaderName.charAt(0).toUpperCase() : 'U'}</span>
@@ -72,8 +104,9 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory }) => {
         </div>
       </div>
       {renderContent()}
+      {renderDeleteButton()}
     </div>
   );
 };
 
-export default MemoryCard; 
+export default MemoryCard;

@@ -13,6 +13,8 @@ The Digital Memorial Hall is a full-stack project that allows users to upload an
 - Upload images, videos, or text as memories
 - All memories displayed in reverse chronological order on a timeline
 - Each memory includes uploader name, upload time, and content
+- Delete memories with a confirmation prompt
+- Hover over memories to see the delete button
 
 ## Installation and Setup
 
@@ -61,6 +63,7 @@ The application will run on http://localhost:5173 (frontend) and http://localhos
 
 - `GET /memories` - Get all memories in reverse chronological order
 - `POST /memories` - Create a new memory
+- `DELETE /memories/:id` - Delete a specific memory by ID
 
 ## Contribution
 

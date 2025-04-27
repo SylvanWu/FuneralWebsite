@@ -12,9 +12,15 @@ export interface Memory {
 
 interface TimelineProps {
   memories: Memory[];
+  onDeleteMemory: (id: string) => void;
 }
 
-const Timeline: React.FC<TimelineProps> = ({ memories }) => {
+const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory }) => {
+  const handleDelete = (id: string) => {
+    console.log("Timeline: handleDelete called for ID:", id);
+    onDeleteMemory(id);
+  };
+
   if (memories.length === 0) {
     return (
       <div className="text-center py-10 text-gray-500">
@@ -28,7 +34,11 @@ const Timeline: React.FC<TimelineProps> = ({ memories }) => {
       <h2 className="text-2xl font-semibold mb-6 border-b pb-2">Memories Timeline</h2>
       <div className="space-y-8 timeline-line">
         {memories.map((memory) => (
-          <MemoryCard key={memory.id} memory={memory} />
+          <MemoryCard 
+            key={memory.id} 
+            memory={memory} 
+            onDelete={handleDelete}
+          />
         ))}
       </div>
     </div>

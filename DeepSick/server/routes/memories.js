@@ -73,4 +73,35 @@ router.post('/', upload.single('file'), async (req, res) => {
   }
 });
 
+// Delete a memory by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const memory = await Memory.findById(req.params.id);
+    
+    if (!memory) {
+      return res.status(404).json({ message: 'Memory not found' });
+    }
+    
+    // If it's an image or video, try to delete the file
+    if ((memory.memoryType === 'image' || memory.memoryType === 'video') && 
+        memory.memoryContent && memory.memoryContent.startsWith(uploadDir)) {
+      try {
+        if (fs.existsSync(memory.memoryContent)) {
+          fs.unlinkSync(memory.memoryContent);
+        }
+      } catch (fileError) {
+        console.error('Failed to delete file:', fileError);
+        // Continue with deletion from database even if file deletion fails
+      }
+    }
+    
+    // Delete from database
+    await Memory.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Memory deleted successfully' });
+  } catch (error) {
+    console.error('Delete failed:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router; 
