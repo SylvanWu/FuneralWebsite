@@ -1,3 +1,4 @@
+//处理用户的注册和登录请求。注册时检查用户名是否已存在，若不存在则创建新用户并生成 JWT 令牌；登录时验证用户名和密码，若正确则签发 JWT 令牌。
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';

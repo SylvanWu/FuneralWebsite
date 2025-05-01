@@ -1,3 +1,4 @@
+//定义Will数据模型，用于存储用户的遗嘱信息，包括遗嘱所有者、上传者姓名、告别留言和视频文件名等。
 import mongoose from 'mongoose';
 
 const willSchema = new mongoose.Schema({

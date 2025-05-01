@@ -1,3 +1,4 @@
+//应用的根组件，处理路由导航，根据用户的登录状态显示不同的页面，并提供登出功能。
 // import React, { useState, useEffect } from 'react'
 // import Header from './components/Header'
 // import UploadArea from './components/UploadArea'
@@ -180,8 +181,8 @@
 import React from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import TimelinePage from './pages/TimelinePage';
-import WillsPage    from './pages/WillsPage';
-import LoginPage    from './pages/LoginPage';
+import WillsPage from './pages/WillsPage';
+import LoginPage from './pages/LoginPage';
 import './App.css';
 
 export default function App() {
@@ -195,55 +196,55 @@ export default function App() {
   };
 
   return (
-      <div className="min-h-screen bg-gray-50 text-gray-800">
-        {/* 顶部导航 */}
-        <nav className="flex items-center space-x-4 px-4 py-3 bg-white shadow-sm">
-          <Link to="/"      className="text-blue-600 hover:underline">Memories</Link>
-          <Link to="/wills" className="text-blue-600 hover:underline">告别留言</Link>
-          <div className="ml-auto">
-            {isLoggedIn ? (
-                <button
-                    onClick={handleLogout}
-                    className="text-red-600 hover:underline"
-                >
-                  Logout
-                </button>
-            ) : (
-                <Link to="/login" className="text-blue-600 hover:underline">
-                  Login
-                </Link>
-            )}
-          </div>
-        </nav>
-
-        <div className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/login" element={isLoggedIn ? <Navigate to="/wills" replace /> : <LoginPage />} />
-
-            <Route
-                path="/"
-                element={
-                  isLoggedIn
-                      ? <TimelinePage />
-                      : <Navigate to="/login" replace />
-                }
-            />
-            <Route
-                path="/wills"
-                element={
-                  isLoggedIn
-                      ? <WillsPage />
-                      : <Navigate to="/login" replace />
-                }
-            />
-
-            {/* 其它所有路径都定向 */}
-            <Route
-                path="*"
-                element={<Navigate to={isLoggedIn ? "/wills" : "/login"} replace />}
-            />
-          </Routes>
+    <div className="min-h-screen bg-gray-50 text-gray-800">
+      {/* 顶部导航 */}
+      <nav className="flex items-center space-x-4 px-4 py-3 bg-white shadow-sm">
+        <Link to="/" className="text-blue-600 hover:underline">Memories</Link>
+        <Link to="/wills" className="text-blue-600 hover:underline">告别留言</Link>
+        <div className="ml-auto">
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="text-red-600 hover:underline"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link to="/login" className="text-blue-600 hover:underline">
+              Login
+            </Link>
+          )}
         </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8">
+        <Routes>
+          <Route path="/login" element={isLoggedIn ? <Navigate to="/wills" replace /> : <LoginPage />} />
+
+          <Route
+            path="/"
+            element={
+              isLoggedIn
+                ? <TimelinePage />
+                : <Navigate to="/login" replace />
+            }
+          />
+          <Route
+            path="/wills"
+            element={
+              isLoggedIn
+                ? <WillsPage />
+                : <Navigate to="/login" replace />
+            }
+          />
+
+          {/* 其它所有路径都定向 */}
+          <Route
+            path="*"
+            element={<Navigate to={isLoggedIn ? "/wills" : "/login"} replace />}
+          />
+        </Routes>
       </div>
+    </div>
   );
 }

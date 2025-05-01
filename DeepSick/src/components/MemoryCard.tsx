@@ -1,3 +1,4 @@
+// 记忆内容卡片组件，显示记忆内容的上传者、时间和具体内容（图片、视频或文本），并提供删除功能。
 import React, { useEffect, useState } from 'react';
 import { Memory } from './Timeline';
 
@@ -7,9 +8,9 @@ interface MemoryCardProps {
 }
 
 const MemoryCard: React.FC<MemoryCardProps> = ({
-                                                   memory,
-                                                   onDeleteMemory,
-                                               }) => {
+    memory,
+    onDeleteMemory,
+}) => {
     const [isNew, setIsNew] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -70,16 +71,15 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
 
     return (
         <div
-            className={`border border-gray-200 rounded-lg shadow-sm p-5 bg-white ${
-                isNew ? 'memory-card-new' : ''
-            } ${isDeleting ? 'opacity-50' : ''}`}
+            className={`border border-gray-200 rounded-lg shadow-sm p-5 bg-white ${isNew ? 'memory-card-new' : ''
+                } ${isDeleting ? 'opacity-50' : ''}`}
         >
             {/* 头部：头像 + 上传者 + 时间 */}
             <div className="flex items-center">
                 <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
-          <span>
-            {(memory.uploaderName || 'U').charAt(0).toUpperCase()}
-          </span>
+                    <span>
+                        {(memory.uploaderName || 'U').charAt(0).toUpperCase()}
+                    </span>
                 </div>
                 <div className="ml-3 timeline-dot">
                     <p className="font-medium">

@@ -1,3 +1,4 @@
+//登录页面组件，处理用户的登录请求，登录成功后将 JWT 令牌存储在 localStorage 中，并跳转到遗嘱列表页。
 // src/pages/LoginPage.tsx
 import React, { useState } from 'react';
 import { loginUser } from '../api/index';   // loginUser 返回 { user, token }
@@ -7,7 +8,7 @@ import API from '../api/index';             // 拿到 axios 实例
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError]       = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {

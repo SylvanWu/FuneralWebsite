@@ -1,3 +1,4 @@
+//时间线页面组件，展示记忆内容时间线，并提供文件上传功能。
 // src/pages/TimelinePage.tsx
 import React, { useState, useEffect } from 'react';
 import UploadArea from '../components/UploadArea';
@@ -18,14 +19,14 @@ export interface BackendMemory {
 
 export default function TimelinePage() {
     const [memories, setMemories] = useState<Memory[]>([]);
-    const [name, setName]         = useState('');
+    const [name, setName] = useState('');
     const [isUploading, setUploading] = useState(false);
 
     /* ---------- 首次加载 ---------- */
     useEffect(() => {
         (async () => {
             try {
-                const res  = await fetchMemories();
+                const res = await fetchMemories();
                 const data = res.data ?? res;
                 const list = (data as BackendMemory[]).map(m => ({
                     id: m._id,                             // 注意字段映射

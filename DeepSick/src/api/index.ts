@@ -1,3 +1,4 @@
+//封装了与后端 API 的交互，包括记忆内容、遗嘱和用户认证相关的操作。自动在请求头中注入 JWT 令牌。
 // from Xingyuan Zhou, updated by Haoran Li
 // src/api/index.ts
 import axios from 'axios';
@@ -26,7 +27,7 @@ export const fetchMemories = () =>
     API.get('/api/memories').then(res => res.data);
 export const createMemory = (data: FormData) =>
     API.post('/api/memories', data).then(res => res.data);
-export const deleteMemory   = (id: string) =>
+export const deleteMemory = (id: string) =>
     API.delete(`/api/memories/${id}`);
 
 // ── Wills 模块 ─────────────────────────
