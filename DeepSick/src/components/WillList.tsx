@@ -1,3 +1,4 @@
+// 遗嘱列表组件，显示用户的遗嘱列表，并提供编辑和删除功能。
 // src/components/WillList.tsx
 import { useState } from 'react';
 

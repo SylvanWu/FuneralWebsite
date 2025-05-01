@@ -1,11 +1,12 @@
+//遗嘱页面组件，展示用户的遗嘱列表，并提供创建、编辑和删除遗嘱的功能。
 // src/pages/WillsPage.tsx
 import React, { useEffect, useState } from 'react';
 import WillForm, { Will } from '../components/WillForm';
-import WillList           from '../components/WillList';
+import WillList from '../components/WillList';
 import { getWills, deleteWill, updateWill } from '../api';
 
 export default function WillsPage() {
-    const [wills, setWills]   = useState<Will[]>([]);
+    const [wills, setWills] = useState<Will[]>([]);
     const [loading, setLoading] = useState(true);
 
     // 首次加载

@@ -1,3 +1,4 @@
+//时间线组件，展示记忆内容列表，并提供删除记忆内容的回调函数。
 import React from 'react';
 import MemoryCard from './MemoryCard';
 
@@ -25,28 +26,28 @@ const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory }) => {
 
   if (memories.length === 0) {
     return (
-        <div className="text-center py-10 text-gray-500">
-          <p>No memories have been added yet. Upload your first memory above.</p>
-        </div>
+      <div className="text-center py-10 text-gray-500">
+        <p>No memories have been added yet. Upload your first memory above.</p>
+      </div>
     );
   }
 
   return (
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-6 border-b pb-2">
-          Memories Timeline
-        </h2>
+    <div className="max-w-3xl mx-auto">
+      <h2 className="text-2xl font-semibold mb-6 border-b pb-2">
+        Memories Timeline
+      </h2>
 
-        <div className="space-y-8 timeline-line">
-          {memories.map((m) => (
-              <MemoryCard
-                  key={m.id}          /* 如果后端字段是 _id 就写 m._id */
-                  memory={m}
-                  onDeleteMemory={handleDelete}
-              />
-          ))}
-        </div>
+      <div className="space-y-8 timeline-line">
+        {memories.map((m) => (
+          <MemoryCard
+            key={m.id}          /* 如果后端字段是 _id 就写 m._id */
+            memory={m}
+            onDeleteMemory={handleDelete}
+          />
+        ))}
       </div>
+    </div>
   );
 };
 

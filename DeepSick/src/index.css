@@ -1,3 +1,4 @@
+/* Tailwind CSS 类和全局样式 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -122,15 +123,15 @@ body {
   padding-bottom: 0.5rem;
 }
 
-.space-y-8 > * + * {
+.space-y-8>*+* {
   margin-top: 2rem;
 }
 
-.space-x-6 > * + * {
+.space-x-6>*+* {
   margin-left: 1.5rem;
 }
 
-.space-x-2 > * + * {
+.space-x-2>*+* {
   margin-left: 0.5rem;
 }
 
@@ -174,7 +175,7 @@ body {
   align-items: center;
 }
 
-.md\:space-x-6 > * + * {
+.md\:space-x-6>*+* {
   margin-left: 1.5rem;
 }
 
@@ -385,6 +386,7 @@ body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -404,28 +406,28 @@ body {
   .container {
     padding: 0 0.5rem;
   }
-  
+
   .text-4xl {
     font-size: 1.875rem;
     line-height: 2.25rem;
   }
-  
+
   .p-8 {
     padding: 1.5rem;
   }
-  
+
   .md\:flex {
     display: block;
   }
-  
+
   .md\:w-1\/2 {
     width: 100%;
   }
-  
-  .md\:space-x-6 > * + * {
+
+  .md\:space-x-6>*+* {
     margin-left: 0;
   }
-  
+
   .md\:mb-0 {
     margin-bottom: 0;
   }

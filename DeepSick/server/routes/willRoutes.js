@@ -1,8 +1,9 @@
 //from Haoran Li
+//处理与遗嘱相关的路由请求，包括创建、获取、编辑和删除遗嘱。使用 multer 进行视频上传，并在处理请求前进行 JWT 鉴权。
 import express from 'express';
-import multer  from 'multer';
-import path    from 'path';
-import Will    from '../models/Will.js';
+import multer from 'multer';
+import path from 'path';
+import Will from '../models/Will.js';
 import authMiddleware from '../middleware/auth.js';
 
 const router = express.Router();
@@ -16,7 +17,7 @@ const storage = multer.diskStorage({
         cb(null, process.env.UPLOAD_DIR || path.join(process.cwd(), 'server', 'uploads'));
     },
     filename(req, file, cb) {
-        const ext  = path.extname(file.originalname);
+        const ext = path.extname(file.originalname);
         const name = path.basename(file.originalname, ext);
         cb(null, `${name}-${Date.now()}${ext}`);
     }

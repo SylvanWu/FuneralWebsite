@@ -1,3 +1,4 @@
+//处理与记忆内容相关的路由请求，包括获取所有记忆内容、上传新的记忆内容和删除记忆内容。使用 multer 进行文件上传，并在删除记忆内容时尝试删除对应的文件。
 import express from 'express';
 import Memory from '../models/Memory.js';
 import multer from 'multer';
@@ -25,7 +26,7 @@ const storage = multer.diskStorage({
 });
 
 // Create multer instance
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
@@ -48,19 +49,19 @@ router.post('/', upload.single('file'), async (req, res) => {
   if (uploadInProgress) {
     return res.status(429).json({ message: 'Processing another upload, please try again later' });
   }
-  
+
   uploadInProgress = true;
-  
+
   try {
     const { uploaderName, memoryType, memoryContent } = req.body;
-    
+
     // Create new memory object
     const newMemory = new Memory({
       uploaderName,
       memoryType,
       memoryContent: req.file ? req.file.path : memoryContent
     });
-    
+
     // Save to database
     const savedMemory = await newMemory.save();
     res.status(201).json(savedMemory);
@@ -77,14 +78,14 @@ router.post('/', upload.single('file'), async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const memory = await Memory.findById(req.params.id);
-    
+
     if (!memory) {
       return res.status(404).json({ message: 'Memory not found' });
     }
-    
+
     // If it's an image or video, try to delete the file
-    if ((memory.memoryType === 'image' || memory.memoryType === 'video') && 
-        memory.memoryContent && memory.memoryContent.startsWith(uploadDir)) {
+    if ((memory.memoryType === 'image' || memory.memoryType === 'video') &&
+      memory.memoryContent && memory.memoryContent.startsWith(uploadDir)) {
       try {
         if (fs.existsSync(memory.memoryContent)) {
           fs.unlinkSync(memory.memoryContent);
@@ -94,7 +95,7 @@ router.delete('/:id', async (req, res) => {
         // Continue with deletion from database even if file deletion fails
       }
     }
-    
+
     // Delete from database
     await Memory.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: 'Memory deleted successfully' });

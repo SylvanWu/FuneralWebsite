@@ -1,3 +1,4 @@
+// 遗嘱表单组件，允许用户输入姓名、告别留言，并使用摄像头录制视频，提交后创建新的遗嘱。
 // src/components/WillForm.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { createWill } from '../api';
@@ -15,14 +16,14 @@ interface Props { onCreated?: (w: Will) => void }
 
 export default function WillForm({ onCreated }: Props) {
     /* ---------------- state ---------------- */
-    const [uploaderName, setUploaderName]     = useState('');
-    const [farewellMessage, setFarewellMsg]   = useState('');
-    const [recording, setRecording]           = useState(false);
-    const [mediaRecorder, setMediaRecorder]   = useState<MediaRecorder | null>(null);
-    const recordedChunksRef                   = useRef<Blob[]>([]);
-    const [recordedBlob, setRecordedBlob]     = useState<Blob | null>(null);   // ⭐
-    const [previewURL, setPreviewURL]         = useState('');
-    const videoRef                            = useRef<HTMLVideoElement>(null);
+    const [uploaderName, setUploaderName] = useState('');
+    const [farewellMessage, setFarewellMsg] = useState('');
+    const [recording, setRecording] = useState(false);
+    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+    const recordedChunksRef = useRef<Blob[]>([]);
+    const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);   // ⭐
+    const [previewURL, setPreviewURL] = useState('');
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     /* ---------------- init camera ---------------- */
     useEffect(() => {
@@ -56,7 +57,7 @@ export default function WillForm({ onCreated }: Props) {
 
     /* ---------------- control ---------------- */
     const startRec = () => { recordedChunksRef.current = []; setRecordedBlob(null); setPreviewURL(''); mediaRecorder?.start(); setRecording(true); };
-    const stopRec  = () => { mediaRecorder?.stop(); setRecording(false); };
+    const stopRec = () => { mediaRecorder?.stop(); setRecording(false); };
 
     /* ---------------- submit ---------------- */
     const handleSubmit = async (e: React.FormEvent) => {
