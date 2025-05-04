@@ -6,7 +6,7 @@ const dreamSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    // required: true   // 目前不验证owner，方便测试
   },
   content: {
     type: String,  // 存储富文本HTML 不够长 后期需要控制长度
