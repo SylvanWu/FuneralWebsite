@@ -1,19 +1,20 @@
 // server/index.js
-import express            from 'express';
-import cors               from 'cors';
-import dotenv             from 'dotenv';
-import mongoose           from 'mongoose';
-import path               from 'path';
-import { fileURLToPath }  from 'url';
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 /* 路由 */
-import authRoutes     from './routes/auth.js';
+import authRoutes from './routes/auth.js';
 import memoriesRouter from './routes/memories.js';
-import willRoutes     from './routes/willRoutes.js';
+import willRoutes from './routes/willRoutes.js';
+import dreamRouter from './routes/dreamRoutes.js';
 
 dotenv.config();
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 5001;
 
 /* ──────────── 公共中间件 ──────────── */
@@ -32,9 +33,11 @@ app.use(
 
 
 /* ──────────── 业务路由 ──────────── */
-app.use('/api/auth',     authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/memories', memoriesRouter);
-app.use('/api/wills',    willRoutes);
+app.use('/api/wills', willRoutes);
+//can:dreamRouter
+app.use('/api/dreams', dreamRouter);
 
 /* 默认根路由 (健康检查) */
 app.get('/', (_, res) => res.send('Digital Memorial Hall API'));
