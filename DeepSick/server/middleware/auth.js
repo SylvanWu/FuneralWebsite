@@ -22,7 +22,7 @@ export default function authMiddleware(req, res, next) {
     const token = parts[1];
     try {
         const secret = process.env.JWT_SECRET;
-        if (!secret) throw new Error('JWT_SECRET not set in .env');
+        if (!secret) throw new Error('JWT_SECRET not set in .env.local');
 
         // 验证并解码
         const decoded = jwt.verify(token, secret);

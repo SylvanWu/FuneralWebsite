@@ -1,250 +1,448 @@
 //应用的根组件，处理路由导航，根据用户的登录状态显示不同的页面，并提供登出功能。
-// import React, { useState, useEffect } from 'react'
-// import Header from './components/Header'
-// import UploadArea from './components/UploadArea'
-// import Timeline, { Memory } from './components/Timeline'
-// import './App.css'
-// import { fetchMemories, createMemory, deleteMemory } from './api/index.ts'
 //
-// // Update Memory interface to match backend model
-// export interface BackendMemory {
-//   _id: string;
-//   uploaderName: string;
-//   uploadTime: string;
-//   memoryType: 'image' | 'video' | 'text';
-//   memoryContent: string;
+// // src/App.tsx
+// import React, { useState, useEffect } from 'react';
+// import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+//
+// // 原先的组件
+// import Header      from './components/Header';
+// import UploadArea  from './components/UploadArea';
+// import Timeline, { Memory } from './components/Timeline';
+// import LoginPage   from './pages/LoginPage';
+// import WillsPage   from './pages/WillsPage';
+// import './App.css';
+//
+// // API 调用
+// import { fetchMemories, createMemory, deleteMemory } from './api';
+//
+// interface BackendMemory {
+//     _id: string;
+//     uploaderName: string;
+//     uploadTime: string;
+//     memoryType: 'image' | 'video' | 'text';
+//     memoryContent: string;
 // }
 //
-// function App() {
-//   const [memories, setMemories] = useState<Memory[]>([])
-//   const [name, setName] = useState('')
-//   const [isUploading, setIsUploading] = useState(false)
+// export default function App() {
+//     const navigate = useNavigate();
+//     const token    = localStorage.getItem('token');
+//     const isLoggedIn = Boolean(token);
 //
-//   // Fetch memories from backend
-//   useEffect(() => {
-//     const getMemories = async () => {
-//       try {
-//         const { data } = await fetchMemories();
-//         // Convert backend data to frontend format
-//         const formattedMemories = data.map((memory: BackendMemory) => ({
-//           id: memory._id,
-//           type: memory.memoryType,
-//           preview: memory.memoryContent,
-//           uploadTime: new Date(memory.uploadTime),
-//           uploaderName: memory.uploaderName
-//         }));
-//         setMemories(formattedMemories);
-//       } catch (error) {
-//         console.error('Failed to fetch memories:', error);
-//       }
+//     // Memories 列表
+//     const [memories, setMemories] = useState<Memory[]>([]);
+//     // 上传者名字（可选）
+//     const [name, setName]         = useState('');
+//     const [isUploading, setIsUploading] = useState(false);
+//
+//     // 拉记忆列表
+//     useEffect(() => {
+//         (async () => {
+//             try {
+//                 const res = await fetchMemories();
+//                 const data: BackendMemory[] = res.data ?? res;
+//                 const formatted = data.map(m => ({
+//                     id: m._id,
+//                     type: m.memoryType,
+//                     preview: m.memoryContent,
+//                     uploadTime: new Date(m.uploadTime),
+//                     uploaderName: m.uploaderName,
+//                 }));
+//                 setMemories(formatted);
+//             } catch (err) {
+//                 console.error('获取记忆失败', err);
+//             }
+//         })();
+//     }, []);
+//
+//     // 文件上传
+//     const handleFileUpload = async (file: File) => {
+//         if (isUploading) return;
+//         setIsUploading(true);
+//
+//         try {
+//             let type: 'image'|'video'|'text' = 'image';
+//             let preview = '';
+//             let memoryContent = '';
+//
+//             if (file.type.startsWith('image/')) {
+//                 type = 'image';
+//                 preview = URL.createObjectURL(file);
+//                 memoryContent = preview;
+//             } else if (file.type.startsWith('video/')) {
+//                 type = 'video';
+//                 preview = URL.createObjectURL(file);
+//                 memoryContent = preview;
+//             } else if (file.type === 'text/plain') {
+//                 type = 'text';
+//                 const txt = await file.text();
+//                 preview = txt.slice(0, 500) + (txt.length > 500 ? '...' : '');
+//                 memoryContent = txt;
+//             }
+//
+//             const fd = new FormData();
+//             fd.append('file', file);
+//             fd.append('uploaderName', name || 'Anonymous');
+//             fd.append('memoryType', type);
+//             if (type === 'text') fd.append('memoryContent', memoryContent);
+//
+//             const resp = await createMemory(fd);
+//             setMemories(prev => [{
+//                 id: resp.data._id,
+//                 type,
+//                 preview,
+//                 uploadTime: new Date(),
+//                 uploaderName: name || 'Anonymous'
+//             }, ...prev]);
+//         } catch (err) {
+//             console.error('上传失败', err);
+//         } finally {
+//             setIsUploading(false);
+//         }
 //     };
 //
-//     getMemories();
-//   }, []);
+//     // 删除 Memory
+//     const handleDeleteMemory = async (id: string) => {
+//         try {
+//             await deleteMemory(id);
+//             setMemories(prev => prev.filter(m => m.id !== id));
+//         } catch (err) {
+//             console.error('删除失败', err);
+//             alert('删除失败，请重试');
+//         }
+//     };
 //
-//   const handleFileUpload = async (file: File) => {
-//     // Prevent duplicate uploads
-//     if (isUploading) return;
+//     // 登出
+//     const handleLogout = () => {
+//         localStorage.removeItem('token');
+//         navigate('/login', { replace: true });
+//     };
 //
-//     try {
-//       setIsUploading(true);
+//     return (
+//         <div className="min-h-screen bg-gray-50 text-gray-800">
+//             {/* ====== 原先的顶部导航 ====== */}
+//             <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
+//                 <div className="flex items-center">
+//                     <span className="text-xl font-bold">88</span>
+//                 </div>
+//                 <div className="hidden md:flex space-x-6">
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Products</a>
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Solutions</a>
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Community</a>
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Resources</a>
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Pricing</a>
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Contact</a>
+//                     <a href="#" className="text-gray-700 hover:text-gray-900">Link</a>
+//                 </div>
+//                 <div className="flex space-x-2">
+//                     {isLoggedIn
+//                         ? <button onClick={handleLogout} className="px-4 py-1 border border-gray-300 rounded-lg bg-gray-100">Logout</button>
+//                         : <button className="px-4 py-1 bg-gray-800 text-white rounded-lg">Register</button>
+//                     }
+//                 </div>
+//             </nav>
 //
-//       let type: 'image' | 'video' | 'text' = 'image'
-//       let preview = ''
-//       let memoryContent = ''
+//             <div className="container mx-auto px-4 py-8">
+//                 {/* ====== 原先的首页大图 + Header ====== */}
+//                 <div className="md:flex md:items-center md:space-x-6 mb-10">
+//                     <div className="md:w-1/2 mb-6 md:mb-0">
+//                         <img
+//                             src="/Hall.png"
+//                             alt="Digital Memorial Hall"
+//                             className="w-full rounded-lg shadow-md"
+//                         />
+//                     </div>
+//                     <div className="md:w-1/2">
+//                         <Header />
+//                     </div>
+//                 </div>
 //
-//       if (file.type.startsWith('image/')) {
-//         type = 'image'
-//         preview = URL.createObjectURL(file)
-//         memoryContent = URL.createObjectURL(file) // Temporary URL for display
-//       } else if (file.type.startsWith('video/')) {
-//         type = 'video'
-//         preview = URL.createObjectURL(file)
-//         memoryContent = URL.createObjectURL(file) // Temporary URL for display
-//       } else if (file.type === 'text/plain') {
-//         type = 'text'
-//         const text = await file.text()
-//         preview = text.substring(0, 500) + (text.length > 500 ? '...' : '')
-//         memoryContent = text
-//       }
+//                 {/* ====== 路由区块 ====== */}
+//                 <Routes>
+//                     <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace/> : <LoginPage/>} />
 //
-//       // Create FormData object
-//       const formData = new FormData();
-//       formData.append('file', file);
-//       formData.append('uploaderName', name || 'Anonymous User');
-//       formData.append('memoryType', type);
+//                     <Route path="/" element={
+//                         isLoggedIn
+//                             ? (
+//                                 <>
+//                                     {/* ====== 上传区 ====== */}
+//                                     <div className="mb-6">
+//                                         <label className="block text-sm font-medium text-gray-700 mb-1">
+//                                             Your Name (Optional)
+//                                         </label>
+//                                         <input
+//                                             type="text"
+//                                             className="w-full px-4 py-2 border rounded-md"
+//                                             placeholder="Please enter your name"
+//                                             value={name}
+//                                             onChange={e => setName(e.target.value)}
+//                                         />
+//                                     </div>
+//                                     <UploadArea onFileUpload={handleFileUpload} />
+//                                     {/* ====== 时间线 ====== */}
+//                                     <Timeline
+//                                         memories={memories}
+//                                         onDeleteMemory={handleDeleteMemory}
+//                                     />
+//                                 </>
+//                             )
+//                             : <Navigate to="/login" replace/>
+//                     }/>
 //
-//       // If text, set content directly
-//       if (type === 'text') {
-//         formData.append('memoryContent', memoryContent);
-//       }
+//                     <Route path="/wills" element={
+//                         isLoggedIn
+//                             ? <WillsPage/>
+//                             : <Navigate to="/login" replace/>
+//                     }/>
 //
-//       // Send to backend
-//       const response = await createMemory(formData);
-//
-//       const newMemory: Memory = {
-//         id: response.data._id,
-//         type,
-//         preview,
-//         uploadTime: new Date(),
-//         uploaderName: name || 'Anonymous User'
-//       }
-//
-//       // Use function form of setState to avoid using stale state
-//       setMemories(prevMemories => [newMemory, ...prevMemories]);
-//     } catch (error) {
-//       console.error('Failed to upload memory:', error);
-//     } finally {
-//       setIsUploading(false);
-//     }
-//   }
-//
-//   const handleDeleteMemory = async (id: string) => {
-//     console.log("App: handleDeleteMemory called for ID:", id);
-//     try {
-//       await deleteMemory(id);
-//       console.log("API call successful, removing memory from state");
-//       setMemories(prevMemories => prevMemories.filter(memory => memory.id !== id));
-//     } catch (error) {
-//       console.error('Failed to delete memory:', error);
-//       alert('Failed to delete memory. Please try again.');
-//     }
-//   };
-//
-//   return (
-//     <div className="min-h-screen bg-gray-50 text-gray-800">
-//       {/* Navigation Bar */}
-//       <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
-//         <div className="flex items-center">
-//           <span className="text-xl font-bold">88</span>
+//                     <Route path="*" element={
+//                         <Navigate to={isLoggedIn ? "/" : "/login"} replace/>
+//                     }/>
+//                 </Routes>
+//             </div>
 //         </div>
-//         <div className="hidden md:flex space-x-6">
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Products</a>
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Solutions</a>
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Community</a>
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Resources</a>
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Pricing</a>
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Contact</a>
-//           <a href="#" className="text-gray-700 hover:text-gray-900">Link</a>
-//         </div>
-//         <div className="flex space-x-2">
-//           <button className="px-4 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-700">Sign in</button>
-//           <button className="px-4 py-1 bg-gray-800 text-white rounded-lg">Register</button>
-//         </div>
-//       </nav>
-//
-//       <div className="container mx-auto px-4 py-8">
-//         <div className="md:flex md:items-center md:space-x-6 mb-10">
-//           {/* Left image */}
-//           <div className="md:w-1/2 mb-6 md:mb-0">
-//             <img
-//               src="/Hall.png"
-//               alt="Digital Memorial Hall"
-//               className="w-full rounded-lg shadow-md"
-//             />
-//           </div>
-//           {/* Right content */}
-//           <div className="md:w-1/2">
-//             <Header />
-//           </div>
-//         </div>
-//
-//         <main className="max-w-4xl mx-auto">
-//           {/* Name input */}
-//           <div className="mb-6">
-//             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-//               Your Name (Optional)
-//             </label>
-//             <input
-//               type="text"
-//               id="name"
-//               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               placeholder="Please enter your name"
-//               value={name}
-//               onChange={(e) => setName(e.target.value)}
-//             />
-//           </div>
-//
-//           <UploadArea onFileUpload={handleFileUpload} />
-//           <Timeline
-//             memories={memories}
-//             onDeleteMemory={handleDeleteMemory}
-//           />
-//         </main>
-//       </div>
-//     </div>
-//   )
+//     );
 // }
-//
-// export default App
-// src/App.tsx
-import React from 'react';
+
+/* src/App.tsx */
+/* --------------------------------------------------
+ * src/App.tsx
+ * 根组件：路由 + 顶部导航 + 首页上传区
+ * -------------------------------------------------- */
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
-import TimelinePage from './pages/TimelinePage';
-import WillsPage from './pages/WillsPage';
-import LoginPage from './pages/LoginPage';
+
+/* 页面 & 组件 */
+import Header              from './components/Header';
+import UploadArea          from './components/UploadArea';
+import Timeline, { Memory} from './components/Timeline';
+import LoginPage           from './pages/LoginPage';
+import WillsPage           from './pages/WillsPage';
+
+/* API */
+import { fetchMemories, createMemory, deleteMemory } from './api';
+
+/* 样式 */
 import './App.css';
 
-export default function App() {
-  const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  const isLoggedIn = Boolean(token);
+/* 后端返回的 Memory 结构 */
+interface BackendMemory {
+  _id: string;
+  uploaderName: string;
+  uploadTime: string;
+  memoryType: 'image' | 'video' | 'text';
+  memoryContent: string;
+}
 
+export default function App() {
+  /* -------------- 登录状态 -------------- */
+  const navigate = useNavigate();
+  const token       = localStorage.getItem('token');
+  const isLoggedIn  = Boolean(token);
+
+  /* -------------- 首页：时间线 & 上传 -------------- */
+  const [memories, setMemories]   = useState<Memory[]>([]);
+  const [name, setName]           = useState('');
+  const [isUploading, setUpload]  = useState(false);
+
+  /* 拉取时间线 */
+  useEffect(() => {
+    (async () => {
+      try {
+        const list: BackendMemory[] = await fetchMemories();
+        setMemories(
+            list.map(m => ({
+              id: m._id,
+              type: m.memoryType,
+              preview: m.memoryContent,
+              uploadTime: new Date(m.uploadTime),
+              uploaderName: m.uploaderName,
+            }))
+        );
+      } catch (err) {
+        console.error('获取记忆失败', err);
+      }
+    })();
+  }, []);
+
+  /* 上传文件 */
+  const handleFileUpload = async (file: File) => {
+    if (isUploading) return;
+    setUpload(true);
+
+    try {
+      /* 根据类型生成预览 & 字段 */
+      let type: 'image' | 'video' | 'text' = 'image';
+      let preview = '';
+      let memoryContent = '';
+
+      if (file.type.startsWith('image/')) {
+        type = 'image';
+        preview = URL.createObjectURL(file);
+        memoryContent = preview;
+      } else if (file.type.startsWith('video/')) {
+        type = 'video';
+        preview = URL.createObjectURL(file);
+        memoryContent = preview;
+      } else if (file.type === 'text/plain') {
+        type = 'text';
+        const txt = await file.text();
+        preview = txt.slice(0, 500) + (txt.length > 500 ? '...' : '');
+        memoryContent = txt;
+      }
+
+      /* 发送到后端 */
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('uploaderName', name || 'Anonymous');
+      fd.append('memoryType', type);
+      if (type === 'text') fd.append('memoryContent', memoryContent);
+
+      const saved = await createMemory(fd);
+
+      setMemories(prev => [
+        {
+          id: saved._id,
+          type,
+          preview,
+          uploadTime: new Date(),
+          uploaderName: name || 'Anonymous',
+        },
+        ...prev,
+      ]);
+    } catch (err) {
+      console.error('上传失败', err);
+      alert('上传失败，请稍后重试');
+    } finally {
+      setUpload(false);
+    }
+  };
+
+  /* 删除 Memory */
+  const handleDeleteMemory = async (id: string) => {
+    try {
+      await deleteMemory(id);
+      setMemories(prev => prev.filter(m => m.id !== id));
+    } catch (err) {
+      console.error('删除失败', err);
+      alert('删除失败，请重试');
+    }
+  };
+
+  /* 登出 */
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login', { replace: true });
   };
 
+  /* -------------- UI -------------- */
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      {/* 顶部导航 */}
-      <nav className="flex items-center space-x-4 px-4 py-3 bg-white shadow-sm">
-        <Link to="/" className="text-blue-600 hover:underline">Memories</Link>
-        <Link to="/wills" className="text-blue-600 hover:underline">告别留言</Link>
-        <div className="ml-auto">
-          {isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="text-red-600 hover:underline"
-            >
-              Logout
-            </button>
-          ) : (
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Login
+      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)]">
+        {/* ===== 顶部导航 ===== */}
+        <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
+          <div className="flex items-center space-x-6">
+            <Link to="/" className="text-xl font-bold text-[var(--link-color)]">
+              88
             </Link>
+            <Link to="/" className="nav-link">产品</Link>
+            <Link to="/" className="nav-link">解决方案</Link>
+            <Link to="/" className="nav-link">社区</Link>
+            <Link to="/" className="nav-link">资源</Link>
+            <Link to="/wills" className="nav-link">意志栏</Link>
+            <Link to="/" className="nav-link">接触</Link>
+          </div>
+          {isLoggedIn ? (
+              <button
+                  onClick={handleLogout}
+                  className="px-4 py-1 bg-gray-100 border border-gray-300 rounded"
+              >
+                Logout
+              </button>
+          ) : (
+              <Link to="/login" className="px-4 py-1 bg-blue-600 text-white rounded">
+                Login
+              </Link>
           )}
+        </nav>
+
+        {/* ===== 路由出口 ===== */}
+        <div className="container mx-auto px-4 py-8">
+          <Routes>
+            {/* 登录页 */}
+            <Route
+                path="/login"
+                element={
+                  isLoggedIn ? <Navigate to="/" replace /> : <LoginPage />
+                }
+            />
+
+            {/* 首页（卡片 + 时间线） */}
+            <Route
+                path="/"
+                element={
+                  isLoggedIn ? (
+                      <>
+                        {/* —— 白色卡片 —— */}
+                        <div className="bg-white rounded-lg shadow-md p-8 mb-10">
+                          {/* 标题图 + 描述 */}
+                          <div className="md:flex md:items-center md:space-x-6 mb-8">
+                            <div className="md:w-1/2 mb-6 md:mb-0">
+                              <img
+                                  src="/Hall.png"
+                                  alt="Digital Memorial Hall"
+                                  className="w-full rounded-lg"
+                              />
+                            </div>
+                            <div className="md:w-1/2">
+                              <Header />
+                            </div>
+                          </div>
+
+                          {/* 姓名输入 */}
+                          <div className="mb-6">
+                            <label className="block text-sm font-medium mb-1">
+                              您的姓名（可选）
+                            </label>
+                            <input
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                placeholder="请输入您的姓名"
+                                className="w-full px-4 py-2 border rounded"
+                            />
+                          </div>
+
+                          {/* 上传区 */}
+                          <UploadArea onFileUpload={handleFileUpload} />
+                        </div>
+
+                        {/* —— 时间线 —— */}
+                        <Timeline
+                            memories={memories}
+                            onDeleteMemory={handleDeleteMemory}
+                        />
+                      </>
+                  ) : (
+                      <Navigate to="/login" replace />
+                  )
+                }
+            />
+
+            {/* 遗嘱页 */}
+            <Route
+                path="/wills"
+                element={
+                  isLoggedIn ? <WillsPage /> : <Navigate to="/login" replace />
+                }
+            />
+
+            {/* 兜底 */}
+            <Route
+                path="*"
+                element={
+                  <Navigate to={isLoggedIn ? '/' : '/login'} replace />
+                }
+            />
+          </Routes>
         </div>
-      </nav>
-
-      <div className="container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/login" element={isLoggedIn ? <Navigate to="/wills" replace /> : <LoginPage />} />
-
-          <Route
-            path="/"
-            element={
-              isLoggedIn
-                ? <TimelinePage />
-                : <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/wills"
-            element={
-              isLoggedIn
-                ? <WillsPage />
-                : <Navigate to="/login" replace />
-            }
-          />
-
-          {/* 其它所有路径都定向 */}
-          <Route
-            path="*"
-            element={<Navigate to={isLoggedIn ? "/wills" : "/login"} replace />}
-          />
-        </Routes>
       </div>
-    </div>
   );
 }

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
+import fs from 'fs';
 /* 路由 */
 import authRoutes from './routes/auth.js';
 import memoriesRouter from './routes/memories.js';
@@ -17,19 +17,25 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// 统一的上传目录
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });   // 保证目录存在
+
 /* ──────────── 公共中间件 ──────────── */
-app.use(cors());
+app.use(cors({
+    origin: true,
+    methods: ['GET','POST','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization','Range'],
+    exposedHeaders: ['Accept-Ranges','Content-Range','Content-Length']
+}));
+
 app.use(express.json());
 
-/* 把上传目录暴露为静态资源：/uploads/xxx.webm */
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-app.use(
-    '/uploads',
-    express.static(
-        path.join(__dirname, 'uploads'),
-        { acceptRanges: false }
-    )
-);
+
+app.use('/uploads',
+    express.static(UPLOAD_DIR, { acceptRanges:false })
+    );
 
 
 /* ──────────── 业务路由 ──────────── */

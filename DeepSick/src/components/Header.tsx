@@ -1,4 +1,4 @@
-//应用的头部组件，显示应用名称和描述信息
+// 应用的头部组件，显示应用名称和描述信息
 import React from 'react';
 
 const Header: React.FC = () => {
@@ -14,4 +14,5 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header; 
+export default Header;
+
