@@ -3,56 +3,56 @@
 // src/api/index.ts
 import axios from 'axios';
 
-// 从 .env 读取后端地址，回退到本地 5001 端口
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001'
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
 });
 
-// —— 自动注入 JWT ——
+/* ---------- 注入 JWT ---------- */
 API.interceptors.request.use(
-    config => {
+    cfg => {
         const token = localStorage.getItem('token');
         if (token) {
-            config.headers = config.headers ?? {};
-            config.headers.Authorization = `Bearer ${token}`;
+            cfg.headers = cfg.headers ?? {};
+            cfg.headers.Authorization = `Bearer ${token}`;
         }
-        return config;
+        return cfg;
     },
-    error => Promise.reject(error)
+    err => Promise.reject(err),
 );
 
-// ── Memories 模块 ──────────────────────
-// 注意：后端是 app.use('/memories', …)
-export const fetchMemories = () =>
-    API.get('/api/memories').then(res => res.data);
-export const createMemory = (data: FormData) =>
-    API.post('/api/memories', data).then(res => res.data);
-export const deleteMemory = (id: string) =>
-    API.delete(`/api/memories/${id}`);
+/* ---------- Memories ---------- */
+export const fetchMemories = ()        => API.get('/api/memories').then(r => r.data);
+export const createMemory  = (fd:FormData) => API.post('/api/memories', fd).then(r => r.data);
+export const deleteMemory  = (id:string)  => API.delete(`/api/memories/${id}`);
 
-// ── Wills 模块 ─────────────────────────
-// 后端是 app.use('/api/wills', willRoutes)
-export const getWills = () =>
-    API.get('/api/wills').then(res => res.data);
-export const createWill = (formData: FormData) =>
-    API.post('/api/wills', formData).then(res => res.data);
+/* ---------- Wills ---------- */
+export const getWills   = ()                 => API.get('/api/wills').then(r => r.data);
+export const createWill = (fd:FormData)      => API.post('/api/wills', fd).then(r => r.data);
+export const deleteWill = (id:string)        => API.delete(`/api/wills/${id}`);
 
-export const deleteWill = (id: string) =>
-    API.delete(`/api/wills/${id}`);
-
+/**
+ * 更新遗嘱
+ * @param id       will _id
+ * @param data     普通 JSON 或 FormData
+ * @param isForm   若为 true，则 data 必须是 FormData，会自动走 multipart/form‑data
+ */
 export const updateWill = (
     id: string,
-    body: { uploaderName?: string; farewellMessage?: string }
-) => API.patch(`/api/wills/${id}`, body).then(r => r.data);
+    data: Partial<{ uploaderName: string; farewellMessage: string }> | FormData,
+    isForm = false,
+) => {
+    if (isForm && data instanceof FormData) {
+        return API.patch(`/api/wills/${id}`, data, {
+            // 让 axios 自动带 boundary
+            headers: { 'Content-Type': 'multipart/form-data' },
+        }).then(r => r.data);
+    }
+    return API.patch(`/api/wills/${id}`, data).then(r => r.data);
+};
 
-
-
-// ── Auth 模块 ─────────────────────────
-export const registerUser = (payload: {
-    username: string;
-    password: string;
-    role: string;
-}) => API.post('/api/auth/register', payload).then(res => res.data);
+/* ---------- Auth ---------- */
+export const registerUser = (p:{ username:string; password:string; role:string }) =>
+    API.post('/api/auth/register', p).then(r => r.data);
 
 export const loginUser = (payload: {
     username: string;
@@ -80,5 +80,6 @@ export const deleteDream = (id: string) => API.delete(`/api/dreams/${id}`);
 
 
 
-//在其他地方想直接拿到 axios 实例：
 export default API;
+
+  
