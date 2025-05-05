@@ -1,4 +1,6 @@
 //处理与记忆内容相关的路由请求，包括获取所有记忆内容、上传新的记忆内容和删除记忆内容。使用 multer 进行文件上传，并在删除记忆内容时尝试删除对应的文件。
+// routes/memories.js
+
 import express from 'express';
 import Memory from '../models/Memory.js';
 import multer from 'multer';
@@ -19,7 +21,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
     cb(null, uniqueSuffix + ext);
   }
@@ -41,36 +43,22 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Add new memory - use lock to prevent duplicate requests
-let uploadInProgress = false;
-
+// Add new memory (no global lock)
 router.post('/', upload.single('file'), async (req, res) => {
-  // Check for duplicate requests
-  if (uploadInProgress) {
-    return res.status(429).json({ message: 'Processing another upload, please try again later' });
-  }
-
-  uploadInProgress = true;
-
   try {
     const { uploaderName, memoryType, memoryContent } = req.body;
 
-    // Create new memory object
     const newMemory = new Memory({
       uploaderName,
       memoryType,
       memoryContent: req.file ? req.file.path : memoryContent
     });
 
-    // Save to database
     const savedMemory = await newMemory.save();
     res.status(201).json(savedMemory);
   } catch (error) {
     console.error('Upload failed:', error.message);
     res.status(400).json({ message: error.message });
-  } finally {
-    // Release lock
-    uploadInProgress = false;
   }
 });
 
@@ -83,20 +71,20 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Memory not found' });
     }
 
-    // If it's an image or video, try to delete the file
+    // Try to delete uploaded file if it's an image or video
     if ((memory.memoryType === 'image' || memory.memoryType === 'video') &&
-      memory.memoryContent && memory.memoryContent.startsWith(uploadDir)) {
+        memory.memoryContent && memory.memoryContent.startsWith(uploadDir)) {
       try {
         if (fs.existsSync(memory.memoryContent)) {
           fs.unlinkSync(memory.memoryContent);
         }
       } catch (fileError) {
         console.error('Failed to delete file:', fileError);
-        // Continue with deletion from database even if file deletion fails
+        // Continue deleting from DB even if file deletion fails
       }
     }
 
-    // Delete from database
+    // Delete memory from DB
     await Memory.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: 'Memory deleted successfully' });
   } catch (error) {
@@ -105,4 +93,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;
