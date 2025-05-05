@@ -185,6 +185,9 @@ import WillsPage from './pages/WillsPage';
 import LoginPage from './pages/LoginPage';
 import './App.css';
 
+//can
+import { DreamList } from './components/DreamList/DreamList'
+
 export default function App() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -215,6 +218,9 @@ export default function App() {
             </Link>
           )}
         </div>
+
+        <Link to="/dreamlist" className="text-blue-600 hover:underline">愿望清单</Link>
+
       </nav>
 
       <div className="container mx-auto px-4 py-8">
@@ -235,6 +241,23 @@ export default function App() {
               isLoggedIn
                 ? <WillsPage />
                 : <Navigate to="/login" replace />
+            }
+          />
+
+          {/* can：在Routes中添加愿望清单     */}
+          {/* <Route
+            path="/dreamlist"
+            element={
+              isLoggedIn
+                ? <DreamList />
+                : <Navigate to="/login" replace />
+            }
+          /> */}
+
+          <Route
+            path="/dreamlist"
+            element={
+              <DreamList />
             }
           />
 

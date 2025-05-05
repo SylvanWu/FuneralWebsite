@@ -49,7 +49,7 @@ router.patch('/:id', async (req, res) => {
       // { _id: req.params.id, owner: req.user.id },// 5.目前不验证owner，方便测试 改成下边一行
       { _id: req.params.id },
 
-      //5.如果不验证token 就把下边的{content，order，position}注释掉
+
       {
         content: req.body.content,
         order: req.body.order,
