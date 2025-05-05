@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
         // 生成 JWT
         const token = jwt.sign(
             { id: user._id, username: user.username, role: user.role },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET||'your_secret_key',
             { expiresIn: '7d' }
         );
 
