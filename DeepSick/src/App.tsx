@@ -218,7 +218,7 @@ export default function App() {
             </Link>
           )}
         </div>
-
+        {/* can */}
         <Link to="/dreamlist" className="text-blue-600 hover:underline">愿望清单</Link>
 
       </nav>
