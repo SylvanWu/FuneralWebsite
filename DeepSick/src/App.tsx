@@ -217,6 +217,11 @@ import UploadArea          from './components/UploadArea';
 import Timeline, { Memory} from './components/Timeline';
 import LoginPage           from './pages/LoginPage';
 import WillsPage           from './pages/WillsPage';
+import RegisterPage from './pages/RegisterPage';
+import RoleProtected from './components/RoleProtected';
+import AdminPage from './pages/AdminPage';
+
+
 
 /* API */
 import { fetchMemories, createMemory, deleteMemory } from './api';
@@ -237,6 +242,7 @@ export default function App() {
   /* -------------- 登录状态 -------------- */
   const navigate = useNavigate();
   const token       = localStorage.getItem('token');
+  const role       = localStorage.getItem('role');
   const isLoggedIn  = Boolean(token);
 
   /* -------------- 首页：时间线 & 上传 -------------- */
@@ -340,6 +346,17 @@ export default function App() {
         {/* ===== 顶部导航 ===== */}
         <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
           <div className="flex items-center space-x-6">
+            {/* 只有 organizer 或 admin 才能看到意志管理 */}
+            {(role === 'organizer' || role === 'admin') && (
+            <Link to="/wills" className="nav-link">意志栏</Link>
+            )}
+            
+
+              {/* 只有 admin 才能看到管理员页 */}
+            {role === 'admin' && (
+            <Link to="/admin" className="nav-link">Admin</Link>
+        )}
+
             <Link to="/" className="text-xl font-bold text-[var(--link-color)]">
               88
             </Link>
@@ -347,8 +364,10 @@ export default function App() {
             <Link to="/" className="nav-link">解决方案</Link>
             <Link to="/" className="nav-link">社区</Link>
             <Link to="/" className="nav-link">资源</Link>
-            <Link to="/wills" className="nav-link">意志栏</Link>
+            
             <Link to="/" className="nav-link">接触</Link>
+            
+
           </div>
           {isLoggedIn ? (
               <button
@@ -425,6 +444,14 @@ export default function App() {
                   )
                 }
             />
+            <Route
+              path="/admin"
+              element={
+              <RoleProtected allow={['admin']}>
+              <AdminPage />
+              </RoleProtected>
+              }
+            />
 
             {/* 遗嘱页 */}
             <Route
@@ -433,6 +460,7 @@ export default function App() {
                   isLoggedIn ? <WillsPage /> : <Navigate to="/login" replace />
                 }
             />
+            
 
             {/* 兜底 */}
             <Route
@@ -441,8 +469,17 @@ export default function App() {
                   <Navigate to={isLoggedIn ? '/' : '/login'} replace />
                 }
             />
+            <Route
+                path="/register"
+                element={
+                isLoggedIn ? <Navigate to="/" replace /> : <RegisterPage />
+                }
+              />
+
           </Routes>
         </div>
       </div>
   );
 }
+
+
