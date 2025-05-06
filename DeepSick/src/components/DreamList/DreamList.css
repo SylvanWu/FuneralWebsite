@@ -1,4 +1,4 @@
-.dream-list-container {
+.dream-card {
   position: relative;
   max-width: 800px;
   margin: 2rem auto;
@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-.dream-list-container::before {
+.dream-card::before {
   content: "";
   position: absolute;
   top: 0;
@@ -19,7 +19,7 @@
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
 }
 
-.dream-list-container::after {
+.dream-card::after {
   content: "";
   position: absolute;
   top: 0;
@@ -46,4 +46,59 @@
   border-radius: 8px;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
+}
+
+/* 添加梦想按钮样式 */
+.add-button {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #8472f6;
+  color: white;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.add-button:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+
+/* 梦想项样式 */
+.dream-item {
+  padding: 2px;
+  margin: 2px 0;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.dream-item:hover {
+  transform: translateX(4px);
+}
+
+/* 输入框样式 */
+.dream-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1.125rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.dream-list-content {
+  margin-bottom: 0rem;
 }
