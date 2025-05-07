@@ -5,11 +5,13 @@ import { Memory } from './Timeline';
 interface MemoryCardProps {
     memory: Memory;
     onDeleteMemory: (id: string) => void;
+    canDelete?: boolean;
 }
 
 const MemoryCard: React.FC<MemoryCardProps> = ({
     memory,
     onDeleteMemory,
+    canDelete = false
 }) => {
     const [isNew, setIsNew] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -94,14 +96,16 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             {/* 主体内容（图 / 视频 / 文本） */}
             {renderContent()}
 
-            {/* 删除按钮 */}
-            <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="mt-4 w-full py-2 rounded bg-red-600 text-white font-semibold disabled:opacity-60"
-            >
-                DELETE THIS MEMORY
-            </button>
+            {/* 删除按钮，仅在canDelete为true时显示 */}
+            {canDelete && (
+                <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="mt-4 w-full py-2 rounded bg-red-600 text-white font-semibold disabled:opacity-60"
+                >
+                    DELETE THIS MEMORY
+                </button>
+            )}
         </div>
     );
 };

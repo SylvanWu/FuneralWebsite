@@ -15,9 +15,11 @@ interface TimelineProps {
   memories: Memory[];
   /** 删除后端记录成功后，父组件传来的回调 */
   onDeleteMemory: (id: string) => void;
+  /** 是否显示删除按钮 */
+  canDelete?: boolean;
 }
 
-const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory }) => {
+const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory, canDelete = false }) => {
   /* 内部再包一层，方便 <MemoryCard> 调用 */
   const handleDelete = (id: string) => {
     console.log('Timeline: handleDelete called for ID:', id);
@@ -44,6 +46,7 @@ const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory }) => {
             key={m.id}          /* 如果后端字段是 _id 就写 m._id */
             memory={m}
             onDeleteMemory={handleDelete}
+            canDelete={canDelete}
           />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 /* Pages & Components */
 import Header from './components/Header';
@@ -31,6 +31,21 @@ interface BackendMemory {
   memoryType: 'image' | 'video' | 'text';
   memoryContent: string;
 }
+
+// NavLink Component for highlighting active links
+const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
+  return (
+    <Link 
+      to={to} 
+      className={`nav-link ${isActive ? 'active' : ''}`}
+    >
+      {children}
+    </Link>
+  );
+};
 
 export default function App() {
   /* -------------- Login Status -------------- */
@@ -132,22 +147,16 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* ===== Top Navigation ===== */}
       <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center justify-center space-x-2 mx-auto">
+          <NavLink to="/">Home</NavLink>
           {(role === 'organizer' || role === 'admin') && (
-            <Link to="/wills" className="text-gray-700 hover:text-gray-900">Wills</Link>
+            <NavLink to="/wills">Wills</NavLink>
           )}
           {role === 'admin' && (
-            <Link to="/admin" className="text-gray-700 hover:text-gray-900">Admin</Link>
+            <NavLink to="/admin">Admin</NavLink>
           )}
-
-          <Link to="/" className="text-gray-700 hover:text-gray-900">TimeLine</Link>  
-          <Link to="/" className="text-gray-700 hover:text-gray-900">Home</Link>
-          <Link to="/" className="text-gray-700 hover:text-gray-900">Products</Link>
-          <Link to="/" className="text-gray-700 hover:text-gray-900">Solutions</Link>
-          <Link to="/" className="text-gray-700 hover:text-gray-900">Community</Link>
-          <Link to="/" className="text-gray-700 hover:text-gray-900">Resources</Link>
-          <Link to="/" className="text-gray-700 hover:text-gray-900">Contact</Link>
-          <Link to="/interactive" className="text-gray-700 hover:text-gray-900">Interactive</Link>
+          <NavLink to="/interactive">Interactive</NavLink>
+          <NavLink to="/">Hall</NavLink>  
         </div>
         <div className="flex space-x-2">
           {isLoggedIn ? (
@@ -201,7 +210,7 @@ export default function App() {
                   </div>
 
                   {/* Upload Area */}
-                  <UploadArea onFileUpload={handleFileUpload} />
+                  <UploadArea onFileUpload={handleFileUpload} isUploading={isUploading} />
                 </div>
 
                 {/* —— Timeline —— */}
