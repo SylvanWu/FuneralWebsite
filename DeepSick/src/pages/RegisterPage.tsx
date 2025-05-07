@@ -1,92 +1,95 @@
-// src/pages/RegisterPage.tsx
 import React, { useState } from 'react';
 import { registerUser } from '../api';
 import { useNavigate } from 'react-router-dom';
 
 export default function RegisterPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('visitor');
+  const [name, setName] = useState('');
+  const [contact, setContact] = useState('');   // Phone / Email
+  const [password, setPwd] = useState('');
+  const [role, setRole] = useState<'visitor'|'organizer'|'admin'>('visitor');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const navigate = useNavigate();
+  const nav = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await registerUser({ username, password, role });
+      await registerUser({ username: name, password, role, contact });
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 1500);
+      setTimeout(() => nav('/login'), 1500);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
     }
   };
 
   return (
-    <main className="w-full max-w-md mx-auto mt-20 p-6 bg-white shadow rounded overflow-hidden">
-      <h1 className="text-2xl mb-4 font-semibold text-center">Register</h1>
+    <main
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('/bg-login.JPG')" }}
+    >
+      <div className="w-full max-w-md bg-white/70 backdrop-blur rounded-lg shadow-lg p-8">
+        <h1 className="text-3xl font-bold text-center mb-6">Register</h1>
 
-      {error   && <div className="mb-3 text-red-600">{error}</div>}
-      {success && <div className="mb-3 text-green-600">Registration successful! Redirecting…</div>}
+        {error && <p className="mb-4 text-red-600">{error}</p>}
+        {success && <p className="mb-4 text-green-600">Success! Redirecting…</p>}
 
-      <form onSubmit={handleSubmit} className="space-y-4 text-left">
-        {/* -------- Username -------- */}
-        <div>
-          <label className="block mb-1">Username</label>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            className="w-full px-3 py-2 border rounded"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            className="w-full px-3 py-2 border rounded placeholder-gray-500/80"
+            value={name}
+            onChange={e => setName(e.target.value)}
             required
+            placeholder="Name"
           />
-        </div>
 
-        {/* -------- Password -------- */}
-        <div>
-          <label className="block mb-1">Password</label>
+          <input
+            className="w-full px-3 py-2 border rounded placeholder-gray-500/80"
+            value={contact}
+            onChange={e => setContact(e.target.value)}
+            required
+            placeholder="Phone Number / Email"
+          />
+
           <input
             type="password"
-            className="w-full px-3 py-2 border rounded"
+            className="w-full px-3 py-2 border rounded placeholder-gray-500/80"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={e => setPwd(e.target.value)}
             required
+            placeholder="Password"
           />
-        </div>
 
-        {/* -------- Role -------- */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Select Role</label>
-
-          {[
-            { label: 'Visitor', value: 'visitor', disabled: false },
-            { label: 'Organizer', value: 'organizer', disabled: false },
-            { label: 'Admin',    value: 'admin',    disabled: false },
-            { label: 'Remembered Person (System Only)', value: 'remembered person', disabled: true },
-          ].map(({ label, value, disabled }) => (
-            <div
-              key={value}
-              className={`grid grid-cols-[auto,1fr] gap-2 mb-1 ${
-                disabled ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <input
-                type="radio"
-                name="role"
-                value={value}
-                checked={role === value}
-                onChange={() => !disabled && setRole(value)}
-                disabled={disabled}
-              />
-              <span className="break-words text-sm">{label}</span>
+          <div>
+            <label className="block mb-2 text-sm text-center">Select Role</label>
+            <div className="flex flex-col items-center gap-2">
+              {[
+                { label: 'Visitor',   value: 'visitor' },
+                { label: 'Organizer', value: 'organizer' },
+                { label: 'Admin',     value: 'admin' },
+              ].map(({ label, value }) => (
+                <label key={value} className="grid grid-cols-[auto_1fr] items-center w-48">
+                  <input
+                    type="radio"
+                    name="role"
+                    value={value}
+                    checked={role === value}
+                    onChange={() => setRole(value as any)}
+                    className="justify-self-start"
+                  />
+                  <span className="justify-self-center w-full text-center">{label}</span>
+                </label>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* -------- Submit -------- */}
-        <button className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Register
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full py-2 bg-lime-500 hover:bg-lime-600 text-white rounded transition"
+          >
+            Register
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
