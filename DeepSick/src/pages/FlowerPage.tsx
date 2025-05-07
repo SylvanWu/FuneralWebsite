@@ -1,8 +1,14 @@
 // src/pages/FlowerPage.tsx
 // Dedicated page for "Offer Flowers" interaction with user history
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../App.css';
+
+interface FlowerRecord {
+  username: string;
+  timestamp: string;
+}
 
 const FlowerPage: React.FC = () => {
   // State for total flowers count
@@ -12,15 +18,49 @@ const FlowerPage: React.FC = () => {
   // Input for username
   const [username, setUsername] = useState<string>('');
   // History of flower offerings
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<FlowerRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  // 仅本地交互，无 socket
-  const handleOfferFlower = () => {
-    if (!username.trim() || hasOffered) return;
-    const record = { user: username.trim(), time: new Date().toISOString() };
-    setFlowers(prev => prev + 1);
-    setRecords(prev => [record, ...prev]);
-    setHasOffered(true);
+  // Fetch history records
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/interactive/flower');
+        if (response.data.success) {
+          setRecords(response.data.records);
+          setFlowers(response.data.totalCount);
+        }
+      } catch (err) {
+        setError('Failed to fetch history');
+        console.error('Error fetching records:', err);
+      }
+    };
+    fetchRecords();
+  }, []);
+
+  const handleOfferFlower = async () => {
+    if (!username.trim() || hasOffered || loading) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post('http://localhost:5001/api/interactive/flower', {
+        username: username.trim()
+      });
+      
+      if (response.data.success) {
+        setFlowers(response.data.totalCount);
+        setRecords(prev => [response.data.record, ...prev]);
+        setHasOffered(true);
+      }
+    } catch (err) {
+      setError('Failed to offer flowers. Please try again later.');
+      console.error('Error offering flower:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,23 +84,24 @@ const FlowerPage: React.FC = () => {
         <button
           className="action-button"
           onClick={handleOfferFlower}
-          disabled={hasOffered || !username.trim()}
+          disabled={hasOffered || !username.trim() || loading}
         >
-          {hasOffered ? 'Offered' : 'Offer Flower'}
+          {loading ? 'Processing...' : hasOffered ? 'Already Offered' : 'Offer Flowers'}
         </button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </section>
 
       {/* History of offerings */}
       <section className="interactive-area">
         <h2 style={{ marginBottom: '1rem' }}>Flower Offering History</h2>
         {records.length === 0 ? (
-          <p className="no-messages">No flower offerings yet.</p>
+          <p className="no-messages">No flower offerings yet</p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {records.map((r, idx) => (
               <li key={idx} className="message-card" style={{ marginBottom: '0.5rem' }}>
-                <span className="message-author">{r.user}</span>{' '}
-                <span className="message-time">{new Date(r.time).toLocaleString()}</span>
+                <span className="message-author">{r.username}</span>{' '}
+                <span className="message-time">{new Date(r.timestamp).toLocaleString()}</span>
               </li>
             ))}
           </ul>

@@ -1,9 +1,15 @@
 // src/pages/CandlePage.tsx
 // Dedicated page for "Light a Candle" interaction with user history
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../App.css';
 import './InteractivePage.css'
+
+interface CandleRecord {
+  username: string;
+  timestamp: string;
+}
 
 const CandlePage: React.FC = () => {
   // Local state for candle count
@@ -13,15 +19,49 @@ const CandlePage: React.FC = () => {
   // Username input
   const [username, setUsername] = useState<string>('');
   // History of lighting events
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<CandleRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  // 仅本地交互，无 socket
-  const handleLightCandle = () => {
-    if (!username.trim() || hasLit) return;
-    const record = { user: username.trim(), time: new Date().toISOString() };
-    setCandles(prev => prev + 1);
-    setRecords(prev => [record, ...prev]);
-    setHasLit(true);
+  // Fetch history records
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/interactive/candle');
+        if (response.data.success) {
+          setRecords(response.data.records);
+          setCandles(response.data.totalCount);
+        }
+      } catch (err) {
+        setError('Failed to fetch history');
+        console.error('Error fetching records:', err);
+      }
+    };
+    fetchRecords();
+  }, []);
+
+  const handleLightCandle = async () => {
+    if (!username.trim() || hasLit || loading) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post('http://localhost:5001/api/interactive/candle', {
+        username: username.trim()
+      });
+      
+      if (response.data.success) {
+        setCandles(response.data.totalCount);
+        setRecords(prev => [response.data.record, ...prev]);
+        setHasLit(true);
+      }
+    } catch (err) {
+      setError('Failed to light candle. Please try again later.');
+      console.error('Error lighting candle:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -45,23 +85,24 @@ const CandlePage: React.FC = () => {
         <button
           className="action-button"
           onClick={handleLightCandle}
-          disabled={hasLit || !username.trim()}
+          disabled={hasLit || !username.trim() || loading}
         >
-          {hasLit ? 'Already Lit' : 'Light a Candle'}
+          {loading ? 'Processing...' : hasLit ? 'Already Lit' : 'Light a Candle'}
         </button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </section>
 
       {/* History of who lit a candle and when */}
       <section className="interactive-area">
         <h2 style={{ marginBottom: '1rem' }}>Candle Lighting History</h2>
         {records.length === 0 ? (
-          <p className="no-messages">No candle lighting yet.</p>
+          <p className="no-messages">No candle lighting records yet</p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {records.map((r, idx) => (
               <li key={idx} className="message-card" style={{ marginBottom: '0.5rem' }}>
-                <span className="message-author">{r.user}</span>{' '}
-                <span className="message-time">{new Date(r.time).toLocaleString()}</span>
+                <span className="message-author">{r.username}</span>{' '}
+                <span className="message-time">{new Date(r.timestamp).toLocaleString()}</span>
               </li>
             ))}
           </ul>

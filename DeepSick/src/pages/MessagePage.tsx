@@ -1,39 +1,74 @@
 // src/pages/MessagePage.tsx
 // Dedicated page for "Leave a Message" interaction with real-time chat canvas via WebSocket
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import '../App.css';
 
 // Type for each chat message
 interface MessageRecord {
-  user: string;
+  username: string;
   content: string;
-  time: string;
+  timestamp: string;
 }
 
 const MessagePage: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [records, setRecords] = useState<MessageRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // 仅本地交互，无 socket
-  const handleSend = () => {
-    if (!username.trim() || !content.trim()) return;
-    const record = {
-      user: username.trim(),
-      content: content.trim(),
-      time: new Date().toISOString(),
+  // Fetch history records
+  useEffect(() => {
+    const fetchRecords = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/interactive/message');
+        if (response.data.success) {
+          setRecords(response.data.records);
+        }
+      } catch (err) {
+        setError('Failed to fetch history');
+        console.error('Error fetching records:', err);
+      }
     };
-    setRecords(prev => [...prev, record]);
-    setContent('');
+    fetchRecords();
+  }, []);
+
+  const handleSend = async () => {
+    if (!username.trim() || !content.trim() || loading) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post('http://localhost:5001/api/interactive/message', {
+        username: username.trim(),
+        content: content.trim()
+      });
+      
+      if (response.data.success) {
+        setRecords(prev => [...prev, response.data.record]);
+        setContent('');
+        // Scroll to latest message
+        if (canvasRef.current) {
+          canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
+        }
+      }
+    } catch (err) {
+      setError('Failed to send message. Please try again later.');
+      console.error('Error sending message:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="interactive-page">
       {/* Header */}
       <section className="hero-section">
-        <h1 className="hero-name">Leave a Message</h1>
+        <h1 className="hero-name">Message Board</h1>
         <p className="hero-subtitle">Real-time chat, unlimited messages</p>
       </section>
 
@@ -44,8 +79,8 @@ const MessagePage: React.FC = () => {
             <div key={idx} className="message-card">
               <p className="message-content">"{r.content}"</p>
               <div className="message-meta">
-                <span className="message-author">{r.user}</span>
-                <span className="message-time">{new Date(r.time).toLocaleString()}</span>
+                <span className="message-author">{r.username}</span>
+                <span className="message-time">{new Date(r.timestamp).toLocaleString()}</span>
               </div>
             </div>
           ))}
@@ -62,7 +97,7 @@ const MessagePage: React.FC = () => {
           />
           <textarea
             className="message-input"
-            placeholder="Type a message..."
+            placeholder="Type your message..."
             value={content}
             onChange={e => setContent(e.target.value)}
             rows={3}
@@ -70,10 +105,11 @@ const MessagePage: React.FC = () => {
           <button
             className="action-button"
             onClick={handleSend}
-            disabled={!username.trim() || !content.trim()}
+            disabled={!username.trim() || !content.trim() || loading}
           >
-            Send
+            {loading ? 'Sending...' : 'Send'}
           </button>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
       </section>
     </div>
