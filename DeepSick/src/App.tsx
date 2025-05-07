@@ -146,9 +146,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
       {/* ===== Top Navigation ===== */}
-      <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
+      <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm border-b border-gray-200">
         <div className="flex items-center justify-center space-x-2 mx-auto">
-          <NavLink to="/">Home</NavLink>
           {(role === 'organizer' || role === 'admin') && (
             <NavLink to="/wills">Wills</NavLink>
           )}
@@ -160,11 +159,11 @@ export default function App() {
         </div>
         <div className="flex space-x-2">
           {isLoggedIn ? (
-            <button onClick={handleLogout} className="px-4 py-1 border border-gray-300 rounded-lg bg-gray-100">
+            <button onClick={handleLogout} className="px-4 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
               Logout
             </button>
           ) : (
-            <Link to="/login" className="px-4 py-1 bg-gray-800 text-white rounded-lg">
+            <Link to="/login" className="px-4 py-1 bg-gray-800 text-white rounded-lg hover:bg-gray-900">
               Login
             </Link>
           )}

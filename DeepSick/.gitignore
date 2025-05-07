@@ -23,7 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
 
 # 排除上传的文件,但保留目录
 server/uploads/*

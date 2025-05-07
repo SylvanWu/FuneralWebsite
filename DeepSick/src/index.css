@@ -19,28 +19,30 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* — 整体配色 — */
-  --bg-main: #FEFEFE;         /* 整页背景（浅暖米色） */
-  --bg-card: #FEFEFE;         /* 卡片  */
-  --text-main: #FEFEFE;       /* 主文字色（深蓝灰） */
-  --link-color: #FEFEFE;      /* 链接色 */
-  --link-hover: #FEFEFE;      /* 链接 hover 色 */
-  --btn-primary: #FEFEFE;     /* 主按钮色（暖橙） */
-  --btn-primary-hover: #FEFEFE;
+  /* — 黑白灰配色 — */
+  --bg-main: #F8F8F8;         /* 整页背景（浅灰） */
+  --bg-card: #FFFFFF;         /* 卡片白色  */
+  --text-main: #333333;       /* 主文字色（深灰） */
+  --text-secondary: #666666;  /* 次要文字（中灰） */
+  --link-color: #444444;      /* 链接色（深灰） */
+  --link-hover: #000000;      /* 链接 hover 色（黑） */
+  --btn-primary: #333333;     /* 主按钮色（深灰） */
+  --btn-primary-hover: #000000; /* 按钮 hover 色（黑） */
+  --border-color: #DDDDDD;    /* 边框颜色（浅灰） */
 
-  /* — WillForm / WillList 专用暖色变量 — */
-  --warm-dark: #333333;
-  --warm-light: #56320e;
-  --warm-border: #DDDDDD;
-  --warm-gray: #6B7280;
-  --warm-red: #D97706;
-  --warm-highlight: rgba(255, 183, 77, 0.35);
+  /* — WillForm / WillList 专用黑白灰变量 — */
+  --warm-dark: #333333;       /* 改为深灰 */
+  --warm-light: #F5F5F5;      /* 改为浅灰 */
+  --warm-border: #DDDDDD;     /* 保持浅灰 */
+  --warm-gray: #666666;       /* 中灰 */
+  --warm-red: #444444;        /* 改为深灰 */
+  --warm-highlight: rgba(200, 200, 200, 0.35); /* 灰色高光 */
   
   /* 导航链接变量 */
-  --nav-text: #374151;
-  --nav-hover: #f3f4f6;
-  --nav-active: #e5e7eb;
-  --nav-active-text: #111827;
+  --nav-text: #444444;        /* 导航文字（深灰） */
+  --nav-hover: #F0F0F0;       /* 悬停背景（浅灰） */
+  --nav-active: #E0E0E0;      /* 激活背景（中灰） */
+  --nav-active-text: #222222; /* 激活文字（近黑） */
 }
 
 /* ========================================================================
@@ -59,7 +61,8 @@ body {
 }
 
 .navi-bar {
-  background: #56320e;
+  background: #333333;  /* 深灰色背景 */
+  color: #FFFFFF;       /* 白色文字 */
 }
 /* ========================================================================
    4. 布局 & 间距 工具类（Utility Classes）
@@ -239,8 +242,8 @@ input:focus, textarea:focus {
    7. WillForm / WillList 专属 卡片样式
    ======================================================================== */
 .will-card {
-  background: #FDEBCF;
-  border: 1px solid rgba(217, 173, 128, .45);
+  background: #F5F5F5;
+  border: 1px solid rgba(200, 200, 200, 0.45);
   border-radius: .75rem;
   box-shadow: 0 4px 6px rgba(0,0,0,.04);
   padding: 1.25rem 1rem;
@@ -267,12 +270,12 @@ input:focus, textarea:focus {
 .will-card .text-sm { text-align: center; color: var(--warm-gray); margin-top: 0.75rem; }
 
 .will-panel{
-  background:#FDEBCF;                         /* 同淡杏色 */
-  border:1px solid rgba(217,173,128,.45);     /* 同色系浅边框 */
-  border-radius:.75rem;
-  box-shadow:0 4px 6px rgba(0,0,0,.04);
-  padding:1.25rem 1rem;
-  margin-bottom:2rem;                         /* 与下方列表间距 */
+  background: #F5F5F5;
+  border: 1px solid rgba(200, 200, 200, 0.45);
+  border-radius: .75rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,.04);
+  padding: 1.25rem 1rem;
+  margin-bottom: 2rem;
 }
 /* ========================================================================
    8. 上传区 & 旋转动画

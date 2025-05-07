@@ -14,6 +14,7 @@ import dreamRouter from './routes/dreamRoutes.js';
 
 dotenv.config();
 
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -21,6 +22,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // 统一的上传目录
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });   // 保证目录存在
+
+// require('dotenv').config()
+
 
 /* ──────────── 公共中间件 ──────────── */
 app.use(cors({

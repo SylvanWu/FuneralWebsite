@@ -78,7 +78,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         >
             {/* 头部：头像 + 上传者 + 时间 */}
             <div className="flex items-center">
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white">
                     <span>
                         {(memory.uploaderName || 'U').charAt(0).toUpperCase()}
                     </span>
@@ -101,7 +101,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 <button
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="mt-4 w-full py-2 rounded bg-red-600 text-white font-semibold disabled:opacity-60"
+                    className="mt-4 w-full py-2 rounded bg-gray-700 text-white font-semibold disabled:opacity-60 hover:bg-gray-800"
                 >
                     DELETE THIS MEMORY
                 </button>
