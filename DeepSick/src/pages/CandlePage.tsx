@@ -1,18 +1,9 @@
 // src/pages/CandlePage.tsx
 // Dedicated page for "Light a Candle" interaction with user history
 
-import React, { useState, useEffect } from 'react';
-import io, { Socket } from 'socket.io-client';
+import React, { useState } from 'react';
 import '../App.css';
 import './InteractivePage.css'
-// Initialize socket.io client
-const socket: Socket = io('http://localhost:3000');
-
-// Type for a candle action record
-interface CandleRecord {
-  user: string;
-  time: string;
-}
 
 const CandlePage: React.FC = () => {
   // Local state for candle count
@@ -22,37 +13,15 @@ const CandlePage: React.FC = () => {
   // Username input
   const [username, setUsername] = useState<string>('');
   // History of lighting events
-  const [records, setRecords] = useState<CandleRecord[]>([]);
+  const [records, setRecords] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Receive overall count
-    socket.on('candleCount', (count: number) => {
-      setCandles(count);
-    });
-    // Receive individual lighting records
-    socket.on('candleLitByUser', (record: CandleRecord) => {
-      setRecords(prev => [record, ...prev]);
-    });
-    // Request initial data
-    socket.emit('getCandleCount');
-    socket.emit('getCandleHistory');
-
-    return () => {
-      socket.off('candleCount');
-      socket.off('candleLitByUser');
-    };
-  }, []);
-
-  // Handle button click: emit event with user and disable further clicks
+  // 仅本地交互，无 socket
   const handleLightCandle = () => {
     if (!username.trim() || hasLit) return;
     const record = { user: username.trim(), time: new Date().toISOString() };
-    // Optimistically update
     setCandles(prev => prev + 1);
     setRecords(prev => [record, ...prev]);
     setHasLit(true);
-    // Emit to server
-    socket.emit('lightCandle', record);
   };
 
   return (

@@ -1,18 +1,8 @@
 // src/pages/FlowerPage.tsx
 // Dedicated page for "Offer Flowers" interaction with user history
 
-import React, { useState, useEffect } from 'react';
-import io, { Socket } from 'socket.io-client';
+import React, { useState } from 'react';
 import '../App.css';
-
-// Initialize socket.io client
-const socket: Socket = io('http://localhost:3000');
-
-// Type for a flower offering record
-interface FlowerRecord {
-  user: string;
-  time: string;
-}
 
 const FlowerPage: React.FC = () => {
   // State for total flowers count
@@ -22,37 +12,15 @@ const FlowerPage: React.FC = () => {
   // Input for username
   const [username, setUsername] = useState<string>('');
   // History of flower offerings
-  const [records, setRecords] = useState<FlowerRecord[]>([]);
+  const [records, setRecords] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Listen for overall flower count
-    socket.on('flowerCount', (count: number) => {
-      setFlowers(count);
-    });
-    // Listen for individual offering events
-    socket.on('flowerOfferedByUser', (record: FlowerRecord) => {
-      setRecords(prev => [record, ...prev]);
-    });
-    // Request initial data
-    socket.emit('getFlowerCount');
-    socket.emit('getFlowerHistory');
-
-    return () => {
-      socket.off('flowerCount');
-      socket.off('flowerOfferedByUser');
-    };
-  }, []);
-
-  // Handler for offering a flower
+  // 仅本地交互，无 socket
   const handleOfferFlower = () => {
     if (!username.trim() || hasOffered) return;
-    const record: FlowerRecord = { user: username.trim(), time: new Date().toISOString() };
-    // Optimistically update UI
+    const record = { user: username.trim(), time: new Date().toISOString() };
     setFlowers(prev => prev + 1);
     setRecords(prev => [record, ...prev]);
     setHasOffered(true);
-    // Emit to server
-    socket.emit('offerFlower', record);
   };
 
   return (

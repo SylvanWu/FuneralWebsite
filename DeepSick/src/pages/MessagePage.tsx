@@ -1,8 +1,7 @@
 // src/pages/MessagePage.tsx
 // Dedicated page for "Leave a Message" interaction with real-time chat canvas via WebSocket
 
-import React, { useState, useEffect, useRef } from 'react';
-import io, { Socket } from 'socket.io-client';
+import React, { useState, useRef } from 'react';
 import '../App.css';
 
 // Type for each chat message
@@ -12,54 +11,22 @@ interface MessageRecord {
   time: string;
 }
 
-// Initialize WebSocket connection
-const socket: Socket = io('http://localhost:3000');
-
 const MessagePage: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [records, setRecords] = useState<MessageRecord[]>([]);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Load initial message history
-    socket.on('messageHistory', (history: MessageRecord[]) => {
-      setRecords(history);
-      scrollToBottom();
-    });
-    // Listen for new incoming messages
-    socket.on('newMessage', (record: MessageRecord) => {
-      setRecords(prev => [...prev, record]);
-      scrollToBottom();
-    });
-    // Request initial data
-    socket.emit('getMessageHistory');
-
-    return () => {
-      socket.off('messageHistory');
-      socket.off('newMessage');
-      socket.disconnect();
-    };
-  }, []);
-
-  // Scroll canvas to bottom on new message
-  const scrollToBottom = () => {
-    if (canvasRef.current) {
-      canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
-    }
-  };
-
-  // Send a new chat message
+  // 仅本地交互，无 socket
   const handleSend = () => {
     if (!username.trim() || !content.trim()) return;
-    const record: MessageRecord = {
+    const record = {
       user: username.trim(),
       content: content.trim(),
       time: new Date().toISOString(),
     };
-    socket.emit('sendMessage', record);
+    setRecords(prev => [...prev, record]);
     setContent('');
-    // optimistic UI: record will be added on 'newMessage'
   };
 
   return (
