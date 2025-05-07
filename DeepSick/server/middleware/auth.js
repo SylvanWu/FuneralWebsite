@@ -21,11 +21,11 @@ export default function authMiddleware(req, res, next) {
 
     const token = parts[1];
     try {
-        const secret = process.env.JWT_SECRET;
+        let secret = process.env.JWT_SECRET;
         if (!secret) {
             if (process.env.NODE_ENV === 'development') {
                 console.warn('[auth] JWT_SECRET not set. Using default dev secret.');
-                secret = 'default_dev_secret';  // 可自定义
+                secret = 'default_dev_secret'; // 开发环境的默认密钥
             } else {
                 throw new Error('JWT_SECRET is required in production');
             }
