@@ -36,6 +36,7 @@ cd digital-memorial-hall
 
 ```bash
 npm install
+npm install socket.io-client
 ```
 
 3. Configure environment variables
