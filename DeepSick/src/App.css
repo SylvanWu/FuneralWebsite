@@ -1,8 +1,9 @@
 /* 应用的全局样式表，定义通用的样式和动画效果 */
 #root {
-  max-width: 1280px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
 }
 
