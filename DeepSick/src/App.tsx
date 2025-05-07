@@ -10,6 +10,7 @@ import WillsPage from './pages/WillsPage';
 import RegisterPage from './pages/RegisterPage';
 import RoleProtected from './components/RoleProtected';
 import AdminPage from './pages/AdminPage';
+import HomePage from './pages/HomePage';
 
 // Add new interactive pages
 import InteractivePage from './pages/InteractivePage';
@@ -148,6 +149,8 @@ export default function App() {
       {/* ===== Top Navigation ===== */}
       <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm border-b border-gray-200">
         <div className="flex items-center justify-center space-x-2 mx-auto">
+          <NavLink to="/">Home</NavLink>
+          <NavLink to="/hall">Memorial Hall</NavLink>
           {(role === 'organizer' || role === 'admin') && (
             <NavLink to="/wills">Wills</NavLink>
           )}
@@ -155,7 +158,6 @@ export default function App() {
             <NavLink to="/admin">Admin</NavLink>
           )}
           <NavLink to="/interactive">Interactive</NavLink>
-          <NavLink to="/">Hall</NavLink>  
         </div>
         <div className="flex space-x-2">
           {isLoggedIn ? (
@@ -176,7 +178,13 @@ export default function App() {
           <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace/> : <LoginPage/>} />
           <Route path="/register" element={<RegisterPage />} />
 
+          {/* 新的Home主页 */}
           <Route path="/" element={
+            isLoggedIn ? <HomePage /> : <Navigate to="/login" replace/>
+          }/>
+
+          {/* 原来的纪念馆主页移到/hall路径 */}
+          <Route path="/hall" element={
             isLoggedIn ? (
               <>
                 {/* —— White Card —— */}
