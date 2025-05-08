@@ -1,4 +1,4 @@
-// 单个愿望卡片组件
+// drag with the mouse can move the wish box鼠标拖拽功能
 import React, { useEffect, useRef } from 'react';
 import '../DreamList/DreamList.css';
 
