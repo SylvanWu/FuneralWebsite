@@ -18,6 +18,9 @@ import CandlePage from './pages/CandlePage';
 import FlowerPage from './pages/FlowerPage';
 import MessagePage from './pages/MessagePage';
 
+import DreamList from './components/DreamList/DreamList';
+import DreamShrink from './components/DreamList/DreamShrink';
+
 /* API */
 import { fetchMemories, createMemory, deleteMemory } from './api';
 
@@ -37,10 +40,10 @@ interface BackendMemory {
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
-  
+
   return (
-    <Link 
-      to={to} 
+    <Link
+      to={to}
       className={`nav-link ${isActive ? 'active' : ''}`}
     >
       {children}
@@ -159,6 +162,7 @@ export default function App() {
           )}
           <NavLink to="/interactive">Interactive</NavLink>
         </div>
+
         <div className="flex space-x-2">
           {isLoggedIn ? (
             <button onClick={handleLogout} className="px-4 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
@@ -170,18 +174,21 @@ export default function App() {
             </Link>
           )}
         </div>
+
+        {/* can:ccccccccccccc */}
+        <Link to="/dreamlist" className="text-blue-600 hover:underline">愿望清单</Link>
       </nav>
 
       <div className="container mx-auto px-4 py-8 w-full max-w-full">
         {/* ===== Routes ===== */}
         <Routes>
-          <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace/> : <LoginPage/>} />
+          <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
           {/* 新的Home主页 */}
           <Route path="/" element={
-            isLoggedIn ? <HomePage /> : <Navigate to="/login" replace/>
-          }/>
+            isLoggedIn ? <HomePage /> : <Navigate to="/login" replace />
+          } />
 
           {/* 原来的纪念馆主页移到/hall路径 */}
           <Route path="/hall" element={
@@ -228,9 +235,9 @@ export default function App() {
                 />
               </>
             ) : (
-              <Navigate to="/login" replace/>
+              <Navigate to="/login" replace />
             )
-          }/>
+          } />
 
           {/* Admin Page */}
           <Route
@@ -251,27 +258,33 @@ export default function App() {
                   <WillsPage />
                 </RoleProtected>
               ) : (
-                <Navigate to="/login" replace/>
+                <Navigate to="/login" replace />
               )
             }
           />
 
           {/* Interactive pages routes */}
           <Route path="/interactive" element={
-            isLoggedIn ? <InteractivePage /> : <Navigate to="/login" replace/>
-          }/>
+            isLoggedIn ? <InteractivePage /> : <Navigate to="/login" replace />
+          } />
           <Route path="/candle" element={
-            isLoggedIn ? <CandlePage /> : <Navigate to="/login" replace/>
-          }/>
+            isLoggedIn ? <CandlePage /> : <Navigate to="/login" replace />
+          } />
           <Route path="/Flower" element={
-            isLoggedIn ? <FlowerPage /> : <Navigate to="/login" replace/>
-          }/>
+            isLoggedIn ? <FlowerPage /> : <Navigate to="/login" replace />
+          } />
           <Route path="/Message" element={
-            isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace/>
-          }/>
+            isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace />
+          } />
+
+          {/* <Route
+            path="/dreamlist"
+            element={<DreamList />}
+          /> */}
+          <Route path="/dreamlist" element={<DreamShrink />} />
 
           {/* Fallback Route */}
-          <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace/>} />
+          <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace />} />
         </Routes>
       </div>
     </div>
