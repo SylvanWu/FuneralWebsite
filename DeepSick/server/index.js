@@ -12,6 +12,7 @@ import memoriesRouter from './routes/memories.js';
 import willRoutes from './routes/willRoutes.js';
 import dreamRouter from './routes/dreamRoutes.js';
 import interactiveRoutes from './routes/interactiveRoutes.js';
+import funeralRoutes from './routes/funeralRoutes.js';
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use('/api/wills', willRoutes);
 //can:dreamRouter
 app.use('/api/dreams', dreamRouter);
 app.use('/api/interactive', interactiveRoutes);
+app.use('/api/funerals', funeralRoutes);
 
 /* 默认根路由 (健康检查) */
 app.get('/', (_, res) => res.send('Digital Memorial Hall API'));
