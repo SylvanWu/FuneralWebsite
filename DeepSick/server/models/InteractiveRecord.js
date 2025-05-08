@@ -16,6 +16,12 @@ const interactiveRecordSchema = new mongoose.Schema({
             return this.type === 'message';
         }
     },
+    candleId: {
+        type: Number,
+        required: function() {
+            return this.type === 'candle';
+        }
+    },
     timestamp: {
         type: Date,
         default: Date.now
