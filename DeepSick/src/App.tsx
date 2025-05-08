@@ -24,6 +24,8 @@ import FlowerPage from './pages/FlowerPage';
 import MessagePage from './pages/MessagePage';
 
 import { fetchMemories, createMemory, deleteMemory } from './api';
+import ProfilePage from './pages/ProfilePage';
+
 
 import './App.css';
 
@@ -46,6 +48,8 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
+    if (window.location.pathname !== '/') return;
+
     (async () => {
       try {
         const res = await fetchMemories();
@@ -204,6 +208,8 @@ export default function App() {
           <Route path="/flower" element={isLoggedIn ? <FlowerPage /> : <Navigate to="/login" replace />} />
           <Route path="/message" element={isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to={isLoggedIn ? '/' : '/login'} replace />} />
+          <Route path="/profile" element={<ProfilePage />} />
+
         </Route>
       </Routes>
     </div>
