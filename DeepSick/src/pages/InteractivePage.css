@@ -426,3 +426,53 @@
   background: #ccc;
   cursor: not-allowed;
 }
+
+/* Flower Page Specific Styles */
+.flowers-container {
+  padding: 2rem;
+  background: rgba(255, 192, 203, 0.05);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.flowers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.flower-item {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.5s ease;
+}
+
+.flower-item.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.flower-emoji {
+  font-size: 2.5rem;
+  animation: floatAnimation 3s ease-in-out infinite;
+}
+
+.flower-info {
+  color: #e07a5f;
+  font-style: italic;
+}
+
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
