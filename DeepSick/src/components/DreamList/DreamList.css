@@ -1,6 +1,8 @@
 .dream-card {
   position: relative;
-  max-width: 800px;
+  /* max-width: 800px; */
+  width: 400px;
+  /* 固定宽度 */
   margin: 2rem auto;
   padding: 2rem;
   background-color: #ffffff;
@@ -41,8 +43,8 @@
 .dream-list-content {
   font-size: 1.125rem;
   color: #4b5563;
-  min-height: 100px;
-  padding: 1rem;
+  min-height: 10px;
+  padding: 0rem;
   border-radius: 8px;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
@@ -76,6 +78,9 @@
 
 /* 梦想项样式 */
 .dream-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 2px;
   margin: 2px 0;
   background: white;
@@ -101,4 +106,127 @@
 
 .dream-list-content {
   margin-bottom: 0rem;
+}
+
+
+/* cancel when adding a dream  */
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.canceladd-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #fcdde0;
+  /* 淡粉色 */
+  border: none;
+  font-size: 1.2rem;
+  color: #e11d48;
+  /* 深粉红，和背景搭配 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.canceladd-button:hover {
+  background-color: #fda4af;
+  /* hover 时更深一点的粉色 */
+  transform: scale(1.1);
+}
+
+
+/* 隐藏操作按钮，悬停时再显示 */
+.dream-actions {
+  display: none;
+  gap: 6px;
+}
+
+.dream-item:hover .dream-actions {
+  display: flex;
+}
+
+/* 按钮样式统一美观 */
+.edit-button,
+.delete-button {
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-button {
+  background-color: #bfdbfe;
+  /* 淡蓝 */
+  color: #1e40af;
+}
+
+.edit-button:hover {
+  background-color: #93c5fd;
+}
+
+.delete-button {
+  background-color: #fecaca;
+  /* 淡红 */
+  color: #991b1b;
+}
+
+.delete-button:hover {
+  background-color: #fca5a5;
+}
+
+/* DreamShrink */
+.dream-shrink-container {
+  position: relative;
+}
+
+.shrink-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  background-color: #df66ae;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* .jirachi-icon {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  margin: 2rem auto;
+  display: block;
+} */
+
+
+/* 新增收缩状态专用样式 */
+.jirachi-icon-shrunk {
+  position: absolute;
+  top: 140px;
+  left: 100px;
+  z-index: 10;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.jirachi-icon-shrunk:hover {
+  transform: scale(1.1);
 }
