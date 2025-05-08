@@ -7,6 +7,8 @@ import User from '../models/User.js';
 dotenv.config();
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'default_dev_secret';
+
 // 注册新用户
 router.post('/register', async (req, res) => {
     const { username, password, role } = req.body;
@@ -20,7 +22,7 @@ router.post('/register', async (req, res) => {
         // 生成 JWT
         const token = jwt.sign(
             { id: user._id, username: user.username, role: user.role },
-            process.env.JWT_SECRET || 'your_secret_key',
+            JWT_SECRET,
             { expiresIn: '7d' }
         );
 
@@ -47,7 +49,7 @@ router.post('/login', async (req, res) => {
         // 签发 JWT
         const token = jwt.sign(
             { id: user._id, username: user.username, role: user.role },
-            process.env.JWT_SECRET || 'your_secret_key',
+            JWT_SECRET,
             { expiresIn: '7d' }
         );
 
