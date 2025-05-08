@@ -30,24 +30,53 @@ router.post('/flower', async (req, res) => {
     }
 });
 
+// 获取蜡烛记录
+router.get('/candle', async (req, res) => {
+    try {
+        const records = await InteractiveRecord.find({ type: 'candle' })
+            .sort({ timestamp: -1 });
+        
+        res.json({ 
+            success: true, 
+            records
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
 // 点亮蜡烛记录
 router.post('/candle', async (req, res) => {
     try {
-        const { username } = req.body;
+        const { username, candleId } = req.body;
+
+        // 检查该蜡烛是否已被点亮
+        const existingCandle = await InteractiveRecord.findOne({
+            type: 'candle',
+            candleId
+        });
+
+        if (existingCandle) {
+            return res.status(400).json({
+                success: false,
+                message: '该蜡烛已被点亮'
+            });
+        }
+
         const record = new InteractiveRecord({
             type: 'candle',
             username,
+            candleId,
             timestamp: new Date()
         });
         await record.save();
         
-        // 获取蜡烛总数
-        const candleCount = await InteractiveRecord.countDocuments({ type: 'candle' });
-        
         res.json({ 
             success: true, 
-            record,
-            totalCount: candleCount
+            record
         });
     } catch (error) {
         res.status(500).json({ 
