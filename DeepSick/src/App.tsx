@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage';
 import RoleProtected from './components/RoleProtected';
 import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
+import CreateFuneralPage from './pages/CreateFuneralPage';
 
 // Add new interactive pages
 import InteractivePage from './pages/InteractivePage';
@@ -155,7 +156,10 @@ export default function App() {
           <NavLink to="/">Home</NavLink>
           <NavLink to="/hall">Memorial Hall</NavLink>
           {(role === 'organizer' || role === 'admin') && (
-            <NavLink to="/wills">Wills</NavLink>
+            <>
+              <NavLink to="/wills">Wills</NavLink>
+              <NavLink to="/create-funeral">Create Funeral</NavLink>
+            </>
           )}
           {role === 'admin' && (
             <NavLink to="/admin">Admin</NavLink>
@@ -282,6 +286,20 @@ export default function App() {
             element={<DreamList />}
           /> */}
           <Route path="/dreamlist" element={<DreamShrink />} />
+
+          {/* Funeral Creation Page */}
+          <Route
+            path="/create-funeral"
+            element={
+              isLoggedIn ? (
+                <RoleProtected allow={['organizer', 'admin']}>
+                  <CreateFuneralPage />
+                </RoleProtected>
+              ) : (
+                <Navigate to="/login" replace/>
+              )
+            }
+          />
 
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace />} />
