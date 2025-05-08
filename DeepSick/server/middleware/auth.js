@@ -21,8 +21,15 @@ export default function authMiddleware(req, res, next) {
 
     const token = parts[1];
     try {
-        const secret = process.env.JWT_SECRET;
-        if (!secret) throw new Error('JWT_SECRET not set in .env.local');
+        let secret = process.env.JWT_SECRET;
+        if (!secret) {
+            if (process.env.NODE_ENV === 'production') {
+                throw new Error('JWT_SECRET is required in production');
+            } else {
+                console.warn('[auth] JWT_SECRET not set. Using default dev secret.');
+                secret = 'default_dev_secret'; // 开发环境的默认密钥
+            }
+        }
 
         // 验证并解码
         const decoded = jwt.verify(token, secret);
@@ -34,7 +41,7 @@ export default function authMiddleware(req, res, next) {
         };
         next();
     } catch (err) {
-        console.error('JWT verification failed:', err);
+        console.error('JWT verification failed:', err.message);
         return res.status(401).json({ message: 'Unauthorized' });
     }
 }

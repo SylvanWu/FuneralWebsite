@@ -14,7 +14,11 @@ interface Dream {
   };
 }
 
-export function DreamList() {
+interface DreamListProps {
+  onShrink: () => void; // 用于切换收缩状态的函数
+}
+
+export function DreamList({ onShrink }: DreamListProps) {
   // 状态管理梦想列表
   const [dreams, setDreams] = useState<Dream[]>([]);
   // 用户输入的愿望内容
@@ -26,7 +30,7 @@ export function DreamList() {
   //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams`的网址写法 基于env。
   const createDream = async (content: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams`, {
+      const response = await fetch(`http://localhost:5001/api/dreams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,10 +41,10 @@ export function DreamList() {
         })
       });
 
-      if (!response.ok) throw new Error('创建失败');
+      if (!response.ok) throw new Error('Creation failed');
       return await response.json();
     } catch (err) {
-      console.error('创建梦想失败:', err);
+      console.error('Failed to create a wish:', err);
       throw err;
     }
   };
@@ -56,7 +60,7 @@ export function DreamList() {
 
     // 如果已经显示输入框，则提交内容
     if (newDreamContent.trim() === '') {
-      alert('请输入愿望内容');
+      alert('Please input the content of your wish');
       return;
     }
     try {
@@ -65,10 +69,11 @@ export function DreamList() {
       setNewDreamContent(''); // 清空输入框
       setShowInput(false); // 提交后隐藏输入框
     } catch (err) {
-      alert('添加失败，请稍后重试');
+      alert('Failed to add. Try again');
     }
   }
 
+  //Press the enter key to add the dream 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleAddDream();
@@ -78,40 +83,77 @@ export function DreamList() {
     }
   }
 
+  //delete dream function
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/dreams/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('failed to delete');
+
+      setDreams((prev) => prev.filter(dream => dream._id !== id)); // 更新状态，移除已删除的梦想
+    } catch (err) {
+      console.error('failed to delete the wish:', err);
+    }
+  }
+
   return (
     <DreamCard>
+
+      <button className="shrink-button" onClick={onShrink}>
+        -
+      </button>
+
       <div>
-        <h1 className="dream-list-title">愿望清单</h1>
+        <h1 className="dream-list-title">Wish List</h1>
         <div className="dream-list-content">
 
           {/* 显示梦想列表 */}
           <div className="dream-list-content">
             {dreams.map(dream => (
               <div key={dream._id} className="dream-item">
-                {dream.content}
+                <span>{dream.content}</span>
+
+                <div className="dream-actions">
+                  <button className="edit-button">Edit</button>
+                  <button className="delete-button" onClick={() => handleDelete(dream._id)}>Delete</button>
+                </div>
               </div>
             ))}
           </div>
 
           {/* 条件渲染输入框 */}
           {showInput && (
-            <input
-              type="text"
-              value={newDreamContent}
-              onChange={(e) => setNewDreamContent(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="请输入你的愿望"
-              className="dream-input"
-              autoFocus // 自动聚焦
-            />
-          )}
+            <div className="input-container">
+              <input
+                type="text"
+                value={newDreamContent}
+                onChange={(e) => setNewDreamContent(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Please input your wish"
+                className="dream-input"
+                autoFocus // 自动聚焦
+              />
 
+              <button
+                className="canceladd-button"
+                onClick={() => {
+                  setShowInput(false);
+                  setNewDreamContent('');
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <button
             className="add-button"
             onClick={handleAddDream}
           >
-            {showInput ? '✓' : '+'} {/* 根据状态显示不同图标 */}
+            {showInput ? '✓' : '+'}
           </button>
+
         </div>
       </div>
     </DreamCard>

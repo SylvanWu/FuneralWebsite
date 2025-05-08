@@ -2,6 +2,8 @@
 // src/components/WillList.tsx
 import { useRef, useState } from 'react';
 
+const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 export interface Will {
     _id: string;
     uploaderName: string;
@@ -80,11 +82,8 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
         setEditingId(w._id);
         setEditName(w.uploaderName);
         setEditMsg(w.farewellMessage);
-        setPreviewURL(
-            w.videoFilename
-                ? `${import.meta.env.VITE_API_URL}/uploads/${w.videoFilename}`
-                : ''
-        );
+        const videoUrl = `${apiBase}/uploads/${w.videoFilename}`;
+        setPreviewURL(videoUrl);
         setPreviewBlob(null);
     };
 
@@ -231,7 +230,7 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                                 <video
                                     controls
                                     className="w-full max-h-[400px] rounded mb-3"
-                                    src={`${import.meta.env.VITE_API_URL}/uploads/${w.videoFilename}`}
+                                    src={`${apiBase}/uploads/${w.videoFilename}`}
                                 />
                             )}
 

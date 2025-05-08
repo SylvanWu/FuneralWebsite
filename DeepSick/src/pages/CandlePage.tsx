@@ -2,97 +2,164 @@
 // Dedicated page for "Light a Candle" interaction with user history
 
 import React, { useState, useEffect } from 'react';
-import io, { Socket } from 'socket.io-client';
+import axios from 'axios';
 import '../App.css';
 import './InteractivePage.css'
-// Initialize socket.io client
-const socket: Socket = io('http://localhost:3000');
 
-// Type for a candle action record
 interface CandleRecord {
-  user: string;
-  time: string;
+  username: string;
+  timestamp: string;
+  candleId: number;
+}
+
+interface Candle {
+  id: number;
+  isLit: boolean;
 }
 
 const CandlePage: React.FC = () => {
-  // Local state for candle count
-  const [candles, setCandles] = useState<number>(0);
-  // Tracks if current user has already lit a candle
-  const [hasLit, setHasLit] = useState<boolean>(false);
-  // Username input
+  // Candle states
+  const [candles, setCandles] = useState<Candle[]>(Array.from({ length: 48 }, (_, i) => ({ 
+    id: i + 1, 
+    isLit: false 
+  })));
   const [username, setUsername] = useState<string>('');
-  // History of lighting events
+  const [selectedCandle, setSelectedCandle] = useState<number | null>(null);
   const [records, setRecords] = useState<CandleRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
+  // Fetch history records and lit candles
   useEffect(() => {
-    // Receive overall count
-    socket.on('candleCount', (count: number) => {
-      setCandles(count);
-    });
-    // Receive individual lighting records
-    socket.on('candleLitByUser', (record: CandleRecord) => {
-      setRecords(prev => [record, ...prev]);
-    });
-    // Request initial data
-    socket.emit('getCandleCount');
-    socket.emit('getCandleHistory');
-
-    return () => {
-      socket.off('candleCount');
-      socket.off('candleLitByUser');
+    const fetchRecords = async () => {
+      try {
+        const response = await axios.get('http://localhost:5001/api/interactive/candle');
+        if (response.data.success) {
+          setRecords(response.data.records);
+          
+          // Update candle states
+          const litCandles = response.data.records.map((record: CandleRecord) => record.candleId);
+          setCandles(prev => prev.map(candle => ({
+            ...candle,
+            isLit: litCandles.includes(candle.id)
+          })));
+        }
+      } catch (err) {
+        setError('Failed to fetch records');
+        console.error('Error fetching records:', err);
+      }
     };
+    fetchRecords();
   }, []);
 
-  // Handle button click: emit event with user and disable further clicks
-  const handleLightCandle = () => {
-    if (!username.trim() || hasLit) return;
-    const record = { user: username.trim(), time: new Date().toISOString() };
-    // Optimistically update
-    setCandles(prev => prev + 1);
-    setRecords(prev => [record, ...prev]);
-    setHasLit(true);
-    // Emit to server
-    socket.emit('lightCandle', record);
+  const handleCandleClick = (candleId: number) => {
+    if (candles.find(c => c.id === candleId)?.isLit) {
+      return; // If candle is already lit, don't allow selection
+    }
+    setSelectedCandle(candleId);
+  };
+
+  const handleLightCandle = async () => {
+    if (!username.trim() || !selectedCandle || loading) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await axios.post('http://localhost:5001/api/interactive/candle', {
+        username: username.trim(),
+        candleId: selectedCandle
+      });
+      
+      if (response.data.success) {
+        // Update candle states
+        setCandles(prev => prev.map(candle => 
+          candle.id === selectedCandle ? { ...candle, isLit: true } : candle
+        ));
+        setRecords(prev => [response.data.record, ...prev]);
+        setSelectedCandle(null);
+        setUsername('');
+      }
+    } catch (err) {
+      setError('Failed to light the candle. Please try again.');
+      console.error('Error lighting candle:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="interactive-page">
       {/* Hero Section */}
       <section className="hero-section">
+        <img src="/image.png" alt="Memorial Hall" className="hero-image" />
+        <h1 className="hero-name">NAME</h1>
+        <p className="hero-subtitle">MOTTO</p>
+      </section>
+
+      {/* Title Section */}
+      <section className="hero-section">
         <h1 className="hero-name">Light a Candle</h1>
-        <p className="hero-subtitle">🕯️ {candles}</p>
+        <p className="hero-subtitle">Light a candle in memory</p>
       </section>
 
-      {/* Username input and action button */}
-      <section className="cards-section" style={{ justifyContent: 'center', gap: '1rem' }}>
-        <input
-          type="text"
-          className="message-input"
-          placeholder="Enter your name"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          disabled={hasLit}
-        />
-        <button
-          className="action-button"
-          onClick={handleLightCandle}
-          disabled={hasLit || !username.trim()}
-        >
-          {hasLit ? 'Already Lit' : 'Light a Candle'}
-        </button>
+      {/* Candles Grid */}
+      <section className="candles-container">
+        <div className="candles-grid">
+          {candles.map((candle) => (
+            <div key={candle.id} className="candle-item" onClick={() => handleCandleClick(candle.id)}>
+              <div className="candle-number">#{candle.id}</div>
+              <div 
+                className={`candle-button ${candle.isLit ? 'lit' : ''} ${selectedCandle === candle.id ? 'selected' : ''}`}
+              >
+                🕯️
+              </div>
+              {selectedCandle === candle.id && (
+                <div className="selected-indicator">Selected</div>
+              )}
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* History of who lit a candle and when */}
+      {/* User Input and Action Button */}
+      <section className="input-section">
+        {selectedCandle && (
+          <div className="selected-candle-info">
+            Selected Candle: #{selectedCandle}
+          </div>
+        )}
+        <div className="input-group">
+          <input
+            type="text"
+            className="message-input"
+            placeholder="Enter your name"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+          />
+          <button
+            className="action-button"
+            onClick={handleLightCandle}
+            disabled={!selectedCandle || !username.trim() || loading}
+          >
+            {loading ? 'Lighting...' : 'Light Candle'}
+          </button>
+        </div>
+        {error && <p className="error-message">{error}</p>}
+      </section>
+
+      {/* Lighting History */}
       <section className="interactive-area">
-        <h2 style={{ marginBottom: '1rem' }}>Candle Lighting History</h2>
+        <h2>Candle Lighting History</h2>
         {records.length === 0 ? (
-          <p className="no-messages">No candle lighting yet.</p>
+          <p className="no-messages">No candles have been lit yet</p>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul className="history-list">
             {records.map((r, idx) => (
-              <li key={idx} className="message-card" style={{ marginBottom: '0.5rem' }}>
-                <span className="message-author">{r.user}</span>{' '}
-                <span className="message-time">{new Date(r.time).toLocaleString()}</span>
+              <li key={idx} className="message-card">
+                <span className="message-author">{r.username}</span>
+                <span className="candle-info">lit candle #{r.candleId}</span>
+                <span className="message-time">{new Date(r.timestamp).toLocaleString()}</span>
               </li>
             ))}
           </ul>

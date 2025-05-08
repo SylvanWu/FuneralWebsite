@@ -32,7 +32,7 @@ const InteractivePage: React.FC = () => {
     <div className="interactive-page">
       {/* Hero section */}
       <section className="hero-section">
-        <img src="/Hall.png" alt="Memorial Hall" className="hero-image" />
+        <img src="/image.png" alt="Memorial Hall" className="hero-image" />
         <h1 className="hero-name">NAME</h1>
         <p className="hero-subtitle">MOTTO</p>
       </section>

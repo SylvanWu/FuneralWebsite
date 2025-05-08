@@ -52,12 +52,18 @@ export const updateWill = (
 
 /* ---------- Auth ---------- */
 export const registerUser = (p:{ username:string; password:string; role:string }) =>
-    API.post('/api/auth/register', p).then(r => r.data);
+    API.post('/api/auth/register', p).then(r => {
+        localStorage.setItem('token', r.data.token);
+        return r.data;
+    });
 
 export const loginUser = (payload: {
     username: string;
     password: string;
-}) => API.post('/api/auth/login', payload).then(res => res.data);
+}) => API.post('/api/auth/login', payload).then(res => {
+    localStorage.setItem('token', res.data.token);
+    return res.data;
+});
 
 //dreamlist api
 // 获取所有梦想清单

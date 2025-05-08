@@ -7,8 +7,10 @@ import User from '../models/User.js';
 dotenv.config();
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'default_dev_secret';
+
 // 注册新用户
-router.post('/register', async (req, res) => {
+router.post('/register', async(req, res) => {
     const { username, password, role } = req.body;
     try {
         const existing = await User.findOne({ username });
@@ -18,10 +20,8 @@ router.post('/register', async (req, res) => {
         await user.save();
 
         // 生成 JWT
-        const token = jwt.sign(
-            { id: user._id, username: user.username, role: user.role },
-            process.env.JWT_SECRET || 'your_secret_key',
-            { expiresIn: '7d' }
+        const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
+            JWT_SECRET, { expiresIn: '7d' }
         );
 
         res.status(201).json({
@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
 });
 
 // 用户登录
-router.post('/login', async (req, res) => {
+router.post('/login', async(req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
@@ -45,10 +45,8 @@ router.post('/login', async (req, res) => {
         if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
         // 签发 JWT
-        const token = jwt.sign(
-            { id: user._id, username: user.username, role: user.role },
-            process.env.JWT_SECRET || 'your_secret_key',
-            { expiresIn: '7d' }
+        const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
+            JWT_SECRET, { expiresIn: '7d' }
         );
 
         res.json({
