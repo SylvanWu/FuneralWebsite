@@ -36,39 +36,27 @@ router.post('/register', async(req, res) => {
 
 // 用户登录
 router.post('/login', async(req, res) => {
-            const { username, password } = req.body;
-            try {
-                const user = await User.findOne({ username });
-                if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    const { username, password } = req.body;
+    try {
+        const user = await User.findOne({ username });
+        if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
-                const ok = await user.comparePassword(password);
-                if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+        const ok = await user.comparePassword(password);
+        if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
-                // 签发 JWT
-                <<
-                <<
-                <<
-                < HEAD
-                const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
-                    process.env.JWT_SECRET || 'your_secret_key', { expiresIn: '7d' } ===
-                    ===
-                    =
-                    const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
-                        JWT_SECRET, { expiresIn: '7d' } >>>
-                        >>>
-                        >
-                        a8ea83f933d84b3c05b6f571c51555f4a58393bc
-                    );
+        // 签发 JWT
+        const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
+            JWT_SECRET, { expiresIn: '7d' }
+        );
 
-                    res.json({
-                        user: { _id: user._id, username: user.username, role: user.role },
-                        token
-                    });
-                }
-                catch (err) {
-                    console.error(err);
-                    res.status(500).json({ message: 'Login failed' });
-                }
-            });
+        res.json({
+            user: { _id: user._id, username: user.username, role: user.role },
+            token
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Login failed' });
+    }
+});
 
-        export default router;
+export default router;
