@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import './Layout.css'; // 新建或已有的CSS文件
 
 export default function Layout({ onLogout }) {
@@ -10,11 +10,7 @@ export default function Layout({ onLogout }) {
   // 假设有用户信息
   const user = {
     avatar: '/avatar.png', // 你的头像图片路径
-    nickname: '小周今天雅思过了吗',
-    level: 6,
-    follow: 417,
-    fans: 6,
-    posts: 0,
+    nickname: 'user',
   };
 
   // 点击外部关闭下拉
@@ -27,6 +23,8 @@ export default function Layout({ onLogout }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -50,24 +48,19 @@ export default function Layout({ onLogout }) {
             />
             {menuOpen && (
               <div className="dropdown-menu">
-                <div className="dropdown-header">
+                <div className="dropdown-header-simple">
                   <img src={user.avatar} alt="avatar" className="dropdown-avatar" />
-                  <div>
-                    <div className="dropdown-nickname">{user.nickname}</div>
-                    <div className="dropdown-level">Lv{user.level}</div>
-                  </div>
+                  <div className="dropdown-nickname">{user.nickname}</div>
                 </div>
-                <div className="dropdown-stats">
-                  <span>关注 {user.follow}</span>
-                  <span>粉丝 {user.fans}</span>
-                  <span>动态 {user.posts}</span>
-                </div>
-                <div className="dropdown-links">
-                  <Link to="/profile">个人中心</Link>
-                  <Link to="/posts">投稿管理</Link>
-                  <Link to="/service">推荐服务</Link>
-                </div>
-                <button className="dropdown-logout" onClick={onLogout}>退出登录</button>
+                <button
+                  className="dropdown-edit-btn"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate('/profile'); // 跳转到个人信息编辑页
+                  }}
+                >
+                  修改个人信息
+                </button>
               </div>
             )}
           </div>

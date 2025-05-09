@@ -97,34 +97,32 @@
 
 .avatar-dropdown {
   position: relative;
-  margin-right: 12px;
 }
 
 .avatar-img {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid #e5e7eb;
   object-fit: cover;
+  border: 2px solid #e5e7eb;
   background: #fff;
-  transition: box-shadow 0.2s;
-}
-.avatar-img:hover {
-  box-shadow: 0 2px 8px rgba(34,197,94,0.15);
+  cursor: pointer;
 }
 
 .dropdown-menu {
   position: absolute;
   right: 0;
-  top: 54px;
-  width: 280px;
+  top: 44px;
+  width: 200px;
   background: #fff;
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  padding: 20px 18px 12px 18px;
+  padding: 18px 0 12px 0;
   z-index: 100;
   animation: fadeIn 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 @keyframes fadeIn {
@@ -132,66 +130,42 @@
   to { opacity: 1; transform: translateY(0);}
 }
 
-.dropdown-header {
+.dropdown-header-simple {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
+
 .dropdown-avatar {
   width: 54px;
   height: 54px;
   border-radius: 50%;
   border: 2px solid #e5e7eb;
   object-fit: cover;
+  margin-bottom: 6px;
 }
+
 .dropdown-nickname {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 2px;
+  color: #222;
+  margin-bottom: 4px;
 }
-.dropdown-level {
-  font-size: 14px;
-  color: #f87171;
-  font-weight: 600;
-}
-.dropdown-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 10px;
-  margin-top: 4px;
-}
-.dropdown-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.dropdown-links a {
-  color: #333;
-  text-decoration: none;
-  font-size: 15px;
-  padding: 4px 0;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-.dropdown-links a:hover {
-  background: #f3f4f6;
-}
-.dropdown-logout {
-  width: 100%;
+
+.dropdown-edit-btn {
+  width: 80%;
   padding: 8px 0;
-  background: #f87171;
+  background: #4ade80;
   color: #fff;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
+  font-size: 15px;
   margin-top: 4px;
   transition: background 0.2s;
 }
-.dropdown-logout:hover {
-  background: #dc2626;
+.dropdown-edit-btn:hover {
+  background: #22c55e;
 }
