@@ -84,7 +84,18 @@ export const updateDream = (id: string, updates: { content?: string, position?: 
 // 删除指定的梦想清单项目 要删除的梦想ID 
 export const deleteDream = (id: string) => API.delete(`/api/dreams/${id}`);
 
-
+// 关键：自动处理 401
+API.interceptors.response.use(
+    res => res,
+    err => {
+        if (err.response && err.response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            window.location.href = '/login';
+        }
+        return Promise.reject(err);
+    }
+);
 
 export default API;
 

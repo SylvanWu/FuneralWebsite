@@ -18,8 +18,9 @@ const HomePage: React.FC = () => {
             loop 
             muted 
             playsInline
+            src={homeVideo}
+            style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
           >
-            <source src={homeVideo} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>

@@ -1,10 +1,10 @@
 // ✅ LoginPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../api';
 import API from '../api';
 
-export default function LoginPage() {
+export default function LoginPage({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,11 +17,20 @@ export default function LoginPage() {
       localStorage.setItem('token', token);
       localStorage.setItem('role', user.role);
       API.defaults.headers.common.Authorization = `Bearer ${token}`;
-      navigate(user.role === 'admin' ? '/admin' : '/wills');
+      setToken(token);
+      navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     }
   };
+
+  // useEffect(() => {
+  //   if (localStorage.getItem('token')) {
+  //     navigate('/');
+  //   }
+  // }, [navigate]);
+
+  console.log('HomePage loaded');
 
   return (
     <div
