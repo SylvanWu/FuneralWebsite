@@ -49,6 +49,7 @@ router.post('/register', async(req, res) => {
             user: {
                 _id: user._id,
                 username: user.username,
+                nickname: user.nickname,
                 role: user.role,
                 phone: user.phone,
                 email: user.email,
@@ -76,6 +77,7 @@ router.post('/login', async(req, res) => {
         const ok = await user.comparePassword(password);
         if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
+        console.log('Login user.nickname:', user.nickname);
         // 签发 JWT
         const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
             JWT_SECRET, { expiresIn: '7d' }
@@ -85,6 +87,7 @@ router.post('/login', async(req, res) => {
             user: {
                 _id: user._id,
                 username: user.username,
+                nickname: user.nickname,
                 role: user.role,
                 phone: user.phone,
                 email: user.email,

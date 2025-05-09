@@ -10,15 +10,6 @@ export default function LoginPage({ setToken }) {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // 在组件卸载时清除登录状态
-    return () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // 如果有其他需要清除的状态，也可以在这里处理
-    };
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');

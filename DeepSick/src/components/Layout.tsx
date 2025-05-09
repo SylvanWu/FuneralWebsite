@@ -13,7 +13,7 @@ export default function Layout({ onLogout }) {
   // 读取用户信息，回退到默认头像
   const user = JSON.parse(localStorage.getItem('user')) || {};
   const avatar = user.avatar || defaultAvatar;
-  const username = user.username || '未登录';
+  const displayName = user.nickname || user.username || '未登录';
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function Layout({ onLogout }) {
                   }}
                 />
                 <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
-                  {username}
+                  {displayName}
                 </div>
                 <button
                   onClick={() => {

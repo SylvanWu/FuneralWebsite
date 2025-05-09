@@ -64,6 +64,17 @@ export default function App() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
+  useEffect(() => {
+    // 页面关闭或刷新时清除登录信息
+    const handleUnload = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('role');
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []);
+
   // 登录/登出后手动更新 state
   const handleLogout = () => {
     localStorage.removeItem('token');
