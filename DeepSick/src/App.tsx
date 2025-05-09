@@ -5,12 +5,12 @@ import {
   Navigate,
   useNavigate,
   Outlet,
+  useLocation,
+  Link
 } from 'react-router-dom';
 
 import Layout from './components/Layout';
 import Header from './components/Header';
-import UploadArea from './components/UploadArea';
-import Timeline, { Memory } from './components/Timeline';
 import RoleProtected from './components/RoleProtected';
 
 import LoginPage from './pages/LoginPage';
@@ -19,6 +19,7 @@ import WillsPage from './pages/WillsPage';
 import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
 import CreateFuneralPage from './pages/CreateFuneralPage';
+import HallPage from './pages/HallPage';
 
 import InteractivePage from './pages/InteractivePage';
 import CandlePage from './pages/CandlePage';
@@ -28,19 +29,9 @@ import MessagePage from './pages/MessagePage';
 import DreamList from './components/DreamList/DreamList';
 import DreamShrink from './components/DreamList/DreamShrink';
 
-/* API */
-import { fetchMemories, createMemory, deleteMemory } from './api';
 import ProfilePage from './pages/ProfilePage';
 
 import './App.css';
-
-interface BackendMemory {
-  _id: string;
-  uploaderName: string;
-  uploadTime: string;
-  memoryType: 'image' | 'video' | 'text';
-  memoryContent: string;
-}
 
 // NavLink Component for highlighting active links
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
@@ -63,10 +54,6 @@ export default function App() {
   const [role, setRole] = useState(() => localStorage.getItem('role'));
   const isLoggedIn = Boolean(token);
 
-  const [memories, setMemories] = useState<Memory[]>([]);
-  const [name, setName] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
-
   // 监听 localStorage 变化（比如登录/登出）
   useEffect(() => {
     const onStorage = () => {
@@ -76,84 +63,6 @@ export default function App() {
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
-
-  useEffect(() => {
-    if (window.location.pathname !== '/') return;
-
-    (async () => {
-      try {
-        const res = await fetchMemories();
-        const data = (res.data ?? res) as BackendMemory[];
-        setMemories(
-          data.map(m => ({
-            id: m._id,
-            type: m.memoryType,
-            preview: m.memoryContent,
-            uploadTime: new Date(m.uploadTime),
-            uploaderName: m.uploaderName,
-          }))
-        );
-      } catch (err) {
-        console.error('Failed to fetch memories:', err);
-      }
-    })();
-  }, []);
-
-  const handleFileUpload = async (file: File) => {
-    if (isUploading) return;
-    setIsUploading(true);
-    try {
-      let type: 'image' | 'video' | 'text' = 'image';
-      let preview = '';
-      let memoryContent = '';
-
-      if (file.type.startsWith('image/')) {
-        preview = URL.createObjectURL(file);
-        memoryContent = preview;
-      } else if (file.type.startsWith('video/')) {
-        type = 'video';
-        preview = URL.createObjectURL(file);
-        memoryContent = preview;
-      } else if (file.type === 'text/plain') {
-        type = 'text';
-        const txt = await file.text();
-        preview = txt.slice(0, 500) + (txt.length > 500 ? '...' : '');
-        memoryContent = txt;
-      }
-
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('uploaderName', name || 'Anonymous');
-      fd.append('memoryType', type);
-      if (type === 'text') fd.append('memoryContent', memoryContent);
-
-      const resp = await createMemory(fd);
-      setMemories(prev => [
-        {
-          id: resp.data._id,
-          type,
-          preview,
-          uploadTime: new Date(),
-          uploaderName: name || 'Anonymous',
-        },
-        ...prev,
-      ]);
-    } catch (err) {
-      console.error('Upload failed:', err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleDeleteMemory = async (id: string) => {
-    try {
-      await deleteMemory(id);
-      setMemories(prev => prev.filter(m => m.id !== id));
-    } catch (err) {
-      console.error('Delete failed:', err);
-      alert('Delete failed, please try again');
-    }
-  };
 
   // 登录/登出后手动更新 state
   const handleLogout = () => {
@@ -184,45 +93,17 @@ export default function App() {
             }
           />
 
-          {/* 原来的纪念馆主页移到/hall路径 */}
-          <Route path="/hall" element={
-            isLoggedIn ? (
-              <>
-                {/* —— White Card —— */}
-                <div className="bg-white rounded-lg shadow-md p-8 mb-10">
-                  {/* Title Image + Description */}
-                  <div className="md:flex md:items-center md:space-x-6 mb-8">
-                    <div className="md:w-1/2 mb-6 md:mb-0">
-                      <img
-                        src="/Hall.png"
-                        alt="Digital Memorial Hall"
-                        className="w-full rounded-lg"
-                      />
-                    </div>
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium mb-1">
-                        Your Name (Optional)
-                      </label>
-                      <input
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                        placeholder="Please enter your name"
-                        className="w-full px-4 py-2 border rounded"
-                      />
-                    </div>
-                    <UploadArea onFileUpload={handleFileUpload} isUploading={isUploading} />
-                  </div>
-                  <Timeline
-                    memories={memories}
-                    onDeleteMemory={handleDeleteMemory}
-                    canDelete={role === 'admin'}
-                  />
-                </div>
-              </>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } />
+          {/* 纪念馆主页 */}
+          <Route
+            path="/hall"
+            element={
+              isLoggedIn ? (
+                <HallPage />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
 
           {/* Admin Page */}
           <Route

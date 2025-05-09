@@ -1,0 +1,152 @@
+import React, { useEffect, useState } from 'react';
+import UploadArea from '../components/UploadArea';
+import Timeline, { Memory } from '../components/Timeline';
+import { fetchMemories, createMemory, deleteMemory } from '../api';
+import './HallPage.css';
+
+interface BackendMemory {
+  _id: string;
+  uploaderName: string;
+  uploadTime: string;
+  memoryType: 'image' | 'video' | 'text';
+  memoryContent: string;
+}
+
+const HallPage: React.FC = () => {
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [name, setName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const role = localStorage.getItem('role');
+  
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetchMemories();
+        const data = (res.data ?? res) as BackendMemory[];
+        setMemories(
+          data.map(m => ({
+            id: m._id,
+            type: m.memoryType,
+            preview: m.memoryContent,
+            uploadTime: new Date(m.uploadTime),
+            uploaderName: m.uploaderName,
+          }))
+        );
+      } catch (err) {
+        console.error('Failed to fetch memories:', err);
+      }
+    })();
+  }, []);
+
+  const handleFileUpload = async (file: File) => {
+    if (isUploading) return;
+    setIsUploading(true);
+    try {
+      let type: 'image' | 'video' | 'text' = 'image';
+      let preview = '';
+      let memoryContent = '';
+
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+        memoryContent = preview;
+      } else if (file.type.startsWith('video/')) {
+        type = 'video';
+        preview = URL.createObjectURL(file);
+        memoryContent = preview;
+      } else if (file.type === 'text/plain') {
+        type = 'text';
+        const txt = await file.text();
+        preview = txt.slice(0, 500) + (txt.length > 500 ? '...' : '');
+        memoryContent = txt;
+      }
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('uploaderName', name || 'Anonymous');
+      fd.append('memoryType', type);
+      if (type === 'text') fd.append('memoryContent', memoryContent);
+
+      const resp = await createMemory(fd);
+      setMemories(prev => [
+        {
+          id: resp.data._id,
+          type,
+          preview,
+          uploadTime: new Date(),
+          uploaderName: name || 'Anonymous',
+        },
+        ...prev,
+      ]);
+    } catch (err) {
+      console.error('Upload failed:', err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteMemory = async (id: string) => {
+    try {
+      await deleteMemory(id);
+      setMemories(prev => prev.filter(m => m.id !== id));
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Delete failed, please try again');
+    }
+  };
+
+  return (
+    <div className="hall-container">
+      {/* 两栏布局主区域 */}
+      <div className="hall-header-section">
+        {/* 左侧图片 */}
+        <div className="hall-image-container">
+          <img
+            src="/image.png"
+            alt="Digital Memorial Hall"
+            className="hall-image"
+          />
+        </div>
+        
+        {/* 右侧内容区 */}
+        <div className="hall-content">
+          {/* <h1 className="hall-title">Digital Memorial Hall</h1> */}
+          {/* <p className="hall-description">
+            The Digital Memorial Hall is a space where users can honor and remember their loved ones by sharing photos, 
+            videos, and written memories. All content is beautifully arranged in a timeline, allowing friends and family to 
+            reflect on special moments and milestones throughout the person's life.
+          </p> */}
+          
+          <div className="upload-section">
+            <UploadArea onFileUpload={handleFileUpload} isUploading={isUploading} />
+            <p className="upload-note">
+              Support for a single or bulk upload. Strictly prohibit from uploading company data or other band files
+            </p>
+          </div>
+          
+          <div className="name-input-container">
+            <label className="name-label">
+              Your Name (Optional)
+            </label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Please enter your name"
+              className="name-input"
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* 时间线区域 */}
+      <div className="timeline-section">
+        <Timeline
+          memories={memories}
+          onDeleteMemory={handleDeleteMemory}
+          canDelete={role === 'admin'}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default HallPage; 
