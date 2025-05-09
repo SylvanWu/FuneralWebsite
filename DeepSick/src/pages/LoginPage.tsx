@@ -10,6 +10,15 @@ export default function LoginPage({ setToken }) {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // 在组件卸载时清除登录状态
+    return () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      // 如果有其他需要清除的状态，也可以在这里处理
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -112,7 +121,15 @@ export default function LoginPage({ setToken }) {
 
         <p className="mt-4 text-sm text-center">
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <Link
+            to="/register"
+            className="text-blue-600 hover:underline font-bold text-lg"
+            style={{
+              backgroundColor: '#e0f2fe',
+              padding: '4px 8px',
+              borderRadius: '4px',
+            }}
+          >
             Register here
           </Link>
         </p>
