@@ -27,6 +27,12 @@ const upload = multer({ storage });
 // 注册新用户
 router.post('/register', async(req, res) => {
     const { username, password, role, phone, email, address, avatar } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
+    }
+    if (password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters' });
+    }
     try {
         const existing = await User.findOne({ username });
         if (existing) return res.status(409).json({ message: 'Username taken' });
@@ -60,6 +66,9 @@ router.post('/register', async(req, res) => {
 // 用户登录
 router.post('/login', async(req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required' });
+    }
     try {
         const user = await User.findOne({ username });
         if (!user) return res.status(401).json({ message: 'Invalid credentials' });
@@ -126,6 +135,29 @@ router.post('/avatar', upload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
     // 返回图片的可访问 URL
     res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+// 修改密码接口
+router.put('/password', authMiddleware, async (req, res) => {
+    const userId = req.user && req.user.id;
+    const { currentPassword, newPassword } = req.body;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!currentPassword || !newPassword) return res.status(400).json({ message: 'Missing password' });
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const ok = await user.comparePassword(currentPassword);
+        if (!ok) return res.status(400).json({ message: 'Current password incorrect' });
+
+        user.password = newPassword;
+        await user.save();
+        res.json({ message: 'Password updated' });
+    } catch (err) {
+        console.error('Password update error:', err);
+        res.status(500).json({ message: 'Update failed' });
+    }
 });
 
 export default router;

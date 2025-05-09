@@ -12,6 +12,11 @@ export default function LoginPage({ setToken }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    if (!username.trim() || !password) {
+      setError('Username and password are required');
+      return;
+    }
     try {
       const { user, token } = await loginUser({ username, password });
       localStorage.setItem('token', token);
@@ -46,7 +51,22 @@ export default function LoginPage({ setToken }) {
       <div className="w-full max-w-md bg-white/80 backdrop-blur-md rounded-lg shadow-lg p-8 m-8 z-40">
         <h1 className="text-3xl font-bold text-center mb-6">Sign In</h1>
 
-        {error && <div className="mb-4 text-red-600 text-center">{error}</div>}
+        {error && (
+          <div
+            style={{
+              color: '#dc2626',
+              background: '#fee2e2',
+              border: '1px solid #fca5a5',
+              borderRadius: 6,
+              padding: '8px 0',
+              textAlign: 'center',
+              fontWeight: 600,
+              marginBottom: 8,
+            }}
+          >
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <input

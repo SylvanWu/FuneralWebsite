@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import './Layout.css'; // 新建或已有的CSS文件
 import defaultAvatar from '../assets/avatar.png'; // 路径根据实际情况调整
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 export default function Layout({ onLogout }) {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const [showPwdModal, setShowPwdModal] = useState(false);
 
   // 读取用户信息，回退到默认头像
   const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -49,19 +51,79 @@ export default function Layout({ onLogout }) {
               style={{ cursor: 'pointer' }}
             />
             {menuOpen && (
-              <div className="dropdown-menu">
-                <div className="dropdown-header-simple">
-                  <img src={avatar} alt="avatar" className="dropdown-avatar" />
-                  <div className="dropdown-nickname">{username}</div>
+              <div
+                style={{
+                  minWidth: 220,
+                  background: '#fff',
+                  borderRadius: 16,
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+                  padding: 24,
+                  position: 'absolute',
+                  top: 50,
+                  right: 0,
+                  zIndex: 1000,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}
+              >
+                <img
+                  src={avatar}
+                  alt="avatar"
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    border: '2px solid #eee',
+                    objectFit: 'cover',
+                    marginBottom: 12
+                  }}
+                />
+                <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
+                  {username}
                 </div>
                 <button
-                  className="dropdown-edit-btn"
                   onClick={() => {
                     setMenuOpen(false);
                     navigate('/profile');
                   }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 0',
+                    background: '#4ade80',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    marginBottom: 12,
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={e => (e.target.style.background = '#22c55e')}
+                  onMouseOut={e => (e.target.style.background = '#4ade80')}
                 >
                   Edit Information
+                </button>
+                <button
+                  onClick={() => setShowPwdModal(true)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 0',
+                    background: '#f3f4f6',
+                    color: '#222',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 500,
+                    fontSize: 15,
+                    marginBottom: 0,
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={e => (e.target.style.background = '#e5e7eb')}
+                  onMouseOut={e => (e.target.style.background = '#f3f4f6')}
+                >
+                  Change Password
                 </button>
               </div>
             )}
@@ -73,6 +135,7 @@ export default function Layout({ onLogout }) {
       <main className="main-content">
         <Outlet />
       </main>
+      {showPwdModal && <ChangePasswordModal onClose={() => setShowPwdModal(false)} />}
     </div>
   );
 }

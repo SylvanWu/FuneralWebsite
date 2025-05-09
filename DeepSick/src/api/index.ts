@@ -88,7 +88,7 @@ export const deleteDream = (id: string) => API.delete(`/api/dreams/${id}`);
 API.interceptors.response.use(
     res => res,
     err => {
-        if (err.response && err.response.status === 401) {
+        if (err.response && err.response.status === 401 && localStorage.getItem('token')) {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
             window.location.href = '/login';

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { registerUser } from '../api';
 import { useNavigate } from 'react-router-dom';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -19,10 +20,29 @@ export default function RegisterPage() {
   }, []);
 
   const isEmail = (str: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
-  const isPhone = (str: string) => /^1\d{10}$/.test(str);
+  const isPhone = (str: string) => isValidPhoneNumber(str);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    // 前端校验
+    if (!name.trim()) {
+      setError('Username is required');
+      return;
+    }
+    if (!contact.trim()) {
+      setError('Phone number or email is required');
+      return;
+    }
+    if (!isEmail(contact) && !isValidPhoneNumber(contact)) {
+      setError('Please enter a valid phone number (international format, e.g. +64...) or email');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
     let phone = '';
     let email = '';
     if (isEmail(contact)) {
@@ -78,7 +98,7 @@ export default function RegisterPage() {
             value={name}
             onChange={e => setName(e.target.value)}
             required
-            placeholder="Name"
+            placeholder="Username"
           />
 
           <input
@@ -95,7 +115,7 @@ export default function RegisterPage() {
             value={password}
             onChange={e => setPwd(e.target.value)}
             required
-            placeholder="Password"
+            placeholder="Password (min 8 chars)"
           />
 
           <div className="w-full md:w-1/3 mx-auto">
