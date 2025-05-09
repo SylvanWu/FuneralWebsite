@@ -141,7 +141,23 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full md:w-1/3 mx-auto py-2 bg-lime-500 hover:bg-lime-600 text-white rounded transition"
+            style={{
+              width: '100%',
+              padding: '14px 0',
+              background: '#4ade80',
+              color: '#fff',
+              fontSize: 18,
+              fontWeight: 700,
+              border: 'none',
+              borderRadius: 8,
+              marginTop: 12,
+              marginBottom: 8,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px #d1fae5',
+              transition: 'background 0.2s, box-shadow 0.2s',
+            }}
+            onMouseOver={e => (e.target.style.background = '#22c55e')}
+            onMouseOut={e => (e.target.style.background = '#4ade80')}
           >
             Register
           </button>
