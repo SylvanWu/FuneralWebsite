@@ -31,8 +31,8 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true }); // 保证目录存在
 
 /* ──────────── 公共中间件 ──────────── */
 app.use(cors({
-    origin: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    origin: 'http://localhost:5173', // 你的前端开发地址
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
     exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length']
 }));

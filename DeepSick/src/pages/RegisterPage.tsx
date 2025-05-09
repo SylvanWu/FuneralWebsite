@@ -18,10 +18,28 @@ export default function RegisterPage() {
     }
   }, []);
 
+  const isEmail = (str: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
+  const isPhone = (str: string) => /^1\d{10}$/.test(str);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let phone = '';
+    let email = '';
+    if (isEmail(contact)) {
+      email = contact;
+    } else if (isPhone(contact)) {
+      phone = contact;
+    }
     try {
-      await registerUser({ username: name, password, role, contact });
+      const { user, token } = await registerUser({
+        username: name,
+        password,
+        role,
+        phone,
+        email,
+      });
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', token);
       setSuccess(true);
       setTimeout(() => nav('/login'), 1500);
     } catch (err: any) {

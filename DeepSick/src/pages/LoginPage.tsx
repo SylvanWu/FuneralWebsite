@@ -15,7 +15,7 @@ export default function LoginPage({ setToken }) {
     try {
       const { user, token } = await loginUser({ username, password });
       localStorage.setItem('token', token);
-      localStorage.setItem('role', user.role);
+      localStorage.setItem('user', JSON.stringify(user));
       API.defaults.headers.common.Authorization = `Bearer ${token}`;
       setToken(token);
       navigate('/');

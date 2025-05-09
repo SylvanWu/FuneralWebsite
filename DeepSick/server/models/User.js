@@ -5,7 +5,12 @@ import bcrypt from 'bcrypt';
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['visitor', 'organizer', 'admin'], default: 'visitor' }
+    role: { type: String, enum: ['visitor', 'organizer', 'admin'], default: 'visitor' },
+    phone: { type: String, default: '' },
+    email: { type: String, default: '' },
+    address: { type: String, default: '' },
+    avatar: { type: String, default: '' },
+    nickname: { type: String, default: '' }
 }, {
     timestamps: true
 });
