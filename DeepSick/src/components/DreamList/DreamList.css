@@ -3,7 +3,7 @@
   /* max-width: 800px; */
   width: 400px;
   /* 固定宽度 */
-  margin: 2rem auto;
+  /* margin: 2rem auto; */
   padding: 2rem;
   background-color: #ffffff;
   border-radius: 12px;
@@ -187,12 +187,13 @@
 /* DreamShrink */
 .dream-shrink-container {
   position: relative;
+  overflow: visible !important;
 }
 
 .shrink-button {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 3px;
+  left: 3px;
   z-index: 10;
   background-color: #df66ae;
   border: none;
@@ -218,15 +219,49 @@
 /* 新增收缩状态专用样式 */
 .jirachi-icon-shrunk {
   position: absolute;
-  top: 140px;
-  left: 100px;
+  top: 0px;
+  left: 0px;
   z-index: 10;
   width: 80px;
   height: 80px;
   cursor: pointer;
   transition: transform 0.3s ease;
+  cursor: grab;
+  /* 确保鼠标悬停时有抓手 */
+  -webkit-user-drag: none;
+  /* 兼容Safari */
 }
 
 .jirachi-icon-shrunk:hover {
   transform: scale(1.1);
+}
+
+.dream-shrink-container.shrunk {
+  padding: 40px;
+  /* 只保留顶部按钮空间 */
+  height: 120px;
+  /* 或者你希望的紧凑高度 */
+  overflow: hidden;
+}
+
+.dream-card .dream-shrink-container.shrunk {
+  min-height: 120px;
+  /* 避免显示残留内容 */
+}
+
+/* 收缩时 DreamCard 样式变透明、尺寸变小 */
+.dream-card.shrunk {
+  background-color: transparent !important;
+  box-shadow: none;
+  padding: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* 隐藏顶部/侧边彩条 */
+.dream-card.shrunk::before,
+.dream-card.shrunk::after {
+  display: none;
 }

@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import '../DreamList/DreamList.css';
 
-export const DreamCard = ({ children }: { children: React.ReactNode }) => {
+export const DreamCard = ({ children, shrunk = false }: { children: React.ReactNode; shrunk?: boolean }) => {
   // 使用useRef引用DOM元素，用于后续操作
   const dragRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
@@ -73,7 +73,7 @@ export const DreamCard = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       ref={dragRef} // 将ref绑定到这个div
-      className="dream-card "
+      className={`dream-card ${shrunk ? 'shrunk' : ''}`} // 关键：动态加上 shrunk 样式
       style={{
         position: 'absolute', // 使用绝对定位以便拖拽
         top: 100, // 初始顶部位置
