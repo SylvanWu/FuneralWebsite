@@ -80,87 +80,16 @@ export default function App() {
   return (
     <div className="min-h-screen bg-transparent text-gray-800">
       <Routes>
-        {/* ✅ Login/Register 页面独立，不使用 Layout 包裹 */}
+        {/* 登录注册页面 */}
         <Route path="/login" element={<LoginPage setToken={setToken} />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* ✅ 其他页面由 Layout 包裹 */}
+        {/* 其他页面由 Layout 包裹 */}
         <Route element={<Layout onLogout={handleLogout} />}>
-          <Route
-            path="/"
-            element={
-              isLoggedIn ? (
-                <HomePage />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+          {/* 首页 */}
+          <Route path="/" element={<HomePage />} />
 
-          {/* 纪念馆主页 */}
-          <Route
-            path="/hall"
-            element={
-              isLoggedIn ? (
-                <HallPage />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-
-          {/* Admin Page */}
-          <Route
-            path="/admin"
-            element={
-              <RoleProtected allow={['admin']}>
-                <AdminPage />
-              </RoleProtected>
-            }
-          />
-          <Route
-            path="/wills"
-            element={
-              isLoggedIn ? (
-                <RoleProtected allow={['lovedOne']}>
-                  <WillsPage />
-                </RoleProtected>
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-
-          <Route path="/interactive" element={isLoggedIn ? <InteractivePage /> : <Navigate to="/login" replace />} />
-          <Route path="/candle" element={isLoggedIn ? <CandlePage /> : <Navigate to="/login" replace />} />
-          <Route path="/flower" element={isLoggedIn ? <FlowerPage /> : <Navigate to="/login" replace />} />
-          <Route path="/message" element={isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace />} />
-          <Route path="/dreamlist" element={<DreamShrink />} />
-          <Route path="/create-funeral" element={<CreateFuneralPage />} />
-          <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-
-          {/* 组织者路由 */}
-          <Route
-            path="/organizer-dashboard"
-            element={
-              <RoleProtected userType="organizer">
-                <OrganizerDashboard />
-              </RoleProtected>
-            }
-          />
-
-          {/* 访客路由 */}
-          <Route
-            path="/visitor-dashboard"
-            element={
-              <RoleProtected userType="visitor">
-                <VisitorDashboard />
-              </RoleProtected>
-            }
-          />
-
-          {/* 亲友路由 */}
+          {/* Loved One Dashboard 及其子路由 */}
           <Route
             path="/loved-one-dashboard"
             element={
@@ -168,10 +97,32 @@ export default function App() {
                 <LovedOneDashboard />
               </RoleProtected>
             }
-          />
+          >
+            <Route path="wills" element={<WillsPage />} />
+            <Route path="dreamlist" element={<DreamList />} />
+          </Route>
 
-          {/* Fallback Route */}
-          <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace />} />
+          {/* 其他公共页面 */}
+          <Route path="/hall" element={<HallPage />} />
+          <Route path="/interactive" element={<InteractivePage />} />
+          <Route path="/candle" element={<CandlePage />} />
+          <Route path="/flower" element={<FlowerPage />} />
+          <Route path="/message" element={<MessagePage />} />
+          <Route path="/create-funeral" element={<CreateFuneralPage />} />
+          <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          
+          {/* Room 占位页面 */}
+          <Route path="/room" element={<div className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Room</h1>
+            <p className="text-gray-600">This page is under construction.</p>
+          </div>} />
+
+          {/* Admin 占位页面 */}
+          <Route path="/admin" element={<div className="p-8 text-center">
+            <h1 className="text-2xl font-bold mb-4">Admin</h1>
+            <p className="text-gray-600">This page is under construction.</p>
+          </div>} />
         </Route>
       </Routes>
     </div>

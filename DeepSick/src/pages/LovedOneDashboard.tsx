@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
 
 export default function LovedOneDashboard() {
   return (
@@ -12,7 +12,7 @@ export default function LovedOneDashboard() {
           <h2 className="text-xl font-semibold mb-4">遗嘱查看</h2>
           <p className="text-gray-600 mb-4">查看和访问相关遗嘱内容</p>
           <Link 
-            to="/wills" 
+            to="/loved-one-dashboard/wills" 
             className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
             查看遗嘱
@@ -24,7 +24,7 @@ export default function LovedOneDashboard() {
           <h2 className="text-xl font-semibold mb-4">梦想清单</h2>
           <p className="text-gray-600 mb-4">查看和管理梦想清单</p>
           <Link 
-            to="/dreamlist" 
+            to="/loved-one-dashboard/dreamlist" 
             className="inline-block bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
           >
             查看梦想清单
@@ -42,6 +42,11 @@ export default function LovedOneDashboard() {
             编辑资料
           </Link>
         </div>
+      </div>
+
+      {/* 子路由内容 */}
+      <div className="mt-8">
+        <Outlet />
       </div>
     </div>
   );

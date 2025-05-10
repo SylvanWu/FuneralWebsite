@@ -20,9 +20,11 @@ export default function RoleProtected(
     // 未登录或user丢失
     return <Navigate to="/login" replace />;
   }
-  if (user.userType !== userType) {
-    // 已登录但无权限
+
+  // 只有 lovedOne 需要特殊处理
+  if (userType === 'lovedOne' && user.userType !== 'lovedOne') {
     return <Navigate to="/" replace />;
   }
+
   return children;
 }
