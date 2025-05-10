@@ -13,6 +13,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [userType, setUserType] = useState<'organizer' | 'visitor' | 'lovedOne'>('visitor');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +23,28 @@ export default function LoginPage({ setToken }: LoginPageProps) {
       return;
     }
     try {
-      const { user, token } = await loginUser({ username, password });
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      API.defaults.headers.common.Authorization = `Bearer ${token}`;
-      setToken(token);
-      navigate('/');
+      const response = await API.post('/api/auth/login', {
+        username,
+        password,
+        userType
+      });
+      
+      // 保存用户信息和token
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      localStorage.setItem('token', response.data.token);
+      
+      // 根据用户类型跳转到不同页面
+      switch(response.data.user.userType) {
+        case 'organizer':
+          navigate('/organizer-dashboard');
+          break;
+        case 'visitor':
+          navigate('/visitor-dashboard');
+          break;
+        case 'lovedOne':
+          navigate('/loved-one-dashboard');
+          break;
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     }
@@ -95,6 +112,12 @@ export default function LoginPage({ setToken }: LoginPageProps) {
               required
             />
           </div>
+
+          <select value={userType} onChange={(e) => setUserType(e.target.value)}>
+            <option value="organizer">组织者</option>
+            <option value="visitor">访客</option>
+            <option value="lovedOne">亲友</option>
+          </select>
 
           <button
             type="submit"

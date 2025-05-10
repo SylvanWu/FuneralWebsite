@@ -30,6 +30,9 @@ import DreamList from './components/DreamList/DreamList';
 import DreamShrink from './components/DreamList/DreamShrink';
 
 import ProfilePage from './pages/ProfilePage';
+import OrganizerDashboard from './pages/OrganizerDashboard';
+import VisitorDashboard from './pages/VisitorDashboard';
+import LovedOneDashboard from './pages/LovedOneDashboard';
 
 import './App.css';
 
@@ -156,6 +159,37 @@ export default function App() {
             }
           />
           <Route path="/profile" element={<ProfilePage />} />
+
+          {/* 组织者路由 */}
+          <Route
+            path="/organizer-dashboard"
+            element={
+              <RoleProtected userType="organizer">
+                <OrganizerDashboard />
+              </RoleProtected>
+            }
+          />
+
+          {/* 访客路由 */}
+          <Route
+            path="/visitor-dashboard"
+            element={
+              <RoleProtected userType="visitor">
+                <VisitorDashboard />
+              </RoleProtected>
+            }
+          />
+
+          {/* 亲友路由 */}
+          <Route
+            path="/loved-one-dashboard"
+            element={
+              <RoleProtected userType="lovedOne">
+                <LovedOneDashboard />
+              </RoleProtected>
+            }
+          />
+
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace />} />
         </Route>

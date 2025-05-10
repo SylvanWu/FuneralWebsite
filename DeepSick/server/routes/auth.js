@@ -6,6 +6,10 @@ import User from '../models/User.js';
 import authMiddleware from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
+import Organizer from '../models/Organizer.js';
+import Visitor from '../models/Visitor.js';
+import LovedOne from '../models/LovedOne.js';
+import bcrypt from 'bcrypt';
 
 dotenv.config();
 const router = express.Router();
@@ -25,62 +29,70 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // 注册新用户
-router.post('/register', async(req, res) => {
-    const { username, password, role, phone, email, address, avatar } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
-    if (password.length < 8) {
-        return res.status(400).json({ message: 'Password must be at least 8 characters' });
-    }
+router.post('/register', async (req, res) => {
+    const { username, password, userType } = req.body;
+    
     try {
-        const existing = await User.findOne({ username });
-        if (existing) return res.status(409).json({ message: 'Username taken' });
-
-        const user = new User({ username, password, role, phone, email, address, avatar });
+        let user;
+        switch(userType) {
+            case 'organizer':
+                user = new Organizer({ username, password });
+                break;
+            case 'visitor':
+                user = new Visitor({ username, password });
+                break;
+            case 'lovedOne':
+                user = new LovedOne({ username, password });
+                break;
+            default:
+                return res.status(400).json({ message: '无效的用户类型' });
+        }
+        
         await user.save();
-
-        // 生成 JWT
-        const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
-            JWT_SECRET, { expiresIn: '7d' }
-        );
-
-        res.status(201).json({
-            user: {
-                _id: user._id,
-                username: user.username,
-                nickname: user.nickname,
-                role: user.role,
-                phone: user.phone,
-                email: user.email,
-                address: user.address,
-                avatar: user.avatar
-            },
-            token
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Register failed' });
+        res.status(201).json({ message: '注册成功' });
+    } catch (error) {
+        res.status(500).json({ message: '注册失败', error: error.message });
     }
 });
 
 // 用户登录
-router.post('/login', async(req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
-    }
+router.post('/login', async (req, res) => {
+    const { username, password, userType } = req.body;
+    
     try {
-        const user = await User.findOne({ username });
-        if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+        let user;
+        switch(userType) {
+            case 'organizer':
+                user = await Organizer.findOne({ username });
+                break;
+            case 'visitor':
+                user = await Visitor.findOne({ username });
+                break;
+            case 'lovedOne':
+                user = await LovedOne.findOne({ username });
+                break;
+            default:
+                return res.status(400).json({ message: '无效的用户类型' });
+        }
 
-        const ok = await user.comparePassword(password);
-        if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
+        if (!user) {
+            return res.status(404).json({ message: '用户不存在' });
+        }
 
-        console.log('Login user.nickname:', user.nickname);
-        // 签发 JWT
-        const token = jwt.sign({ id: user._id, username: user.username, role: user.role },
-            JWT_SECRET, { expiresIn: '7d' }
+        // 验证密码
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return res.status(401).json({ message: '密码错误' });
+        }
+
+        // 生成 token
+        const token = jwt.sign(
+            { 
+                userId: user._id,
+                userType: userType 
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
         );
 
         res.json({
@@ -88,7 +100,7 @@ router.post('/login', async(req, res) => {
                 _id: user._id,
                 username: user.username,
                 nickname: user.nickname,
-                role: user.role,
+                userType: userType,
                 phone: user.phone,
                 email: user.email,
                 address: user.address,
@@ -96,9 +108,8 @@ router.post('/login', async(req, res) => {
             },
             token
         });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Login failed' });
+    } catch (error) {
+        res.status(500).json({ message: '登录失败', error: error.message });
     }
 });
 
