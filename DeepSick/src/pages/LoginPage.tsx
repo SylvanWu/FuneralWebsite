@@ -16,6 +16,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
   const [userType, setUserType] = useState<'organizer' | 'visitor' | 'lovedOne'>('visitor');
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('Login form submitted');
     e.preventDefault();
     setError('');
     if (!username.trim() || !password) {
