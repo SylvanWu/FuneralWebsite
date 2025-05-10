@@ -36,6 +36,7 @@ export default function Layout({ onLogout }) {
           <div className="nav-links">
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
             <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
+            <Link to="/create-funeral" className={location.pathname === '/create-funeral' ? 'active' : ''}>Funeral Create</Link>
             <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
             <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
             <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
