@@ -15,6 +15,7 @@ dotenv.config();
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_dev_secret';
+console.log('JWT_SECRET:', JWT_SECRET);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -33,16 +34,19 @@ router.post('/register', async (req, res) => {
     const { username, password, userType } = req.body;
     
     try {
+        // 1. 先加密密码
+        const hashedPwd = await bcrypt.hash(password, 10);
+
         let user;
         switch(userType) {
             case 'organizer':
-                user = new Organizer({ username, password });
+                user = new Organizer({ username, password: hashedPwd });
                 break;
             case 'visitor':
-                user = new Visitor({ username, password });
+                user = new Visitor({ username, password: hashedPwd });
                 break;
             case 'lovedOne':
-                user = new LovedOne({ username, password });
+                user = new LovedOne({ username, password: hashedPwd });
                 break;
             default:
                 return res.status(400).json({ message: '无效的用户类型' });
@@ -79,6 +83,10 @@ router.post('/login', async (req, res) => {
             return res.status(404).json({ message: '用户不存在' });
         }
 
+        console.log('登录用户名:', username, 'userType:', userType);
+        console.log('数据库密码:', user.password);
+        console.log('前端密码:', password);
+
         // 验证密码
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
@@ -87,11 +95,8 @@ router.post('/login', async (req, res) => {
 
         // 生成 token
         const token = jwt.sign(
-            { 
-                userId: user._id,
-                userType: userType 
-            },
-            process.env.JWT_SECRET,
+            { userId: user._id, userType: userType },
+            JWT_SECRET,
             { expiresIn: '24h' }
         );
 
@@ -109,6 +114,7 @@ router.post('/login', async (req, res) => {
             token
         });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ message: '登录失败', error: error.message });
     }
 });
@@ -173,5 +179,27 @@ router.put('/password', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Update failed' });
     }
 });
+
+// JWT 验证中间件
+const auth = (userType) => async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: '未授权' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+
+        // 如果需要特定 userType，则校验
+        if (userType && decoded.userType !== userType) {
+            return res.status(403).json({ message: '权限不足' });
+        }
+
+        next();
+    } catch (error) {
+        res.status(401).json({ message: '无效的token' });
+    }
+};
 
 export default router;

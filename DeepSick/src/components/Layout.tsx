@@ -14,6 +14,8 @@ export default function Layout({ onLogout }) {
   const user = JSON.parse(localStorage.getItem('user')) || {};
   const avatar = user.avatar || defaultAvatar;
   const displayName = user.nickname || user.username || '未登录';
+  const isLoggedIn = !!localStorage.getItem('token');
+  const userType = user.userType; // visitor, organizer, lovedOne
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -34,11 +36,25 @@ export default function Layout({ onLogout }) {
         <div className="nav-left"></div>
         <div className="nav-center">
           <div className="nav-links">
-            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-            <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
-            <Link to="/create-funeral" className={location.pathname === '/create-funeral' ? 'active' : ''}>Funeral Create</Link>
-            <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
-            <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
+            {(userType === 'visitor' || userType === 'organizer') && (
+              <>
+                <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+                <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
+                <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
+                <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
+                {userType === 'organizer' && (
+                  <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
+                )}
+              </>
+            )}
+            {userType === 'lovedOne' && (
+              <>
+                <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
+                <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link>
+              </>
+            )}
+
+           
           </div>
         </div>
         <div className="right-btns">
@@ -52,7 +68,7 @@ export default function Layout({ onLogout }) {
             />
             {menuOpen && (
               <div
-                style={{
+      style={{
                   minWidth: 220,
                   background: '#fff',
                   borderRadius: 16,
@@ -65,8 +81,8 @@ export default function Layout({ onLogout }) {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center'
-                }}
-              >
+      }}
+    >
                 <img
                   src={avatar}
                   alt="avatar"
@@ -105,7 +121,7 @@ export default function Layout({ onLogout }) {
                 >
                   Edit Information
                 </button>
-                <button
+          <button
                   onClick={() => setShowPwdModal(true)}
                   style={{
                     width: '100%',
@@ -124,13 +140,15 @@ export default function Layout({ onLogout }) {
                   onMouseOut={e => (e.target.style.background = '#f3f4f6')}
                 >
                   Change Password
-                </button>
+          </button>
               </div>
             )}
           </div>
           <button className="logout-btn" onClick={onLogout}>Logout</button>
-          <Link to="/dreamlist" className="dreamlist-btn">DreamList</Link>
-        </div>
+          {(userType === 'visitor' || userType === 'organizer') && (
+            <Link to="/dreamlist" className="dreamlist-btn">DreamList</Link>
+          )}
+      </div>
       </nav>
       <main className="main-content">
         <Outlet />

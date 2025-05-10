@@ -52,15 +52,13 @@ export default function RegisterPage() {
       phone = contact;
     }
     try {
-      const response = await API.post('/api/auth/register', {
+      await API.post('/api/auth/register', {
         username: name,
         password,
         userType,
         ...(phone ? { phone } : {}),
         ...(email ? { email } : {})
       });
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      localStorage.setItem('token', response.data.token);
       setSuccess(true);
       setTimeout(() => nav('/login'), 1500);
     } catch (err: any) {
