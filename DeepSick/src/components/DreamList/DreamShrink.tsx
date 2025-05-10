@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DreamList from './DreamList'; // 引入愿望列表组
 import '../DreamList/DreamList.css';// 引入样式文件
-import pokemon from '../../assets/PokemonKirachi.png';
+import pokemon from '../../assets/5IPv.gif';
 
 const DreamShrink = () => {
   const [isShrunk, setIsShrunk] = useState(false); // 控制是否收缩
