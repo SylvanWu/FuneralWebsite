@@ -19,6 +19,7 @@ import WillsPage from './pages/WillsPage';
 import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
 import CreateFuneralPage from './pages/CreateFuneralPage';
+import FuneralRoomPage from './pages/FuneralRoomPage';
 import HallPage from './pages/HallPage';
 
 import InteractivePage from './pages/InteractivePage';
@@ -147,6 +148,7 @@ export default function App() {
           <Route path="/message" element={isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace />} />
           <Route path="/dreamlist" element={<DreamShrink />} />
           <Route path="/create-funeral" element={<CreateFuneralPage />} />
+          <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
           {/* 组织者路由 */}

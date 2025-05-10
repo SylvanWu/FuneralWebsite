@@ -1,5 +1,6 @@
 import React from 'react';
 import { FuneralProvider } from '../context/FuneralContext';
+import { useNavigate } from 'react-router-dom';
 import funeralCreationBg from '../assets/funeral creation.jpg';
 import churchImage from '../assets/funeral type/church funeral.png';
 import gardenImage from '../assets/funeral type/garden funeral.png';
@@ -9,6 +10,28 @@ import starryNightImage from '../assets/funeral type/Starry Night Funeral.png';
 import chineseTraditionalImage from '../assets/funeral type/Chinese traditional funeral.png';
 
 const CreateFuneralPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleFuneralTypeClick = (type: string, image: string) => {
+    // Generate a random 5-digit room number
+    const roomId = Math.floor(10000 + Math.random() * 90000).toString();
+    
+    // Prompt for password
+    const password = window.prompt('Please set a room password:');
+    
+    // If user cancels the prompt, don't proceed
+    if (!password) return;
+    
+    // Navigate to the funeral room with params
+    navigate(`/funeral-room/${roomId}`, {
+      state: {
+        funeralType: type,
+        backgroundImage: image,
+        password
+      }
+    });
+  };
+
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       {/* Header Section */}
@@ -36,7 +59,10 @@ const CreateFuneralPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1: Church Funeral */}
           <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="h-48 bg-gray-300 relative">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('church', churchImage)}
+            >
               <img 
                 src={churchImage} 
                 alt="Church Funeral" 
@@ -46,16 +72,18 @@ const CreateFuneralPage: React.FC = () => {
             <div className="p-6">
               <h3 className="text-xl font-bold mb-2">Church Funeral</h3>
               <p className="text-gray-600">
-              Sunlit stained glass bathes the casket beneath the church’s soaring arches. Gentle organ notes drift over time‑worn pews, carrying quiet farewells.
-
+              Sunlit stained glass bathes the casket beneath the church's soaring arches. Gentle organ notes drift over time‑worn pews, carrying quiet farewells.
               </p>
             </div>
           </div>
           
           {/* Card 2: Garden Funeral */}
           <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="h-48 bg-gray-300 flex items-center justify-center">
-            <img 
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('garden', gardenImage)}
+            >
+              <img 
                 src={gardenImage} 
                 alt="Garden Funeral" 
                 className="w-full h-full object-cover" 
@@ -64,16 +92,18 @@ const CreateFuneralPage: React.FC = () => {
             <div className="p-6">
               <h3 className="text-xl font-bold mb-2">Garden Funeral</h3>
               <p className="text-gray-600">
-              A casket rests beneath open sky, framed by flower‑lined paths and sun‑warmed pillars. Birdsongs and rustling leaves replace church bells, offering a farewell woven with nature’s quiet grace.
-
+              A casket rests beneath open sky, framed by flower‑lined paths and sun‑warmed pillars. Birdsongs and rustling leaves replace church bells, offering a farewell woven with nature's quiet grace.
               </p>
             </div>
           </div>
           
           {/* Card 3: Forest Funeral */}
           <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="h-48 bg-gray-300 flex items-center justify-center">
-            <img 
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('forest', forestImage)}
+            >
+              <img 
                 src={forestImage} 
                 alt="Forest Funeral" 
                 className="w-full h-full object-cover" 
@@ -82,16 +112,18 @@ const CreateFuneralPage: React.FC = () => {
             <div className="p-6">
               <h3 className="text-xl font-bold mb-2">Forest Funeral</h3>
               <p className="text-gray-600">
-              Amid towering trunks and whispering leaves, a simple coffin lies cradled by emerald moss. Nature’s hush becomes the eulogy, as life returns gently to the forest’s eternal cycle.
-
+              Amid towering trunks and whispering leaves, a simple coffin lies cradled by emerald moss. Nature's hush becomes the eulogy, as life returns gently to the forest's eternal cycle.
               </p>
             </div>
           </div>
           
           {/* Card 4: Seaside Funeral */}
           <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="h-48 bg-gray-300 flex items-center justify-center">
-            <img 
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('seaside', seasideImage)}
+            >
+              <img 
                 src={seasideImage} 
                 alt="Seaside Funeral" 
                 className="w-full h-full object-cover" 
@@ -100,16 +132,18 @@ const CreateFuneralPage: React.FC = () => {
             <div className="p-6">
               <h3 className="text-xl font-bold mb-2">Seaside Funeral</h3>
               <p className="text-gray-600">
-              Salt‑tinged winds weave through mourners’ quiet words, while the tide offers its rhythmic benediction. Each retreating wave bears their farewells toward the shimmering horizon, folding sorrow into the sea’s endless embrace.
-
+              Salt‑tinged winds weave through mourners' quiet words, while the tide offers its rhythmic benediction. Each retreating wave bears their farewells toward the shimmering horizon, folding sorrow into the sea's endless embrace.
               </p>
             </div>
           </div>
           
           {/* Card 5: Starry Night Funeral */}
           <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="h-48 bg-gray-300 flex items-center justify-center">
-            <img 
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('starryNight', starryNightImage)}
+            >
+              <img 
                 src={starryNightImage} 
                 alt="Starry Night Funeral" 
                 className="w-full h-full object-cover" 
@@ -118,16 +152,18 @@ const CreateFuneralPage: React.FC = () => {
             <div className="p-6">
               <h3 className="text-xl font-bold mb-2">Starry Night Funeral</h3>
               <p className="text-gray-600">
-              Beneath a tapestry of twinkling stars, quiet headstones rise from dew‑lit grass. Night’s cosmic glow turns every farewell into a wish etched across the sky.
-
+              Beneath a tapestry of twinkling stars, quiet headstones rise from dew‑lit grass. Night's cosmic glow turns every farewell into a wish etched across the sky.
               </p>
             </div>
           </div>
           
           {/* Card 6: Chinese Traditional Funeral */}
           <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="h-48 bg-gray-300 flex items-center justify-center">
-            <img 
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('chineseTraditional', chineseTraditionalImage)}
+            >
+              <img 
                 src={chineseTraditionalImage} 
                 alt="Chinese Traditional Funeral" 
                 className="w-full h-full object-cover" 
@@ -137,7 +173,6 @@ const CreateFuneralPage: React.FC = () => {
               <h3 className="text-xl font-bold mb-2">Chinese Traditional Funeral</h3>
               <p className="text-gray-600">
               Red lanterns sway above incense‑lit altars as joss paper and fruit guide the departed onward. Monastic chants drift, each bow marking a serene farewell.
-
               </p>
             </div>
           </div>
