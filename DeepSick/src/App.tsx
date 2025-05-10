@@ -143,18 +143,7 @@ export default function App() {
           <Route path="/flower" element={isLoggedIn ? <FlowerPage /> : <Navigate to="/login" replace />} />
           <Route path="/message" element={isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace />} />
           <Route path="/dreamlist" element={<DreamShrink />} />
-          <Route
-            path="/create-funeral"
-            element={
-              isLoggedIn ? (
-                <RoleProtected allow={['organizer', 'admin']}>
-                  <CreateFuneralPage />
-                </RoleProtected>
-              ) : (
-                <Navigate to="/login" replace/>
-              )
-            }
-          />
+          <Route path="/create-funeral" element={<CreateFuneralPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace />} />
