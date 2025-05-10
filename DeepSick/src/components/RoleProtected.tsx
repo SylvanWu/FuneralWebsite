@@ -1,12 +1,28 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-type Role = 'visitor' | 'organizer' | 'admin' | 'remembered person';
+type UserType = 'organizer' | 'visitor' | 'lovedOne';
 
 export default function RoleProtected(
-  { allow, children }:
-  { allow: Role[]; children: JSX.Element }
+  { userType, children }:
+  { userType: UserType; children: JSX.Element }
 ) {
-  const role = localStorage.getItem('role') as Role | null;
-  return role && allow.includes(role) ? children : <Navigate to="/" replace />;
+  const userStr = localStorage.getItem('user');
+  let user: any = {};
+  try {
+    user = userStr ? JSON.parse(userStr) : {};
+  } catch {
+    user = {};
+  }
+  console.log('RoleProtected user:', user);
+
+  if (!user.userType) {
+    // 未登录或user丢失
+    return <Navigate to="/login" replace />;
+  }
+  if (user.userType !== userType) {
+    // 已登录但无权限
+    return <Navigate to="/" replace />;
+  }
+  return children;
 }

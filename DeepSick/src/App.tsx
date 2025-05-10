@@ -19,6 +19,7 @@ import WillsPage from './pages/WillsPage';
 import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
 import CreateFuneralPage from './pages/CreateFuneralPage';
+import FuneralRoomPage from './pages/FuneralRoomPage';
 import HallPage from './pages/HallPage';
 
 import InteractivePage from './pages/InteractivePage';
@@ -30,6 +31,9 @@ import DreamList from './components/DreamList/DreamList';
 import DreamShrink from './components/DreamList/DreamShrink';
 
 import ProfilePage from './pages/ProfilePage';
+import OrganizerDashboard from './pages/OrganizerDashboard';
+import VisitorDashboard from './pages/VisitorDashboard';
+import LovedOneDashboard from './pages/LovedOneDashboard';
 
 import './App.css';
 
@@ -62,17 +66,6 @@ export default function App() {
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  useEffect(() => {
-    // 页面关闭或刷新时清除登录信息
-    const handleUnload = () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
-    };
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
   }, []);
 
   // 登录/登出后手动更新 state
@@ -129,7 +122,7 @@ export default function App() {
             path="/wills"
             element={
               isLoggedIn ? (
-                <RoleProtected allow={['organizer', 'admin']}>
+                <RoleProtected allow={['lovedOne']}>
                   <WillsPage />
                 </RoleProtected>
               ) : (
@@ -143,19 +136,40 @@ export default function App() {
           <Route path="/flower" element={isLoggedIn ? <FlowerPage /> : <Navigate to="/login" replace />} />
           <Route path="/message" element={isLoggedIn ? <MessagePage /> : <Navigate to="/login" replace />} />
           <Route path="/dreamlist" element={<DreamShrink />} />
+          <Route path="/create-funeral" element={<CreateFuneralPage />} />
+          <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+
+          {/* 组织者路由 */}
           <Route
-            path="/create-funeral"
+            path="/organizer-dashboard"
             element={
-              isLoggedIn ? (
-                <RoleProtected allow={['organizer', 'admin']}>
-                  <CreateFuneralPage />
-                </RoleProtected>
-              ) : (
-                <Navigate to="/login" replace/>
-              )
+              <RoleProtected userType="organizer">
+                <OrganizerDashboard />
+              </RoleProtected>
             }
           />
-          <Route path="/profile" element={<ProfilePage />} />
+
+          {/* 访客路由 */}
+          <Route
+            path="/visitor-dashboard"
+            element={
+              <RoleProtected userType="visitor">
+                <VisitorDashboard />
+              </RoleProtected>
+            }
+          />
+
+          {/* 亲友路由 */}
+          <Route
+            path="/loved-one-dashboard"
+            element={
+              <RoleProtected userType="lovedOne">
+                <LovedOneDashboard />
+              </RoleProtected>
+            }
+          />
+
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to={isLoggedIn ? "/" : "/login"} replace />} />
         </Route>

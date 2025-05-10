@@ -1,130 +1,194 @@
 import React from 'react';
-import { FuneralProvider, useFuneral } from '../context/FuneralContext';
-import SceneSelection from '../components/SceneSelection';
-import FlowEditor from '../components/FlowEditor';
-import FuneralReview from '../components/FuneralReview';
+import { FuneralProvider } from '../context/FuneralContext';
+import { useNavigate } from 'react-router-dom';
+import funeralCreationBg from '../assets/funeral creation.jpg';
+import churchImage from '../assets/funeral type/church funeral.png';
+import gardenImage from '../assets/funeral type/garden funeral.png';
+import forestImage from '../assets/funeral type/forest funeral.png';
+import seasideImage from '../assets/funeral type/seaside funeral.png';
+import starryNightImage from '../assets/funeral type/Starry Night Funeral.png';
+import chineseTraditionalImage from '../assets/funeral type/Chinese traditional funeral.png';
 
-// Stepper component for navigation
-const Stepper: React.FC = () => {
-  const { state, dispatch } = useFuneral();
-  const { currentStep } = state;
-  
-  const steps = [
-    { id: 'scene-selection', name: 'Scene Selection' },
-    { id: 'flow-editor', name: 'Ceremony Design' },
-    { id: 'review', name: 'Review & Create' }
-  ];
-  
-  const handleStepClick = (step: string) => {
-    dispatch({ type: 'GO_TO_STEP', payload: step as any });
+const CreateFuneralPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleFuneralTypeClick = (type: string, image: string) => {
+    // Generate a random 5-digit room number
+    const roomId = Math.floor(10000 + Math.random() * 90000).toString();
+    
+    // Prompt for password
+    const password = window.prompt('Please set a room password:');
+    
+    // If user cancels the prompt, don't proceed
+    if (!password) return;
+    
+    // Navigate to the funeral room with params
+    navigate(`/funeral-room/${roomId}`, {
+      state: {
+        funeralType: type,
+        backgroundImage: image,
+        password
+      }
+    });
   };
-  
+
   return (
-    <div className="flex items-center justify-center mb-8 hidden">
-      {/* 根据设计图，暂时隐藏步骤导航器 */}
-      <nav className="flex items-center" aria-label="Progress">
-        <ol className="flex items-center space-x-8">
-          {steps.map((step, stepIdx) => (
-            <li key={step.id} className="relative">
-              {currentStep === step.id ? (
-                <div className="flex items-center" aria-current="step">
-                  <span className="absolute flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full -left-4">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </span>
-                  <span className="ml-4 text-sm font-medium text-blue-600">{step.name}</span>
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <span 
-                    className={`absolute flex items-center justify-center w-8 h-8 rounded-full -left-4 cursor-pointer
-                      ${stepIdx < steps.findIndex(s => s.id === currentStep) 
-                        ? 'bg-blue-500 hover:bg-blue-600' 
-                        : 'border-2 border-gray-300 bg-white'
-                      }
-                    `}
-                    onClick={() => {
-                      // Only allow going back to previous steps
-                      if (stepIdx < steps.findIndex(s => s.id === currentStep)) {
-                        handleStepClick(step.id);
-                      }
-                    }}
-                  >
-                    {stepIdx < steps.findIndex(s => s.id === currentStep) ? (
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      <span className="text-gray-500">{stepIdx + 1}</span>
-                    )}
-                  </span>
-                  <span className={`ml-4 text-sm font-medium ${
-                    stepIdx < steps.findIndex(s => s.id === currentStep) 
-                      ? 'text-blue-600'
-                      : 'text-gray-500'
-                  }`}>
-                    {step.name}
-                  </span>
-                </div>
-              )}
-              
-              {stepIdx !== steps.length - 1 && (
-                <div className="absolute top-4 left-4 hidden sm:block -ml-px mt-0.5 h-0.5 w-[calc(100%+1rem)] bg-gray-200" />
-              )}
-            </li>
-          ))}
-        </ol>
-      </nav>
+    <div className="max-w-6xl mx-auto py-8 px-4">
+      {/* Header Section */}
+      <div className="mb-12">
+        
+        {/* Large illustration/banner */}
+        <div className="w-full h-80 rounded-lg overflow-hidden relative mb-8">
+          <img
+            src={funeralCreationBg}
+            alt="Funeral Creation"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center' }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+          </div>
+        </div>
+      </div>
+      
+      {/* Funeral Type Section */}
+      <div className="mb-16">
+        <h2 className="text-3xl font-bold mb-2">Type of funeral</h2>
+        <p className="text-lg text-gray-600 mb-8">Choose your favorite scene</p>
+        
+        {/* Grid of funeral types */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Card 1: Church Funeral */}
+          <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('church', churchImage)}
+            >
+              <img 
+                src={churchImage} 
+                alt="Church Funeral" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">Church Funeral</h3>
+              <p className="text-gray-600">
+              Sunlit stained glass bathes the casket beneath the church's soaring arches. Gentle organ notes drift over time‑worn pews, carrying quiet farewells.
+              </p>
+            </div>
+          </div>
+          
+          {/* Card 2: Garden Funeral */}
+          <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('garden', gardenImage)}
+            >
+              <img 
+                src={gardenImage} 
+                alt="Garden Funeral" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">Garden Funeral</h3>
+              <p className="text-gray-600">
+              A casket rests beneath open sky, framed by flower‑lined paths and sun‑warmed pillars. Birdsongs and rustling leaves replace church bells, offering a farewell woven with nature's quiet grace.
+              </p>
+            </div>
+          </div>
+          
+          {/* Card 3: Forest Funeral */}
+          <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('forest', forestImage)}
+            >
+              <img 
+                src={forestImage} 
+                alt="Forest Funeral" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">Forest Funeral</h3>
+              <p className="text-gray-600">
+              Amid towering trunks and whispering leaves, a simple coffin lies cradled by emerald moss. Nature's hush becomes the eulogy, as life returns gently to the forest's eternal cycle.
+              </p>
+            </div>
+          </div>
+          
+          {/* Card 4: Seaside Funeral */}
+          <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('seaside', seasideImage)}
+            >
+              <img 
+                src={seasideImage} 
+                alt="Seaside Funeral" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">Seaside Funeral</h3>
+              <p className="text-gray-600">
+              Salt‑tinged winds weave through mourners' quiet words, while the tide offers its rhythmic benediction. Each retreating wave bears their farewells toward the shimmering horizon, folding sorrow into the sea's endless embrace.
+              </p>
+            </div>
+          </div>
+          
+          {/* Card 5: Starry Night Funeral */}
+          <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('starryNight', starryNightImage)}
+            >
+              <img 
+                src={starryNightImage} 
+                alt="Starry Night Funeral" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">Starry Night Funeral</h3>
+              <p className="text-gray-600">
+              Beneath a tapestry of twinkling stars, quiet headstones rise from dew‑lit grass. Night's cosmic glow turns every farewell into a wish etched across the sky.
+              </p>
+            </div>
+          </div>
+          
+          {/* Card 6: Chinese Traditional Funeral */}
+          <div className="bg-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div 
+              className="h-48 bg-gray-300 relative cursor-pointer" 
+              onClick={() => handleFuneralTypeClick('chineseTraditional', chineseTraditionalImage)}
+            >
+              <img 
+                src={chineseTraditionalImage} 
+                alt="Chinese Traditional Funeral" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">Chinese Traditional Funeral</h3>
+              <p className="text-gray-600">
+              Red lanterns sway above incense‑lit altars as joss paper and fruit guide the departed onward. Monastic chants drift, each bow marking a serene farewell.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-// Main content based on current step
-const StepContent: React.FC = () => {
-  const { state } = useFuneral();
-  const { currentStep } = state;
-  
-  switch (currentStep) {
-    case 'scene-selection':
-      return <SceneSelection />;
-    case 'flow-editor':
-      return <FlowEditor />;
-    case 'review':
-      return <FuneralReview />;
-    default:
-      return <SceneSelection />;
-  }
-};
-
 // Wrapper component with FuneralProvider
-const CreateFuneralPage: React.FC = () => {
+const WrappedCreateFuneralPage: React.FC = () => {
   return (
     <FuneralProvider>
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold">Funeral Creation</h1>
-          
-          {/* 示意图区域 */}
-          <div className="w-full h-64 my-8 flex items-center justify-center">
-            <svg className="w-full max-w-2xl" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="800" height="200" fill="#f3f4f6" rx="8" />
-              <text x="400" y="100" fontSize="24" textAnchor="middle" fill="#6b7280">Funeral Ceremony Illustration</text>
-              <circle cx="200" cy="100" r="40" fill="#d1d5db" />
-              <circle cx="400" cy="100" r="60" fill="#d1d5db" />
-              <circle cx="600" cy="100" r="40" fill="#d1d5db" />
-            </svg>
-          </div>
-        </div>
-        
-        <Stepper />
-        
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <StepContent />
-        </div>
-      </div>
+      <CreateFuneralPage />
     </FuneralProvider>
   );
 };
 
-export default CreateFuneralPage; 
+export default WrappedCreateFuneralPage; 

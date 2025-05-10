@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { registerUser } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { isValidPhoneNumber } from 'libphonenumber-js';
+import API from "../api";
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [password, setPwd] = useState('');
-  const [role, setRole] = useState<'visitor' | 'organizer'>('visitor');
+  const [userType, setUserType] = useState<'organizer' | 'visitor' | 'lovedOne'>('visitor');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const nav = useNavigate();
@@ -51,15 +52,13 @@ export default function RegisterPage() {
       phone = contact;
     }
     try {
-      const { user, token } = await registerUser({
+      await API.post('/api/auth/register', {
         username: name,
         password,
-        role,
+        userType,
         ...(phone ? { phone } : {}),
         ...(email ? { email } : {})
       });
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
       setSuccess(true);
       setTimeout(() => nav('/login'), 1500);
     } catch (err: any) {
@@ -166,30 +165,31 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* 角色选择区域 */}
+          {/* 用户类型选择区域 */}
           <div className="space-y-3 pt-2">
             {/* <label className="block text-sm font-medium text-gray-700">Select Role</label> */}
             <div className="flex flex-wrap items-center justify-center ">
               {[
                 { label: 'Visitor', value: 'visitor', icon: '👤' },
                 { label: 'Organizer', value: 'organizer', icon: '🏢' },
+                { label: 'Loved One', value: 'lovedOne', icon: '💖' },
               ].map(({ label, value, icon }) => (
               <label 
                 key={value} 
                 className={`
                   inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
                   transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
-                  ${role === value 
+                  ${userType === value 
                     ? 'text-indigo-700 shadow-md' 
                     : 'text-gray-700'}
                 `}
               >
                   <input
                     type="radio"
-                    name="role"
+                    name="userType"
                     value={value}
-                    checked={role === value}
-                    onChange={() => setRole(value as any)}
+                    checked={userType === value}
+                    onChange={() => setUserType(value as any)}
                     className="sr-only" // 隐藏原始单选按钮，使用自定义样式
                   />
                   <span className="text-xl">{icon}</span>
