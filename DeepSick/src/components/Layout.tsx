@@ -36,6 +36,7 @@ export default function Layout({ onLogout }) {
         <div className="nav-left"></div>
         <div className="nav-center">
           <div className="nav-links">
+<<<<<<< HEAD
             {(userType === 'visitor' || userType === 'organizer') && (
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
@@ -53,6 +54,13 @@ export default function Layout({ onLogout }) {
                 <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link>
               </>
             )}
+=======
+            <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+            <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
+            <Link to="/create-funeral" className={location.pathname === '/create-funeral' ? 'active' : ''}>Funeral Create</Link>
+            <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
+            <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
+>>>>>>> 2cfa20e6459b20f88c5558e4b2da05fa2e7cc2bc
           </div>
         </div>
         <div className="right-btns">
