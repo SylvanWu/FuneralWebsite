@@ -83,10 +83,17 @@ export default function RegisterPage() {
 
       {/* 注册卡片 */}
       <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out" 
-           style={{ maxWidth: '550px', minWidth: '320px',backgroundColor: 'rgba(255, 255, 255, 0.5)'}}>
+           style={{ maxWidth: '550px', minWidth: '320px',backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            backdropFilter: 'blur(16px)',                   
+            WebkitBackdropFilter: 'blur(16px)',            
+            borderRadius: '16px',                            
+            overflow: 'hidden',                              
+           }}>
         
         {/* 卡片标题 */}
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800"
+        style={{ paddingBottom: '2vh'}}>
+          
           <span className="relative inline-block pb-2 after:content-[''] after:absolute after:w-1/2 after:h-0.5 after:bg-indigo-500 after:bottom-0 after:left-1/4">
             Create Account
           </span>
@@ -115,7 +122,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 用户名输入框 */}
           <div className="space-y-2">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+            {/* <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label> */}
             <input
               id="username"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
@@ -130,7 +137,7 @@ export default function RegisterPage() {
 
           {/* 联系方式输入框 */}
           <div className="space-y-2">
-            <label htmlFor="contact" className="block text-sm font-medium text-gray-700">Phone Number / Email</label>
+            {/* <label htmlFor="contact" className="block text-sm font-medium text-gray-700">Phone Number / Email</label> */}
             <input
               id="contact"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
@@ -145,7 +152,7 @@ export default function RegisterPage() {
 
           {/* 密码输入框 */}
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label> */}
             <input
               id="password"
               type="password"
@@ -161,22 +168,22 @@ export default function RegisterPage() {
 
           {/* 角色选择区域 */}
           <div className="space-y-3 pt-2">
-            <label className="block text-sm font-medium text-gray-700">Select Role</label>
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-2">
+            {/* <label className="block text-sm font-medium text-gray-700">Select Role</label> */}
+            <div className="flex flex-wrap items-center justify-center ">
               {[
                 { label: 'Visitor', value: 'visitor', icon: '👤' },
                 { label: 'Organizer', value: 'organizer', icon: '🏢' },
               ].map(({ label, value, icon }) => (
-                <label 
-                  key={value} 
-                  className={`
-                    inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg border
-                    transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
-                    ${role === value 
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md' 
-                      : 'border-gray-300 text-gray-700'}
-                  `}
-                >
+              <label 
+                key={value} 
+                className={`
+                  inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
+                  transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
+                  ${role === value 
+                    ? 'text-indigo-700 shadow-md' 
+                    : 'text-gray-700'}
+                `}
+              >
                   <input
                     type="radio"
                     name="role"
@@ -194,19 +201,18 @@ export default function RegisterPage() {
 
           {/* 注册按钮 */}
           <div className="pt-4">
-            <button
-              type="submit"
-              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl 
-                        shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out 
-                        transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50
-                        cursor-pointer"
-            >
+          <button
+            type="submit"
+            className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)'}}
+          >
               Create Account
             </button>
                   {/* Login按钮 */}
       <button
         onClick={() => nav('/login')}
-        className="absolute top-4 right-4 px-5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 text-gray-800 font-medium shadow-lg transition-all duration-300 ease-in-out cursor-pointer z-50"
+        className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+        style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)', marginTop: '2vh'}}
       >
         Login
       </button>
