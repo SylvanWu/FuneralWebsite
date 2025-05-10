@@ -4,7 +4,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../api';
 import API from '../api';
 
-export default function LoginPage({ setToken }) {
+interface LoginPageProps {
+  setToken: (token: string) => void;
+}
+
+export default function LoginPage({ setToken }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,85 +45,72 @@ export default function LoginPage({ setToken }) {
     <div
       className="w-full min-h-screen flex flex-col items-center justify-center"
       style={{
-        backgroundImage: "url('/bg-login.JPG')",
+        backgroundImage: "url('/1.jpg')",
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       }}
     >
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-md rounded-lg shadow-lg p-8 m-8 z-40">
-        <h1 className="text-3xl font-bold text-center mb-6">Sign In</h1>
+      <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out" 
+           style={{ maxWidth: '550px', minWidth: '320px',backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            backdropFilter: 'blur(16px)',                   
+            WebkitBackdropFilter: 'blur(16px)',            
+            borderRadius: '16px',                            
+            overflow: 'hidden',                              
+           }}>
+        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800"
+        style={{ paddingBottom: '2vh'}}>Sign In</h1>
 
         {error && (
           <div
-            style={{
-              color: '#dc2626',
-              background: '#fee2e2',
-              border: '1px solid #fca5a5',
-              borderRadius: 6,
-              padding: '8px 0',
-              textAlign: 'center',
-              fontWeight: 600,
-              marginBottom: 8,
-            }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center font-medium"
           >
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <input
-            className="w-full md:w-1/3 mx-auto px-3 py-2 border rounded placeholder-gray-500/80"
-            placeholder="Username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
-          />
+          <div className="space-y-2">
+            {/* <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label> */}
+            <input
+              id="username"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+              placeholder="Enter your username"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-          <input
-            type="password"
-            className="w-full md:w-1/3 mx-auto px-3 py-2 border rounded placeholder-gray-500/80"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-          />
+          <div className="space-y-2">
+            {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label> */}
+            <input
+              id="password"
+              type="password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+              placeholder="Enter your password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
           <button
             type="submit"
-            style={{
-              width: '100%',
-              padding: '14px 0',
-              background: '#4ade80',
-              color: '#fff',
-              fontSize: 18,
-              fontWeight: 700,
-              border: 'none',
-              borderRadius: 8,
-              marginTop: 12,
-              marginBottom: 8,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px #d1fae5',
-              transition: 'background 0.2s, box-shadow 0.2s',
-            }}
-            onMouseOver={e => (e.target.style.background = '#22c55e')}
-            onMouseOut={e => (e.target.style.background = '#4ade80')}
+            className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)'}}
           >
             Sign In
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-center">
+        <p className="mt-8 text-sm text-center text-gray-600"
+        style={{ paddingTop: '1vh'}}>
           Don&apos;t have an account?{' '}
           <Link
             to="/register"
-            className="text-blue-600 hover:underline font-bold text-lg"
-            style={{
-              backgroundColor: '#e0f2fe',
-              padding: '4px 8px',
-              borderRadius: '4px',
-            }}
+            className="text-green-600 hover:text-green-800 font-medium"
           >
             Register here
           </Link>
