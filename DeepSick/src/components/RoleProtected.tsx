@@ -1,12 +1,12 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-type Role = 'visitor' | 'organizer' | 'admin' | 'remembered person';
+type UserType = 'organizer' | 'visitor' | 'lovedOne';
 
 export default function RoleProtected(
-  { allow, children }:
-  { allow: Role[]; children: JSX.Element }
+  { userType, children }:
+  { userType: UserType; children: JSX.Element }
 ) {
-  const role = localStorage.getItem('role') as Role | null;
-  return role && allow.includes(role) ? children : <Navigate to="/" replace />;
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  return user.userType === userType ? children : <Navigate to="/login" replace />;
 }
