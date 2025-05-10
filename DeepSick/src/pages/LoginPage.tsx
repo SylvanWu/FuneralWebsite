@@ -16,13 +16,9 @@ export default function LoginPage({ setToken }: LoginPageProps) {
   const [userType, setUserType] = useState<'organizer' | 'visitor' | 'lovedOne'>('visitor');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log('Login form submitted');
     e.preventDefault();
     setError('');
-    if (!username.trim() || !password) {
-      setError('Username and password are required');
-      return;
-    }
+    
     try {
       const response = await API.post('/api/auth/login', {
         username,
@@ -34,16 +30,14 @@ export default function LoginPage({ setToken }: LoginPageProps) {
       localStorage.setItem('user', JSON.stringify(response.data.user));
       localStorage.setItem('token', response.data.token);
       
-      // 根据用户类型跳转到不同页面
+      // 根据用户类型跳转
       switch(response.data.user.userType) {
         case 'organizer':
-          navigate('/organizer-dashboard');
-          break;
         case 'visitor':
-          navigate('/visitor-dashboard');
+          navigate('/');
           break;
         case 'lovedOne':
-          navigate('/loved-one-dashboard');
+          navigate('/loved-one-dashboard/wills');
           break;
       }
     } catch (err: any) {
@@ -51,11 +45,17 @@ export default function LoginPage({ setToken }: LoginPageProps) {
     }
   };
 
-  // useEffect(() => {
-  //   if (localStorage.getItem('token')) {
-  //     navigate('/');
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (localStorage.getItem('token') && userStr) {
+      const user = JSON.parse(userStr);
+      if (user.userType === 'lovedOne') {
+        navigate('/loved-one-dashboard/wills');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [navigate]);
 
   console.log('HomePage loaded');
 

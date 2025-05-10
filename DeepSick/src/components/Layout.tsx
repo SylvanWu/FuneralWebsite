@@ -36,25 +36,27 @@ export default function Layout({ onLogout }) {
         <div className="nav-left"></div>
         <div className="nav-center">
           <div className="nav-links">
-            {(userType === 'visitor' || userType === 'organizer') && (
+            {userType === 'lovedOne' ? (
+              <>
+                <Link to="/loved-one-dashboard/wills">Wills</Link>
+                <Link to="/loved-one-dashboard/dreamlist">DreamList</Link>
+              </>
+            ) : userType === 'organizer' ? (
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
                 <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
                 <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
                 <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
-                {userType === 'organizer' && (
-                  <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
-                )}
+                <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
               </>
-            )}
-            {userType === 'lovedOne' && (
+            ) : (
               <>
-                <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
-                <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link>
+                <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+                <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
+                <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
+                <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
               </>
             )}
-
-           
           </div>
         </div>
         <div className="right-btns">
@@ -145,9 +147,6 @@ export default function Layout({ onLogout }) {
             )}
           </div>
           <button className="logout-btn" onClick={onLogout}>Logout</button>
-          {(userType === 'visitor' || userType === 'organizer') && (
-            <Link to="/dreamlist" className="dreamlist-btn">DreamList</Link>
-          )}
       </div>
       </nav>
       <main className="main-content">
