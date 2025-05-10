@@ -14,11 +14,10 @@ interface Dream {
   };
 }
 
-interface DreamListProps {
-  onShrink: () => void; // 用于切换收缩状态的函数
-}
 
-export function DreamList({ onShrink }: DreamListProps) {
+
+// export function DreamList({ onShrink }: DreamListProps) {
+export function DreamList() {
   // 状态管理梦想列表
   const [dreams, setDreams] = useState<Dream[]>([]);
   // 用户输入的愿望内容
@@ -99,65 +98,48 @@ export function DreamList({ onShrink }: DreamListProps) {
   }
 
   return (
-    <DreamCard>
-
-      <button className="shrink-button" onClick={onShrink}>
-        -
-      </button>
-
-      <div>
-        <h1 className="dream-list-title">Wish List</h1>
-        <div className="dream-list-content">
-
-          {/* 显示梦想列表 */}
-          <div className="dream-list-content">
-            {dreams.map(dream => (
-              <div key={dream._id} className="dream-item">
-                <span>{dream.content}</span>
-
-                <div className="dream-actions">
-                  <button className="edit-button">Edit</button>
-                  <button className="delete-button" onClick={() => handleDelete(dream._id)}>Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 条件渲染输入框 */}
-          {showInput && (
-            <div className="input-container">
-              <input
-                type="text"
-                value={newDreamContent}
-                onChange={(e) => setNewDreamContent(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Please input your wish"
-                className="dream-input"
-                autoFocus // 自动聚焦
-              />
-
-              <button
-                className="canceladd-button"
-                onClick={() => {
-                  setShowInput(false);
-                  setNewDreamContent('');
-                }}
-              >
-                ✕
-              </button>
+    <div>
+      <h1 className="dream-list-title">Wish List</h1>
+      <div className="dream-list-content">
+        {/* 显示愿望清单 */}
+        {dreams.map(dream => (
+          <div key={dream._id} className="dream-item">
+            <span>{dream.content}</span>
+            <div className="dream-actions">
+              <button className="edit-button">Edit</button>
+              <button className="delete-button" onClick={() => handleDelete(dream._id)}>Delete</button>
             </div>
-          )}
-          <button
-            className="add-button"
-            onClick={handleAddDream}
-          >
-            {showInput ? '✓' : '+'}
-          </button>
-
-        </div>
+          </div>
+        ))}
+        {/* 输入框与添加按钮 */}
+        {showInput && (
+          <div className="input-container">
+            <input
+              type="text"
+              value={newDreamContent}
+              onChange={(e) => setNewDreamContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Please input your wish"
+              className="dream-input"
+              autoFocus
+            />
+            <button
+              className="canceladd-button"
+              onClick={() => {
+                setShowInput(false);
+                setNewDreamContent('');
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        <button className="add-button" onClick={handleAddDream}>
+          {showInput ? '✓' : '+'}
+        </button>
       </div>
-    </DreamCard>
-  )
+    </div>
+  );
 }
 
 export default DreamList;
