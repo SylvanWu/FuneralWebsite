@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { DreamCard } from './DreamCard';
 import '../DreamList/DreamList.css';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 导入 useNavigate 用于路由跳转
 
 // 新增接口定义
 interface Dream {
@@ -24,6 +25,15 @@ export function DreamList() {
   const [newDreamContent, setNewDreamContent] = useState<string>('');
   // 新增状态控制输入框显示
   const [showInput, setShowInput] = useState<boolean>(false);
+
+  const navigate = useNavigate(); // 初始化 navigate
+
+  // 编辑按钮点击事件
+  const handleEdit = (dreamId: string) => {
+    // 跳转到编辑页面，并传递dream的id
+    navigate(`/dreamlist/edit/${dreamId}`);
+  };
+
 
   // 新增：创建新梦想的函数
   //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams`的网址写法 基于env。
@@ -106,7 +116,8 @@ export function DreamList() {
           <div key={dream._id} className="dream-item">
             <span>{dream.content}</span>
             <div className="dream-actions">
-              <button className="edit-button">Edit</button>
+
+              {/* <button className="edit-button">Edit</button> */}
               <button className="delete-button" onClick={() => handleDelete(dream._id)}>Delete</button>
             </div>
           </div>
@@ -134,6 +145,9 @@ export function DreamList() {
             </button>
           </div>
         )}
+        <button className="edit-toggle-button" onClick={() => navigate('/dreamlist/edit')}>
+          🖉
+        </button>
         <button className="add-button" onClick={handleAddDream}>
           {showInput ? '✓' : '+'}
         </button>

@@ -267,3 +267,30 @@
 .dream-card.shrunk::after {
   display: none;
 }
+
+/* 编辑按钮 */
+.edit-toggle-button {
+  position: absolute;
+  right: 20px;
+  /* 比 add-button 更靠左 */
+  bottom: -30px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #60a5fa;
+  /* 蓝色调 */
+  color: white;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.edit-toggle-button:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}

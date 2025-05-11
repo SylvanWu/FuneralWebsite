@@ -34,6 +34,7 @@ import ProfilePage from './pages/ProfilePage';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
 // import LovedOneDashboard from './pages/LovedOneDashboard';
+import DreamEditor from './components/DreamList/DreamEditor';  // 编辑页面组件
 
 import './App.css';
 
@@ -130,12 +131,22 @@ export default function App() {
           />
         </Route>
 
+        <Route
+          path="/dreamlist/edit"
+          element={
+            <RoleProtected userType="organizer">
+              <DreamEditor />
+            </RoleProtected>
+          }
+        />
+
+
         {/* Visitor Dashboard */}
         <Route path="/visitor-dashboard" element={<VisitorDashboard />} />
 
         {/* Organizer Dashboard */}
         <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
       </Routes>
-    </div>
+    </div >
   );
 }
