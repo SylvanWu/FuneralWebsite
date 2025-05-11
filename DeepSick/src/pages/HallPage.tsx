@@ -101,7 +101,7 @@ const HallPage: React.FC = () => {
         {/* 左侧图片 */}
         <div className="hall-image-container">
           <img
-            src="/image.png"
+            src="/photo2.png"
             alt="Digital Memorial Hall"
             className="hall-image"
           />
