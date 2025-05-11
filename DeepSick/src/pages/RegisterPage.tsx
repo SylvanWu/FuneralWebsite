@@ -1,7 +1,7 @@
 // ✅ RegisterPage.tsx
 import React, { useEffect, useState } from 'react';
 import { registerUser } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import API from "../api";
 
@@ -208,13 +208,17 @@ export default function RegisterPage() {
               Create Account
             </button>
                   {/* Login按钮 */}
-      <button
-        onClick={() => nav('/login')}
-        className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-        style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)', marginTop: '2vh'}}
-      >
-        Login
-          </button>
+
+          <p className="mt-8 text-sm text-center text-gray-600"
+        style={{ paddingTop: '1vh'}}>
+          Already have an account?{' '}
+          <Link
+            to="/login"
+            className="text-green-600 hover:text-green-800 font-medium"
+          >
+            Login here
+          </Link>
+        </p>
           </div>
         </form>
       </div>
