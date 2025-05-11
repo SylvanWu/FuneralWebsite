@@ -119,9 +119,13 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
 };
 
 // Update canvas items only
-export const updateCanvasItems = async (roomId: string, canvasItems: CanvasItem[]): Promise<boolean> => {
+export const updateCanvasItems = async (roomId: string, canvasItems: CanvasItem[], password?: string): Promise<boolean> => {
   try {
-    await axios.patch(`${API_URL}/room/${roomId}/canvas`, { canvasItems });
+    const url = password 
+      ? `${API_URL}/room/${roomId}/canvas?password=${encodeURIComponent(password)}`
+      : `${API_URL}/room/${roomId}/canvas`;
+    
+    await axios.patch(url, { canvasItems });
     return true;
   } catch (error) {
     console.error('Error updating canvas items:', error);

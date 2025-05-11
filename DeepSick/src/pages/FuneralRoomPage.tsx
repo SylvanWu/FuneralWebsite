@@ -197,8 +197,11 @@ const FuneralRoomPage: React.FC = () => {
       
       setIsLoading(true);
       try {
+        // Get password from location state if available
+        const initialPassword = locationState?.password || '';
+        
         // Get funeral room data from the MongoDB API
-        const roomData = await getFuneralRoomById(roomId);
+        const roomData = await getFuneralRoomById(roomId, initialPassword);
         
         if (roomData) {
           // Update state with room data
@@ -227,7 +230,7 @@ const FuneralRoomPage: React.FC = () => {
     };
     
     loadFuneralRoom();
-  }, [roomId]);
+  }, [roomId, locationState]);
   
   // Load background image on mount
   useEffect(() => {
@@ -351,7 +354,14 @@ const FuneralRoomPage: React.FC = () => {
       // Save to database
       if (roomId) {
         console.log('Saving to database...');
-        const updatedRoom: FuneralRoom = {
+        // Get current funeral room data with password if possible
+        const existingRoom = await getFuneralRoomById(roomId, state.password);
+        
+        const updatedRoom: FuneralRoom = existingRoom ? {
+          ...existingRoom,
+          deceasedImage: croppedImage,
+          updatedAt: Date.now(),
+        } : {
           roomId,
           password: state.password,
           deceasedName: state.name,
@@ -447,8 +457,8 @@ const FuneralRoomPage: React.FC = () => {
     if (!roomId) return;
     
     try {
-      // Use the new MongoDB API to update canvas items
-      const success = await updateCanvasItems(roomId, items);
+      // Use the new MongoDB API to update canvas items with password
+      const success = await updateCanvasItems(roomId, items, state.password);
       
       if (success) {
         console.log('Auto-saved funeral room with updated items');
@@ -458,7 +468,7 @@ const FuneralRoomPage: React.FC = () => {
     } catch (error) {
       console.error('Error auto-saving funeral room:', error);
     }
-  }, [roomId]);
+  }, [roomId, state.password]);
   
   // Function to remove a selected item
   const handleRemoveSelectedItem = useCallback(() => {
@@ -496,8 +506,8 @@ const FuneralRoomPage: React.FC = () => {
     setSaveMessage('');
     
     try {
-      // Get current funeral room data
-      const funeralRoom = await getFuneralRoomById(roomId);
+      // Get current funeral room data with password
+      const funeralRoom = await getFuneralRoomById(roomId, state.password);
       
       if (funeralRoom) {
         // Update with all current state

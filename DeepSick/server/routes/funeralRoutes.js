@@ -289,6 +289,7 @@ router.post('/room', async(req, res) => {
 router.patch('/room/:roomId/canvas', async(req, res) => {
     try {
         const { roomId } = req.params;
+        const { password } = req.query;
         const { canvasItems } = req.body;
 
         if (!canvasItems) {
@@ -305,6 +306,11 @@ router.patch('/room/:roomId/canvas', async(req, res) => {
 
         if (!funeral) {
             return res.status(404).json({ message: 'Funeral room not found' });
+        }
+
+        // Check password if it exists
+        if (funeral.password && funeral.password !== password) {
+            return res.status(403).json({ message: 'Invalid password' });
         }
 
         funeral.canvasItems = canvasItems;
