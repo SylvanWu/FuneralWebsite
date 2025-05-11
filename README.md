@@ -1,10 +1,10 @@
 # CS732 project - Team DeepSick
 
-can2 test test test
+# Digital Memorial Hall
 
-Welcome to the CS732 project. We look forward to seeing the amazing things you create this semester! This is your team's repository.
+The Digital Memorial Hall is a full-stack project that allows users to upload and view images, videos, and text memories to commemorate the deceased.
 
-Your team members are:
+## Team Members
 - XingYuan Zhou _(xzho158@aucklanduni.ac.nz)_
 - Weijing Zhang _(wzha211@aucklanduni.ac.nz)_
 - Haoran Li _(hli598@aucklanduni.ac.nz)_
@@ -12,8 +12,72 @@ Your team members are:
 - Huiyu Zhang _(hzha635@aucklanduni.ac.nz)_
 - Can Zhao _(czha564@aucklanduni.ac.nz)_
 
-You have complete control over how you run this repo. All your members will have admin access. The only thing setup by default is branch protections on `main`, requiring a PR with at least one code reviewer to modify `main` rather than direct pushes.
+## Tech Stack
 
-Please use good version control practices, such as feature branching, both to make it easier for markers to see your group's history and to lower the chances of you tripping over each other during development
+- Frontend: React, TypeScript, TailwindCSS
+- Backend: Express.js, MongoDB, Mongoose
+- File Handling: Multer
 
-![](./DeepSick.png)
+## Features
+
+- Upload images, videos, or text as memories
+- All memories displayed in reverse chronological order on a timeline
+- Each memory includes uploader name, upload time, and content
+- Delete memories with a confirmation prompt
+- Hover over memories to see the delete button
+
+## Installation and Setup
+
+### Prerequisites
+
+- Node.js (v16+)
+- MongoDB (local or remote)
+
+### Installation Steps
+
+1. Clone the project
+
+```bash
+git clone <repository-url>
+cd digital-memorial-hall
+```
+
+2. Install dependencies
+
+```bash
+npm install
+npm install socket.io-client
+```
+
+3. Configure environment variables
+
+Create a file named `.env` and add the following content:
+
+```
+MONGO_URI=mongodb://localhost:27017/memorial
+PORT=5000
+```
+
+4. Start the application
+
+```bash
+# Start the frontend development server
+npm run dev
+
+# In another terminal, start the backend server
+npm run dev:server
+```
+
+The application will run on http://localhost:5173 (frontend) and http://localhost:5000 (backend API).
+
+## API Endpoints
+
+- `GET /memories` - Get all memories in reverse chronological order
+- `POST /memories` - Create a new memory
+- `DELETE /memories/:id` - Delete a specific memory by ID
+
+## Contribution
+
+Pull requests and Issues are welcome to improve this project.
+
+![](./DeepSick.png) 
