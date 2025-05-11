@@ -33,7 +33,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
       // 根据用户类型跳转
       switch(response.data.user.userType) {
         case 'organizer':
-          navigate('/');
+          navigate('/organizer-dashboard');
           break;
         case 'visitor':
           navigate('/visitor-dashboard');
