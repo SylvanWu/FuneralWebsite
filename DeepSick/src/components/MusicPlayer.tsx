@@ -1,26 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './MusicPlayer.css';
 
 interface MusicPlayerProps {
   className?: string;
 }
 
+type PlayMode = 'sequence' | 'single' | 'random';
+
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
-  const [isRandom, setIsRandom] = useState(false);
+  const [playMode, setPlayMode] = useState<PlayMode>('sequence');
   const [playlist, setPlaylist] = useState<File[]>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
+      audioRef.current.playbackRate = playbackRate;
     }
-  }, [volume]);
+  }, [volume, playbackRate]);
 
   useEffect(() => {
     if (playlist.length > 0 && audioRef.current) {
@@ -29,8 +35,26 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
         audioRef.current.play();
       }
     }
-    // eslint-disable-next-line
   }, [currentTrackIndex, playlist]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        handlePlayPause();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        handleSeek({ target: { value: String(Math.max(0, currentTime - 5)) } } as any);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        handleSeek({ target: { value: String(Math.min(duration, currentTime + 5)) } } as any);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentTime, duration]);
 
   const handlePlayPause = () => {
     if (audioRef.current) {
@@ -78,7 +102,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
     if (playlist.length === 0) return;
     
     let nextIndex;
-    if (isRandom) {
+    if (playMode === 'random') {
       nextIndex = Math.floor(Math.random() * playlist.length);
     } else {
       nextIndex = (currentTrackIndex + 1) % playlist.length;
@@ -92,7 +116,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
     if (playlist.length === 0) return;
     
     let prevIndex;
-    if (isRandom) {
+    if (playMode === 'random') {
       prevIndex = Math.floor(Math.random() * playlist.length);
     } else {
       prevIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
@@ -107,29 +131,87 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
     setIsPlaying(true);
   };
 
+  const handleRemoveTrack = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPlaylist(prev => prev.filter((_, i) => i !== index));
+    if (index === currentTrackIndex) {
+      setCurrentTrackIndex(0);
+    } else if (index < currentTrackIndex) {
+      setCurrentTrackIndex(prev => prev - 1);
+    }
+  };
+
+  const handleDragStart = (index: number) => {
+    setIsDragging(true);
+    setCurrentTrackIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const draggedIndex = currentTrackIndex;
+    if (draggedIndex === targetIndex) return;
+    
+    const newPlaylist = [...playlist];
+    const [draggedItem] = newPlaylist.splice(draggedIndex, 1);
+    newPlaylist.splice(targetIndex, 0, draggedItem);
+    
+    setPlaylist(newPlaylist);
+    setCurrentTrackIndex(targetIndex);
+  };
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const getPlayModeIcon = () => {
+    switch (playMode) {
+      case 'sequence':
+        return '🔁';
+      case 'single':
+        return '🔂';
+      case 'random':
+        return '🔀';
+      default:
+        return '🔁';
+    }
+  };
+
   return (
     <div className={`music-player ${className || ''}`}>
+      <div className="player-header">
+        <h3>Music Player</h3>
+      </div>
+
       <div className="player-controls">
         <button onClick={handlePrevious} className="control-button">
           ⏮️
         </button>
-        <button onClick={handlePlayPause} className="control-button">
+        <button onClick={handlePlayPause} className="control-button play-button">
           {isPlaying ? '⏸️' : '▶️'}
         </button>
         <button onClick={handleNext} className="control-button">
           ⏭️
         </button>
         <button 
-          onClick={() => setIsRandom(!isRandom)} 
-          className={`control-button ${isRandom ? 'active' : ''}`}
+          onClick={() => setPlayMode(prev => 
+            prev === 'sequence' ? 'single' : 
+            prev === 'single' ? 'random' : 'sequence'
+          )} 
+          className={`control-button ${playMode !== 'sequence' ? 'active' : ''}`}
+          title={`Play Mode: ${
+            playMode === 'sequence' ? 'Sequence' :
+            playMode === 'single' ? 'Single' : 'Random'
+          }`}
         >
-          🔀
+          {getPlayModeIcon()}
         </button>
       </div>
 
@@ -146,17 +228,35 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
         <span className="time">{formatTime(duration)}</span>
       </div>
 
-      <div className="volume-control">
-        <span>🔈</span>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={volume}
-          onChange={handleVolumeChange}
-          className="volume"
-        />
+      <div className="player-settings">
+        <div className="volume-control">
+          <span>🔈</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={volume}
+            onChange={handleVolumeChange}
+            className="volume"
+          />
+        </div>
+
+        <div className="playback-rate">
+          <span>⏱️</span>
+          <select
+            value={playbackRate}
+            onChange={(e) => setPlaybackRate(Number(e.target.value))}
+            className="rate-select"
+          >
+            <option value={0.5}>0.5x</option>
+            <option value={0.75}>0.75x</option>
+            <option value={1}>1x</option>
+            <option value={1.25}>1.25x</option>
+            <option value={1.5}>1.5x</option>
+            <option value={2}>2x</option>
+          </select>
+        </div>
       </div>
 
       <div className="upload-section">
@@ -172,22 +272,33 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
           onClick={() => fileInputRef.current?.click()}
           className="upload-button"
         >
-          上传音乐
+          Upload Music
         </button>
       </div>
 
-      {/* 音乐列表 */}
       {playlist.length > 0 && (
         <div className="playlist-section">
+          <h4>Playlist</h4>
           <ul className="playlist-list">
             {playlist.map((file, idx) => (
               <li
                 key={idx}
                 className={`playlist-item${idx === currentTrackIndex ? ' active' : ''}`}
                 onClick={() => handleSelectTrack(idx)}
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, idx)}
                 title={file.name}
               >
-                {idx === currentTrackIndex ? '▶️ ' : ''}{file.name}
+                <span className="track-number">{idx + 1}</span>
+                <span className="track-name">{file.name}</span>
+                <button
+                  className="remove-track"
+                  onClick={(e) => handleRemoveTrack(idx, e)}
+                >
+                  ✕
+                </button>
               </li>
             ))}
           </ul>
@@ -198,7 +309,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={handleNext}
+        onEnded={() => {
+          if (playMode === 'single') {
+            audioRef.current?.play();
+          } else {
+            handleNext();
+          }
+        }}
       />
     </div>
   );
