@@ -1,6 +1,3 @@
-// src/pages/InteractivePage.tsx
-// Interactive page: hero image + basic info + three interaction cards
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SharedCanvas from '../components/SharedCanvas';
@@ -76,4 +73,4 @@ const InteractivePage: React.FC = () => {
   );
 };
 
-export default InteractivePage;
+export default InteractivePage; 

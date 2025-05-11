@@ -1,0 +1,145 @@
+.music-player {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.player-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.control-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.control-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.control-button.active {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.progress {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  background: #ddd;
+  border-radius: 2px;
+  outline: none;
+}
+
+.progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #5c3d2e;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.time {
+  font-size: 12px;
+  color: #666;
+  min-width: 40px;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.volume {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  background: #ddd;
+  border-radius: 2px;
+  outline: none;
+}
+
+.volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #5c3d2e;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.upload-section {
+  text-align: center;
+}
+
+.upload-button {
+  background: #5c3d2e;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.upload-button:hover {
+  background: #e07a5f;
+}
+
+.playlist-section {
+  margin: 18px 0 0 0;
+  padding: 0 10px;
+}
+
+.playlist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.playlist-item {
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  color: #5c3d2e;
+  font-size: 15px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-item:hover {
+  background: #f5e6de;
+}
+
+.playlist-item.active {
+  background: #e07a5f;
+  color: #fff;
+  font-weight: bold;
+} 
