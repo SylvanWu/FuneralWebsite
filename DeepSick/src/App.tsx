@@ -27,13 +27,13 @@ import CandlePage from './pages/CandlePage';
 import FlowerPage from './pages/FlowerPage';
 import MessagePage from './pages/MessagePage';
 
-import DreamList from './components/DreamList/DreamList';
+// import DreamList from './components/DreamList/DreamList';
 import DreamShrink from './components/DreamList/DreamShrink';
 
 import ProfilePage from './pages/ProfilePage';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
-import LovedOneDashboard from './pages/LovedOneDashboard';
+// import LovedOneDashboard from './pages/LovedOneDashboard';
 
 import './App.css';
 
@@ -98,7 +98,7 @@ export default function App() {
           <Route path="/create-funeral" element={<CreateFuneralPage />} />
           <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          
+
           {/* Room 占位页面 */}
           <Route path="/room" element={<div className="p-8 text-center">
             <h1 className="text-2xl font-bold mb-4">Room</h1>
@@ -124,7 +124,7 @@ export default function App() {
             path="/dreamlist"
             element={
               <RoleProtected userType="organizer">
-                <DreamList />
+                <DreamShrink />
               </RoleProtected>
             }
           />
