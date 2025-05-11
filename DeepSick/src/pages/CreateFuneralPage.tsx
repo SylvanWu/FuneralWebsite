@@ -23,9 +23,6 @@ const funeralTypeImages = {
 
 const CreateFuneralPage: React.FC = () => {
   const navigate = useNavigate();
-  // State for deceased person's image
-  const [deceasedImage, setDeceasedImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Log image paths on component mount
   useEffect(() => {
@@ -34,22 +31,6 @@ const CreateFuneralPage: React.FC = () => {
     console.log('Forest Image Path:', forestImage);
     console.log('All funeral image paths:', funeralTypeImages);
   }, []);
-
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Create a FileReader to read the image file
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      // Store the image as base64 string
-      if (event.target?.result) {
-        setDeceasedImage(event.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
 
   // Handle funeral type selection and pass the selected type and image to funeral room page
   const handleFuneralTypeClick = (type: string, image: string) => {
@@ -75,7 +56,6 @@ const CreateFuneralPage: React.FC = () => {
       deceasedName: name,
       funeralType: type,
       backgroundImage: image,
-      deceasedImage: deceasedImage || undefined,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -87,10 +67,9 @@ const CreateFuneralPage: React.FC = () => {
     navigate(`/funeral-room/${roomId}`, {
       state: {
         funeralType: type,
-        backgroundImage: image, // Pass the background image corresponding to the funeral type
+        backgroundImage: image,
         password,
         name,
-        deceasedImage: deceasedImage || undefined,
       }
     });
   };
@@ -98,10 +77,6 @@ const CreateFuneralPage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       {/* Header Section */}
-
-      
-      {/* Deceased Person Image Upload */}
-      <div className="mb-12 bg-white rounded-lg p-6 shadow-md">
       <div className="mb-12">
         
         {/* Large illustration/banner */}
@@ -117,52 +92,6 @@ const CreateFuneralPage: React.FC = () => {
           />
           <div className="absolute inset-0 flex items-center justify-center">
           </div>
-        </div>
-      </div>
-        <h2 className="text-3xl font-bold mb-2">Upload Image of the Deceased</h2>
-        <p className="text-lg text-gray-600 mb-4">
-          Upload a photo to remember your loved one
-        </p>
-        
-        <div className="flex items-center">
-          {/* Preview the uploaded image */}
-          {deceasedImage && (
-            <div className="mr-6">
-              <img 
-                src={deceasedImage} 
-                alt="Deceased" 
-                className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300" 
-              />
-            </div>
-          )}
-                    {/* Upload button */}
-          <div className="flex items-center justify-center">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              ref={fileInputRef}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center"
-              
-            >
-              {deceasedImage ? 'Change Image' : 'Upload Image'}
-            </button>
-            
-            {deceasedImage && (
-              <button
-                onClick={() => setDeceasedImage(null)}
-                className="ml-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-              >
-                Remove
-              </button>
-            )}
-          </div>
-          
-
         </div>
       </div>
       
