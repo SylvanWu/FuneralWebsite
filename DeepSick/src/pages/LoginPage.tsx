@@ -33,11 +33,13 @@ export default function LoginPage({ setToken }: LoginPageProps) {
       // 根据用户类型跳转
       switch(response.data.user.userType) {
         case 'organizer':
+          navigate('/');
+          break;
         case 'visitor':
           navigate('/');
           break;
         case 'lovedOne':
-          navigate('/loved-one-dashboard/wills');
+          navigate('/');
           break;
       }
     } catch (err: any) {
@@ -63,7 +65,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
     <div
       className="w-full min-h-screen flex flex-col items-center justify-center"
       style={{
-        backgroundImage: "url('/1.jpg')",
+        backgroundImage: "url('/login.png')",
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',

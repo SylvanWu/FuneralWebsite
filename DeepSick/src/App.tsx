@@ -89,19 +89,6 @@ export default function App() {
           {/* 首页 */}
           <Route path="/" element={<HomePage />} />
 
-          {/* Loved One Dashboard 及其子路由 */}
-          <Route
-            path="/loved-one-dashboard"
-            element={
-              <RoleProtected userType="lovedOne">
-                <LovedOneDashboard />
-              </RoleProtected>
-            }
-          >
-            <Route path="wills" element={<WillsPage />} />
-            <Route path="dreamlist" element={<DreamList />} />
-          </Route>
-
           {/* 其他公共页面 */}
           <Route path="/hall" element={<HallPage />} />
           <Route path="/interactive" element={<InteractivePage />} />
@@ -123,6 +110,10 @@ export default function App() {
             <h1 className="text-2xl font-bold mb-4">Admin</h1>
             <p className="text-gray-600">This page is under construction.</p>
           </div>} />
+
+          {/* Wills 和 DreamList 页面 */}
+          <Route path="/wills" element={<WillsPage />} />
+          <Route path="/dreamlist" element={<DreamList />} />
         </Route>
       </Routes>
     </div>

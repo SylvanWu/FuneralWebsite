@@ -36,18 +36,15 @@ export default function Layout({ onLogout }) {
         <div className="nav-left"></div>
         <div className="nav-center">
           <div className="nav-links">
-            {userType === 'lovedOne' ? (
-              <>
-                <Link to="/loved-one-dashboard/wills">Wills</Link>
-                <Link to="/loved-one-dashboard/dreamlist">DreamList</Link>
-              </>
-            ) : userType === 'organizer' ? (
+            {userType === 'organizer' ? (
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
                 <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
                 <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
                 <Link to="/create-funeral" className={location.pathname === '/create-funeral' ? 'active' : ''}>Room</Link>
                 <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
+                <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
+                <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link>
               </>
             ) : (
               <>

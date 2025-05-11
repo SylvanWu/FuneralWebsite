@@ -70,7 +70,7 @@ export default function RegisterPage() {
     <div
       className="w-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-100 p-4 md:p-0"
       style={{
-        backgroundImage: "url('/1.jpg')",
+        backgroundImage: "url('/register.png')",
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
