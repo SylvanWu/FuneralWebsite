@@ -26,12 +26,52 @@ const stepSchema = new mongoose.Schema({
     }
 });
 
+// Canvas item schema for funeral room decorations
+const canvasItemSchema = new mongoose.Schema({
+    id: {
+        type: String,
+        required: true
+    },
+    x: {
+        type: Number,
+        required: true
+    },
+    y: {
+        type: Number,
+        required: true
+    },
+    width: {
+        type: Number,
+        required: true
+    },
+    height: {
+        type: Number,
+        required: true
+    },
+    color: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    image: {
+        type: String
+    }
+});
+
 // Main Funeral schema
 const funeralSchema = new mongoose.Schema({
     organizerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    // Add stringId field to store non-ObjectId roomIds
+    stringId: {
+        type: String,
+        index: true
     },
     title: {
         type: String,
@@ -47,9 +87,30 @@ const funeralSchema = new mongoose.Schema({
             'Forest Funeral',
             'Seaside Funeral',
             'Starry Night Funeral',
-            'Chinese Traditional Funeral'
+            'Chinese Traditional Funeral',
+            // Frontend keys for mapping
+            'church',
+            'garden',
+            'forest',
+            'seaside',
+            'starryNight',
+            'chineseTraditional'
         ]
     },
+    deceasedName: {
+        type: String,
+        trim: true
+    },
+    deceasedImage: {
+        type: String
+    },
+    backgroundImage: {
+        type: String
+    },
+    password: {
+        type: String
+    },
+    canvasItems: [canvasItemSchema],
     ceremonySteps: [stepSchema]
 }, {
     timestamps: true

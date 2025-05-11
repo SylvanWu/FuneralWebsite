@@ -1,7 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useReducer } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Stage, Layer, Rect, Text, Image as KonvaImage } from 'react-konva';
-import { saveFuneralRoom, getFuneralRoomById, FuneralRoom } from '../services/funeralRoomDatabase';
+import { 
+  FuneralRoom, 
+  getFuneralRoomById, 
+  saveFuneralRoom, 
+  updateCanvasItems 
+} from '../services/funeralRoomDatabase';
 import DeceasedImage from '../components/DeceasedImage';
 import Cropper from 'react-easy-crop';
 
@@ -125,17 +130,35 @@ const FuneralRoomPage: React.FC = () => {
     backgroundImage: string;
     password: string;
     name: string;
+    canvasItems?: CanvasItem[];
   } | null;
 
-  // State to hold funeral room data
-  const [state, setState] = useState<{
+  // Define reducer for room state management
+  type RoomAction = 
+    | { type: 'SET_ALL'; payload: { name: string; password: string; backgroundImage: string; funeralType: string; deceasedImage?: string } }
+    | { type: 'UPDATE_FIELD'; field: string; value: string };
+
+  // Reducer function
+  const roomReducer = (state: {
     funeralType: string;
     backgroundImage: string;
     password: string;
     name: string;
     deceasedImage?: string;
-  }>({
-    funeralType: 'default',
+  }, action: RoomAction) => {
+    switch (action.type) {
+      case 'SET_ALL':
+        return { ...state, ...action.payload };
+      case 'UPDATE_FIELD':
+        return { ...state, [action.field]: action.value };
+      default:
+        return state;
+    }
+  };
+
+  // State to hold funeral room data
+  const [state, dispatch] = useReducer(roomReducer, {
+    funeralType: 'church',
     backgroundImage: '',
     password: '',
     name: '',
@@ -169,42 +192,42 @@ const FuneralRoomPage: React.FC = () => {
   
   // Load funeral room data from database on mount
   useEffect(() => {
-    if (!roomId) return;
-    
-    // Preload all background images
-    Object.values(backgroundImageMap).forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
-    
-    // Check if we have data in location state
-    if (locationState) {
-      setState(locationState);
-      setIsLoading(false);
-      return;
-    }
-    
-    // Otherwise, try to load from database
-    const funeralRoom = getFuneralRoomById(roomId);
-    if (funeralRoom) {
-      setState({
-        funeralType: funeralRoom.funeralType,
-        backgroundImage: funeralRoom.backgroundImage,
-        password: funeralRoom.password,
-        name: funeralRoom.deceasedName,
-        deceasedImage: funeralRoom.deceasedImage,
-      });
+    const loadFuneralRoom = async () => {
+      if (!roomId) return;
       
-      if (funeralRoom.canvasItems) {
-        setCanvasItems(funeralRoom.canvasItems);
+      setIsLoading(true);
+      try {
+        // Get funeral room data from the MongoDB API
+        const roomData = await getFuneralRoomById(roomId);
+        
+        if (roomData) {
+          // Update state with room data
+          dispatch({
+            type: 'SET_ALL',
+            payload: {
+              name: roomData.deceasedName,
+              password: roomData.password,
+              backgroundImage: roomData.backgroundImage,
+              funeralType: roomData.funeralType,
+              deceasedImage: roomData.deceasedImage,
+            }
+          });
+          
+          // Set canvas items if they exist
+          if (roomData.canvasItems && Array.isArray(roomData.canvasItems)) {
+            setCanvasItems(roomData.canvasItems);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading funeral room:', error);
+        // Handle error accordingly, perhaps show a message to the user
+      } finally {
+        setIsLoading(false);
       }
-    } else if (!locationState) {
-      // If no data found in location state or database, show error or redirect
-      navigate('/create-funeral', { replace: true });
-    }
+    };
     
-    setIsLoading(false);
-  }, [roomId, locationState, navigate]);
+    loadFuneralRoom();
+  }, [roomId]);
   
   // Load background image on mount
   useEffect(() => {
@@ -319,10 +342,11 @@ const FuneralRoomPage: React.FC = () => {
       console.log('Image cropped successfully');
       
       // Update component state with the cropped image
-      setState(prevState => ({
-        ...prevState,
-        deceasedImage: croppedImage,
-      }));
+      dispatch({
+        type: 'UPDATE_FIELD',
+        field: 'deceasedImage',
+        value: croppedImage,
+      });
       
       // Save to database
       if (roomId) {
@@ -356,7 +380,7 @@ const FuneralRoomPage: React.FC = () => {
       console.error('Error cropping image:', error);
       setUploadError('Failed to crop image. Please try again.');
     }
-  }, [imageToCrop, croppedAreaPixels, roomId, state, canvasItems, setIsCropping, setImageToCrop, setSaveMessage, setUploadError]);
+  }, [imageToCrop, croppedAreaPixels, roomId, state, canvasItems, dispatch, setIsCropping, setImageToCrop, setSaveMessage, setUploadError]);
   
   // Cancel cropping
   const handleCancelCrop = useCallback(() => {
@@ -367,33 +391,14 @@ const FuneralRoomPage: React.FC = () => {
   // Function to remove deceased image
   const handleRemoveDeceasedImage = () => {
     // Update state
-    setState({
-      ...state,
-      deceasedImage: undefined,
+    dispatch({
+      type: 'UPDATE_FIELD',
+      field: 'deceasedImage',
+      value: '',
     });
     
-    // Save to database
-    if (roomId) {
-      const updatedRoom: FuneralRoom = {
-        roomId,
-        password: state.password,
-        deceasedName: state.name,
-        funeralType: state.funeralType,
-        backgroundImage: state.backgroundImage,
-        deceasedImage: undefined,
-        canvasItems: canvasItems,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
-      
-      saveFuneralRoom(updatedRoom);
-      setSaveMessage('Deceased image removed');
-      
-      // Hide message after 3 seconds
-      setTimeout(() => {
-        setSaveMessage('');
-      }, 3000);
-    }
+    // Save changes
+    handleSave();
   };
 
   // Function to get background image, with fallback to mapping if needed
@@ -428,32 +433,103 @@ const FuneralRoomPage: React.FC = () => {
       image: item.image,
     };
     
-    setCanvasItems([...canvasItems, newItem]);
+    const updatedItems = [...canvasItems, newItem];
+    setCanvasItems(updatedItems);
+    
+    // Auto-save when adding an item
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after adding item:', err)
+    );
   };
   
+  // Function to save items to database
+  const saveToDatabase = useCallback(async (items: CanvasItem[]) => {
+    if (!roomId) return;
+    
+    try {
+      // Use the new MongoDB API to update canvas items
+      const success = await updateCanvasItems(roomId, items);
+      
+      if (success) {
+        console.log('Auto-saved funeral room with updated items');
+      } else {
+        console.error('Failed to auto-save canvas items');
+      }
+    } catch (error) {
+      console.error('Error auto-saving funeral room:', error);
+    }
+  }, [roomId]);
+  
+  // Function to remove a selected item
+  const handleRemoveSelectedItem = useCallback(() => {
+    if (!selectedItemId) return;
+    
+    const updatedItems = canvasItems.filter(item => item.id !== selectedItemId);
+    setCanvasItems(updatedItems);
+    setSelectedItemId(null);
+    
+    // Auto-save when removing an item
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after item removal:', err)
+    );
+  }, [selectedItemId, canvasItems, saveToDatabase]);
+  
+  // Add keyboard event listener for deleting items with Delete key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' && selectedItemId) {
+        handleRemoveSelectedItem();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedItemId, handleRemoveSelectedItem]);
+  
   // Function to save the funeral room data to the database
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!roomId) return;
     
     setIsSaving(true);
     setSaveMessage('');
     
     try {
-      // Create funeral room object
-      const funeralRoom: FuneralRoom = {
-        roomId,
-        password: state.password,
-        deceasedName: state.name,
-        funeralType: state.funeralType,
-        backgroundImage: state.backgroundImage,
-        deceasedImage: state.deceasedImage,
-        canvasItems: canvasItems, // Save all canvas items
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
+      // Get current funeral room data
+      const funeralRoom = await getFuneralRoomById(roomId);
       
-      // Save to database
-      saveFuneralRoom(funeralRoom);
+      if (funeralRoom) {
+        // Update with all current state
+        const updatedRoom: FuneralRoom = {
+          ...funeralRoom,
+          password: state.password,
+          deceasedName: state.name,
+          funeralType: state.funeralType,
+          backgroundImage: state.backgroundImage,
+          deceasedImage: state.deceasedImage,
+          canvasItems: canvasItems,
+          updatedAt: Date.now(),
+        };
+        
+        // Save to database
+        await saveFuneralRoom(updatedRoom);
+        console.log('Manually saved funeral room with all data');
+      } else {
+        // Create a new room if it doesn't exist (fallback)
+        const newRoom: FuneralRoom = {
+          roomId,
+          password: state.password,
+          deceasedName: state.name,
+          funeralType: state.funeralType,
+          backgroundImage: state.backgroundImage,
+          deceasedImage: state.deceasedImage,
+          canvasItems: canvasItems,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        await saveFuneralRoom(newRoom);
+      }
       
       // Show success message
       setSaveMessage('Funeral room saved successfully!');
@@ -714,7 +790,7 @@ const FuneralRoomPage: React.FC = () => {
           {/* Canvas Area */}
           <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
             <div className="text-center text-gray-500 py-2">
-              <p>Click on the decorations to add them to the scene, and you can drag and place them</p>
+              <p>Click on decorations to add them to the scene. Drag to position them. Items are automatically saved.</p>
             </div>
             <Stage
               ref={stageRef}
@@ -738,64 +814,100 @@ const FuneralRoomPage: React.FC = () => {
                   const baseId = item.id.split('-')[0];
                   // Check if we have the image loaded
                   const itemImage = item.image && decorationImages[baseId];
+                  const isSelected = selectedItemId === item.id;
                   
                   return (
                     <React.Fragment key={item.id}>
                       {itemImage ? (
-                        <KonvaImage
-                          image={itemImage}
-                          x={item.x}
-                          y={item.y}
-                          width={item.width}
-                          height={item.height}
-                          draggable
-                          onDragEnd={(e) => {
-                            const updatedItems = canvasItems.map((i) => {
-                              if (i.id === item.id) {
-                                return {
-                                  ...i,
-                                  x: e.target.x(),
-                                  y: e.target.y(),
-                                };
-                              }
-                              return i;
-                            });
-                            setCanvasItems(updatedItems);
-                          }}
-                          onClick={() => setSelectedItemId(item.id)}
-                          onTap={() => setSelectedItemId(item.id)}
-                        />
+                        <>
+                          {/* Selection border for images */}
+                          {isSelected && (
+                            <Rect
+                              x={item.x - 2}
+                              y={item.y - 2}
+                              width={item.width + 4}
+                              height={item.height + 4}
+                              stroke="#0096FF"
+                              strokeWidth={2}
+                            />
+                          )}
+                          <KonvaImage
+                            image={itemImage}
+                            x={item.x}
+                            y={item.y}
+                            width={item.width}
+                            height={item.height}
+                            draggable
+                            onDragEnd={(e) => {
+                              const updatedItems = canvasItems.map((i) => {
+                                if (i.id === item.id) {
+                                  return {
+                                    ...i,
+                                    x: e.target.x(),
+                                    y: e.target.y(),
+                                  };
+                                }
+                                return i;
+                              });
+                              setCanvasItems(updatedItems);
+                              // Auto-save when moving an item
+                              saveToDatabase(updatedItems);
+                            }}
+                            onClick={() => setSelectedItemId(item.id)}
+                            onTap={() => setSelectedItemId(item.id)}
+                          />
+                        </>
                       ) : (
-                        <Rect
-                          x={item.x}
-                          y={item.y}
-                          width={item.width}
-                          height={item.height}
-                          fill={item.color}
-                          cornerRadius={5}
-                          draggable
-                          onDragEnd={(e) => {
-                            const updatedItems = canvasItems.map((i) => {
-                              if (i.id === item.id) {
-                                return {
-                                  ...i,
-                                  x: e.target.x(),
-                                  y: e.target.y(),
-                                };
-                              }
-                              return i;
-                            });
-                            setCanvasItems(updatedItems);
-                          }}
-                          onClick={() => setSelectedItemId(item.id)}
-                          onTap={() => setSelectedItemId(item.id)}
-                        />
+                        <>
+                          {/* Selection border for rectangles */}
+                          {isSelected && (
+                            <Rect
+                              x={item.x - 2}
+                              y={item.y - 2}
+                              width={item.width + 4}
+                              height={item.height + 4}
+                              stroke="#0096FF"
+                              strokeWidth={2}
+                            />
+                          )}
+                          <Rect
+                            x={item.x}
+                            y={item.y}
+                            width={item.width}
+                            height={item.height}
+                            fill={item.color}
+                            cornerRadius={5}
+                            draggable
+                            onDragEnd={(e) => {
+                              const updatedItems = canvasItems.map((i) => {
+                                if (i.id === item.id) {
+                                  return {
+                                    ...i,
+                                    x: e.target.x(),
+                                    y: e.target.y(),
+                                  };
+                                }
+                                return i;
+                              });
+                              setCanvasItems(updatedItems);
+                              // Auto-save when moving an item
+                              saveToDatabase(updatedItems);
+                            }}
+                            onClick={() => setSelectedItemId(item.id)}
+                            onTap={() => setSelectedItemId(item.id)}
+                          />
+                        </>
                       )}
                     </React.Fragment>
                   );
                 })}
               </Layer>
             </Stage>
+            {selectedItemId && (
+              <div className="text-center text-gray-500 py-2 bg-gray-100 rounded-b-lg">
+                <p>Press <span className="font-bold">Delete</span> key to remove the selected item</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
