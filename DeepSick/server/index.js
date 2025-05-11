@@ -107,3 +107,21 @@ mongoose
         httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     })
     .catch(err => console.error('DB connection error:', err));
+
+console.log('Environment variables:');
+console.log('PORT:', process.env.PORT);
+console.log('MONGO_URI:', process.env.MONGO_URI);
+console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
+
+function validateEnv() {
+    const required = ['JWT_SECRET', 'PORT', 'MONGO_URI'];
+    const missing = required.filter(key => !process.env[key]);
+    
+    if (missing.length > 0) {
+        console.error('Missing required environment variables:', missing);
+        process.exit(1);
+    }
+}
+
+validateEnv();

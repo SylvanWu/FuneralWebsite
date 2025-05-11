@@ -16,6 +16,8 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_dev_secret';
 console.log('JWT_SECRET:', JWT_SECRET);
+console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('JWT_SECRET length:', process.env.JWT_SECRET?.length);
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -183,22 +185,51 @@ router.put('/password', authMiddleware, async (req, res) => {
 // JWT 验证中间件
 const auth = (userType) => async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
+        // 检查 JWT_SECRET
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not configured');
+            return res.status(500).json({ 
+                message: '服务器配置错误',
+                error: 'JWT_SECRET not configured'
+            });
+        }
+
+        const authHeader = req.headers.authorization;
+        console.log('Auth header:', authHeader);
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: '无效的认证头' });
+        }
+        
+        const token = authHeader.split(' ')[1];
         if (!token) {
-            return res.status(401).json({ message: '未授权' });
+            return res.status(401).json({ message: '未提供token' });
         }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-
-        // 如果需要特定 userType，则校验
-        if (userType && decoded.userType !== userType) {
-            return res.status(403).json({ message: '权限不足' });
+        
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log('Token decoded:', decoded);
+            
+            if (userType && decoded.userType !== userType) {
+                return res.status(403).json({ 
+                    message: '权限不足',
+                    required: userType,
+                    got: decoded.userType
+                });
+            }
+            
+            req.user = decoded;
+            next();
+        } catch (jwtError) {
+            console.error('JWT verification failed:', jwtError);
+            return res.status(401).json({ 
+                message: 'token验证失败',
+                error: jwtError.message
+            });
         }
-
-        next();
     } catch (error) {
-        res.status(401).json({ message: '无效的token' });
+        console.error('Auth middleware error:', error);
+        res.status(500).json({ message: '服务器错误' });
     }
 };
 

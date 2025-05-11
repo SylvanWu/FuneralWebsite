@@ -112,8 +112,22 @@ export default function App() {
           </div>} />
 
           {/* Wills 和 DreamList 页面 */}
-          <Route path="/wills" element={<WillsPage />} />
-          <Route path="/dreamlist" element={<DreamList />} />
+          <Route
+            path="/wills"
+            element={
+              <RoleProtected userType="organizer">
+                <WillsPage />
+              </RoleProtected>
+            }
+          />
+          <Route
+            path="/dreamlist"
+            element={
+              <RoleProtected userType="organizer">
+                <DreamList />
+              </RoleProtected>
+            }
+          />
         </Route>
       </Routes>
     </div>

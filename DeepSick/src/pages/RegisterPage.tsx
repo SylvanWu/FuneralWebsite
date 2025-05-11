@@ -97,7 +97,7 @@ export default function RegisterPage() {
             Create Account
           </span>
         </h1>
-        
+
         {/* 错误提示 */}
         {error && (
           <div className="bg-red-50/70 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-center font-medium animate-pulse">
@@ -122,47 +122,47 @@ export default function RegisterPage() {
           {/* 用户名输入框 */}
           <div className="space-y-2">
             {/* <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label> */}
-            <input
+          <input
               id="username"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
               placeholder="Enter your username"
-            />
+          />
           </div>
 
           {/* 联系方式输入框 */}
           <div className="space-y-2">
             {/* <label htmlFor="contact" className="block text-sm font-medium text-gray-700">Phone Number / Email</label> */}
-            <input
+          <input
               id="contact"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
-              value={contact}
-              onChange={e => setContact(e.target.value)}
-              required
+            value={contact}
+            onChange={e => setContact(e.target.value)}
+            required
               placeholder="Enter your email or phone number"
-            />
+          />
           </div>
 
           {/* 密码输入框 */}
           <div className="space-y-2">
             {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label> */}
-            <input
+          <input
               id="password"
-              type="password"
+            type="password"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
-              value={password}
-              onChange={e => setPwd(e.target.value)}
-              required
+            value={password}
+            onChange={e => setPwd(e.target.value)}
+            required
               placeholder="Min 8 characters"
-            />
+          />
           </div>
 
           {/* 用户类型选择区域 */}
@@ -215,7 +215,7 @@ export default function RegisterPage() {
         style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)', marginTop: '2vh'}}
       >
         Login
-      </button>
+          </button>
           </div>
         </form>
       </div>

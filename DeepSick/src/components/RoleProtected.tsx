@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-type UserType = 'organizer' | 'visitor' | 'lovedOne';
+type UserType = 'organizer' | 'visitor';
 
 export default function RoleProtected(
   { userType, children }:
@@ -21,8 +21,8 @@ export default function RoleProtected(
     return <Navigate to="/login" replace />;
   }
 
-  // 只有 lovedOne 需要特殊处理
-  if (userType === 'lovedOne' && user.userType !== 'lovedOne') {
+  // 只允许指定 userType 访问
+  if (user.userType !== userType) {
     return <Navigate to="/" replace />;
   }
 

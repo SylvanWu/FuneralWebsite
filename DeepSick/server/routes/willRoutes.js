@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const router = express.Router();
 
 /* ───── 鉴权 ───── */
-router.use(authMiddleware);
+router.use(authMiddleware('organizer'));
 
 /* ───── Multer：视频上传 ───── */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,7 +41,7 @@ router.post(
             const videoFilename = req.file?.filename || '';
 
             const newWill = await Will.create({
-                owner: req.user.id,
+                owner: req.user.userId,
                 uploaderName,
                 farewellMessage,
                 videoFilename
@@ -59,8 +59,9 @@ router.post(
 router.get(
     '/',
     async (req, res) => {
+        console.log('GET /api/wills called, req.user:', req.user);
         try {
-            const list = await Will.find({ owner: req.user.id }).sort({ createdAt: -1 });
+            const list = await Will.find({ owner: req.user.userId }).sort({ createdAt: -1 });
             res.json(list);
         } catch (err) {
             console.error('获取遗嘱列表失败', err);
@@ -84,7 +85,7 @@ router.patch(
             if (req.file)                 updateFields.videoFilename   = req.file.filename;
 
             const updated = await Will.findOneAndUpdate(
-                { _id: req.params.id, owner: req.user.id },
+                { _id: req.params.id, owner: req.user.userId },
                 updateFields,
                 { new: true, runValidators: true }
             );
@@ -107,7 +108,7 @@ router.delete(
         try {
             const deleted = await Will.findOneAndDelete({
                 _id: req.params.id,
-                owner: req.user.id
+                owner: req.user.userId
             });
             if (!deleted) {
                 return res.status(404).json({ message: '遗嘱未找到或无权限' });
