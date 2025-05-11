@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Stage, Layer, Rect, Text } from 'react-konva';
+import { saveFuneralRoom, getFuneralRoomById, FuneralRoom } from '../services/funeralRoomDatabase';
+import DeceasedImage from '../components/DeceasedImage';
 
 // Placeholder vector icons - replace with actual SVGs
 const placeholderIcons = [
@@ -25,20 +27,70 @@ interface CanvasItem {
 const FuneralRoomPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const location = useLocation();
-  const state = location.state as {
+  const navigate = useNavigate();
+  
+  // Retrieve funeral type and background image from router state or database
+  const locationState = location.state as {
     funeralType: string;
     backgroundImage: string;
     password: string;
-  } || {
+    name: string;
+  } | null;
+
+  // State to hold funeral room data
+  const [state, setState] = useState<{
+    funeralType: string;
+    backgroundImage: string;
+    password: string;
+    name: string;
+    deceasedImage?: string;
+  }>({
     funeralType: 'default',
     backgroundImage: '',
-    password: ''
-  };
-
+    password: '',
+    name: '',
+  });
+  
   // Canvas state
   const stageRef = useRef<any>(null);
   const [canvasItems, setCanvasItems] = useState<CanvasItem[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  
+  // Load funeral room data from database on mount
+  useEffect(() => {
+    if (!roomId) return;
+    
+    // Check if we have data in location state
+    if (locationState) {
+      setState(locationState);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Otherwise, try to load from database
+    const funeralRoom = getFuneralRoomById(roomId);
+    if (funeralRoom) {
+      setState({
+        funeralType: funeralRoom.funeralType,
+        backgroundImage: funeralRoom.backgroundImage,
+        password: funeralRoom.password,
+        name: funeralRoom.deceasedName,
+        deceasedImage: funeralRoom.deceasedImage,
+      });
+      
+      if (funeralRoom.canvasItems) {
+        setCanvasItems(funeralRoom.canvasItems);
+      }
+    } else if (!locationState) {
+      // If no data found in location state or database, show error or redirect
+      navigate('/create-funeral', { replace: true });
+    }
+    
+    setIsLoading(false);
+  }, [roomId, locationState, navigate]);
   
   // Function to add a new item to the canvas
   const handleAddItem = (item: { id: string; color: string; name: string }) => {
@@ -54,8 +106,52 @@ const FuneralRoomPage: React.FC = () => {
     
     setCanvasItems([...canvasItems, newItem]);
   };
+  
+  // Function to save the funeral room data to the database
+  const handleSave = () => {
+    if (!roomId) return;
+    
+    setIsSaving(true);
+    setSaveMessage('');
+    
+    try {
+      // Create funeral room object
+      const funeralRoom: FuneralRoom = {
+        roomId,
+        password: state.password,
+        deceasedName: state.name,
+        funeralType: state.funeralType,
+        backgroundImage: state.backgroundImage,
+        deceasedImage: state.deceasedImage,
+        canvasItems: canvasItems, // Save all canvas items
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      
+      // Save to database
+      saveFuneralRoom(funeralRoom);
+      
+      // Show success message
+      setSaveMessage('Funeral room saved successfully!');
+      
+      // Hide message after 3 seconds
+      setTimeout(() => {
+        setSaveMessage('');
+      }, 3000);
+    } catch (error) {
+      console.error('Error saving funeral room:', error);
+      setSaveMessage('Error saving funeral room');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
+    // Set background image dynamically based on funeral type
     <div className="min-h-screen" style={{ 
       backgroundImage: `url(${state.backgroundImage})`,
       backgroundSize: 'cover',
@@ -64,10 +160,31 @@ const FuneralRoomPage: React.FC = () => {
     }}>
       <div className="container mx-auto py-8 px-4">
         <div className="bg-white bg-opacity-80 rounded-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold mb-2">Funeral Room: {roomId}</h1>
-          <p className="text-gray-700">
+          {/* Display deceased person's image */}
+          <DeceasedImage 
+            imageUrl={state.deceasedImage} 
+            name={state.name} 
+          />
+          
+          <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
+          <p className="text-gray-700 text-center mb-4">
             Type: {state.funeralType} | Password: {state.password}
           </p>
+          
+          {/* Save Button */}
+          <div className="mt-4 text-center">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50"
+            >
+              {isSaving ? 'Saving...' : 'Save Room'}
+            </button>
+            
+            {saveMessage && (
+              <div className="mt-2 text-green-600">{saveMessage}</div>
+            )}
+          </div>
         </div>
         
         <div className="flex flex-col md:flex-row gap-6">

@@ -13,8 +13,9 @@ import authRoutes from './routes/auth.js';
 import memoriesRouter from './routes/memories.js';
 import willRoutes from './routes/willRoutes.js';
 import dreamRouter from './routes/dreamRoutes.js';
-import interactiveRoutes from './routes/interactiveRoutes.js';
 import funeralRoutes from './routes/funeralRoutes.js';
+import interactiveRoutes from './interactive/interactiveRoutes.js';
+import { initializeCanvasSocket } from './interactive/interactiveCanvas.js';
 
 dotenv.config();
 
@@ -46,8 +47,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/memories', memoriesRouter);
 app.use('/api/wills', willRoutes);
 app.use('/api/dreams', dreamRouter);
-app.use('/api/interactive', interactiveRoutes);
 app.use('/api/funerals', funeralRoutes);
+app.use('/api/interactive', interactiveRoutes);
 
 /* Default root route (Health check) */
 app.get('/', (_, res) => res.send('Digital Memorial Hall API'));
@@ -65,43 +66,33 @@ mongoose
         const io = new Server(httpServer, {
             cors: {
                 origin: "http://localhost:5173",
-                methods: ["GET", "POST"]
+                methods: ["GET", "POST"],
+                credentials: true
+            },
+            pingTimeout: 60000,
+            pingInterval: 25000,
+            transports: ['websocket', 'polling'],
+            allowEIO3: true,
+            maxHttpBufferSize: 1e8,
+            connectTimeout: 45000,
+            upgradeTimeout: 30000,
+            allowUpgrades: true,
+            perMessageDeflate: {
+                threshold: 2048
             }
         });
 
-        // Store canvas state
-        let canvasState = {
-            width: 800,
-            height: 600,
-            backgroundColor: '#ffffff',
-            drawings: []
-        };
-
-        // Socket.IO connection handling
-        io.on('connection', (socket) => {
-            console.log('Client connected');
-
-            // Send current canvas state to newly connected client
-            socket.emit('canvasState', canvasState);
-
-            // Handle drawing data
-            socket.on('draw', (data) => {
-                // Save drawing data
-                canvasState.drawings.push(data);
-                // Broadcast to other clients
-                socket.broadcast.emit('draw', data);
-            });
-
-            // Handle canvas clear
-            socket.on('clearCanvas', () => {
-                canvasState.drawings = [];
-                io.emit('canvasCleared');
-            });
-
-            socket.on('disconnect', () => {
-                console.log('Client disconnected');
-            });
+        // Add error handling for Socket.IO
+        io.engine.on("connection_error", (err) => {
+            console.log('Socket.IO connection error:', err);
         });
+
+        io.engine.on("upgrade_error", (err) => {
+            console.log('Socket.IO upgrade error:', err);
+        });
+
+        // Initialize canvas socket handlers
+        initializeCanvasSocket(io);
 
         // Use httpServer to listen on port
         httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));

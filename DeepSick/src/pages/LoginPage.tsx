@@ -65,7 +65,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
     <div
       className="w-full min-h-screen flex flex-col items-center justify-center"
       style={{
-        backgroundImage: "url('/1.jpg')",
+        backgroundImage: "url('/login.png')",
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',

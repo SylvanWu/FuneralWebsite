@@ -24,11 +24,11 @@
   .hero-section .hero-name {
     font-size: 2.5rem;
     margin: 1rem 0 0.5rem;
-    color: #5c3d2e;
+    color: #000;
   }
   .hero-section .hero-subtitle {
     font-size: 1.2rem;
-    color: #e07a5f;
+    color: #333;
   }
   
   /* Cards section */
@@ -54,12 +54,12 @@
   .interactive-card .icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
-    color: #e07a5f;
+    color: #333;
   }
   .interactive-card .title {
     font-size: 1.3rem;
     margin-bottom: 0.5rem;
-    color: #5c3d2e;
+    color: #000;
   }
   .interactive-card .description {
     font-size: .95rem;
@@ -67,7 +67,7 @@
   }
   .interactive-card .action-button {
     padding: .5rem 1.2rem;
-    background: #5c3d2e;
+    background: #000;
     color: #fff;
     border: none;
     border-radius: 20px;
@@ -75,7 +75,7 @@
     transition: background .2s;
   }
   .interactive-card .action-button:hover {
-    background: #e07a5f;
+    background: #333;
   }
   
   /* Real-time interaction area */
@@ -105,14 +105,14 @@
   }
   .interactive-area .message-submit {
     padding: .6rem 1.5rem;
-    background: #5c3d2e;
+    background: #000;
     color: #fff;
     border: none;
     border-radius: 5px;
     transition: background .2s;
   }
   .interactive-area .message-submit:hover {
-    background: #e07a5f;
+    background: #333;
   }
   
   /* Message board */
@@ -198,25 +198,25 @@
   color: #fff;
   border: none;
   border-radius: 20px;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 .message-form-wrapper .action-button:hover:not(:disabled) {
   background: #333;
+  transform: translateY(-1px);
 }
 .message-form-wrapper .action-button:disabled {
-  background: #999;
+  background: #ccc;
   cursor: not-allowed;
 }
 .audio-player {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  background: rgba(255,255,255,0.9);
-  padding: 0.5rem 1rem;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* 蜡烛容器样式 */
@@ -257,6 +257,10 @@
   font-weight: bold;
 }
 
+.candle-number::before {
+  content: "";
+}
+
 .candle-button {
   width: 60px;
   height: 60px;
@@ -293,7 +297,6 @@
   margin-top: 0.25rem;
 }
 
-/* Input Section */
 .input-section {
   max-width: 600px;
   margin: 0 auto 2rem;
@@ -326,7 +329,6 @@
   font-size: 0.9rem;
 }
 
-/* History List */
 .history-list {
   list-style: none;
   padding: 0;
@@ -364,42 +366,36 @@
   }
 }
 
-/* 历史记录样式 */
 .message-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  background: #fff;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.8);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
   transition: transform 0.2s ease;
 }
 
 .message-card:hover {
-  transform: translateX(5px);
-  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
 }
 
 .message-author {
   font-weight: bold;
-  color: #5c3d2e;
+  color: #000;
 }
 
 .message-time {
+  font-size: 0.8rem;
   color: #666;
-  font-size: 0.9rem;
-  margin-left: auto;
 }
 
-/* 输入框和按钮样式 */
 .message-input {
-  padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
   width: 100%;
-  max-width: 300px;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
 }
 
 .message-input:disabled {
@@ -408,18 +404,19 @@
 }
 
 .action-button {
-  padding: 0.8rem 2rem;
-  background: #5c3d2e;
+  padding: 0.8rem 1.5rem;
+  background: #000;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .action-button:hover:not(:disabled) {
-  background: #e07a5f;
+  background: #333;
+  transform: translateY(-1px);
 }
 
 .action-button:disabled {
@@ -429,140 +426,141 @@
 
 /* Flower Page Specific Styles */
 .flowers-container {
-  padding: 2rem;
-  background: rgba(255, 192, 203, 0.05);
-  border-radius: 12px;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .flowers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .flower-item {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  background: #fafafa;
+  border-radius: 8px;
   opacity: 0;
-  transform: scale(0.8);
+  transform: translateY(20px);
   transition: all 0.5s ease;
 }
 
 .flower-item.visible {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0);
 }
 
 .flower-emoji {
-  font-size: 2.5rem;
-  animation: floatAnimation 3s ease-in-out infinite;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .flower-info {
-  color: #e07a5f;
-  font-style: italic;
+  font-size: 0.9rem;
+  color: #666;
 }
 
 @keyframes floatAnimation {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
 }
 
 /* Drawing area styles */
 .drawing-area {
+  margin: 2rem 0;
+  padding: 1rem;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 20px auto;
-  padding: 20px;
-  max-width: 1200px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .drawing-area h2 {
-  color: #333;
+  color: #000;
+  margin-bottom: 1rem;
   font-size: 1.5rem;
-  margin-bottom: 20px;
   text-align: center;
 }
 
 /* Message board styles */
 .interactive-area {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 20px auto;
-  padding: 20px;
-  max-width: 800px;
+  background: #f5f0ea;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
 
 .interactive-area h2 {
-  color: #333;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
+  color: #000;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
   text-align: center;
 }
 
 .message-canvas {
-  max-height: 400px;
+  background: #fff;
+  height: 400px;
   overflow-y: auto;
-  padding: 10px;
-  margin-bottom: 20px;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
 }
 
 .message-card {
-  background: #f5f5f5;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  padding: 15px;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: #fafafa;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .message-content {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
+  margin: 0 0 0.5rem;
 }
 
 .message-meta {
+  font-size: 0.8rem;
+  color: #666;
   display: flex;
   justify-content: space-between;
-  color: #666;
-  font-size: 0.9rem;
 }
 
 .message-form-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.5rem;
 }
 
 .message-input {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
   font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
 }
 
 .action-button {
-  background: #4a90e2;
+  align-self: flex-end;
+  padding: 0.6rem 1.2rem;
+  background: #000;
+  color: #fff;
   border: none;
-  border-radius: 4px;
-  color: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-size: 1rem;
-  padding: 10px 20px;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
 .action-button:hover {
-  background: #357abd;
+  background: #333;
+  transform: translateY(-1px);
 }
 
 .action-button:disabled {
