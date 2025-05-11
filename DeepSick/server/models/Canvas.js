@@ -18,22 +18,10 @@ const canvasSchema = new mongoose.Schema({
     type: String, 
     default: '#ffffff' 
   },
-  drawings: [{
-    points: [{
-      x: Number,
-      y: Number,
-      color: String,
-      size: Number,
-      opacity: Number
-    }],
-    type: String,
-    tool: String,
-    startX: Number,
-    startY: Number,
-    endX: Number,
-    endY: Number,
-    fillColor: String
-  }],
+  drawings: {
+    type: Array,
+    default: []
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
