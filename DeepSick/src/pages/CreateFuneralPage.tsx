@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FuneralProvider } from '../context/FuneralContext';
 import { useNavigate } from 'react-router-dom';
-import funeralCreationBg from '../assets/funeral creation.jpg';
+import funeralCreationBg from '../assets/funeral creation.png';
 // Map funeral types to their respective background images
 import churchImage from '../assets/funeral type/church funeral.png';
 import gardenImage from '../assets/funeral type/garden funeral.png';
@@ -11,27 +11,26 @@ import starryNightImage from '../assets/funeral type/Starry Night Funeral.png';
 import chineseTraditionalImage from '../assets/funeral type/Chinese traditional funeral.png';
 import { saveFuneralRoom, FuneralRoom } from '../services/funeralRoomDatabase';
 
+// Mapping funeral types to their background images
+const funeralTypeImages = {
+  'church': churchImage,
+  'garden': gardenImage,
+  'forest': forestImage,
+  'seaside': seasideImage,
+  'starryNight': starryNightImage,
+  'chineseTraditional': chineseTraditionalImage,
+};
+
 const CreateFuneralPage: React.FC = () => {
   const navigate = useNavigate();
-  // State for deceased person's image
-  const [deceasedImage, setDeceasedImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Create a FileReader to read the image file
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      // Store the image as base64 string
-      if (event.target?.result) {
-        setDeceasedImage(event.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
+  // Log image paths on component mount
+  useEffect(() => {
+    console.log('Church Image Path:', churchImage);
+    console.log('Garden Image Path:', gardenImage);
+    console.log('Forest Image Path:', forestImage);
+    console.log('All funeral image paths:', funeralTypeImages);
+  }, []);
 
   // Handle funeral type selection and pass the selected type and image to funeral room page
   const handleFuneralTypeClick = (type: string, image: string) => {
@@ -46,6 +45,10 @@ const CreateFuneralPage: React.FC = () => {
     if (!password) return;
     if(!name) return;
     
+    // For debugging
+    console.log('Selected Type:', type);
+    console.log('Selected Image Path:', image);
+    
     // Create and save the funeral room to the database
     const funeralRoom: FuneralRoom = {
       roomId,
@@ -53,7 +56,6 @@ const CreateFuneralPage: React.FC = () => {
       deceasedName: name,
       funeralType: type,
       backgroundImage: image,
-      deceasedImage: deceasedImage || undefined,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -65,10 +67,9 @@ const CreateFuneralPage: React.FC = () => {
     navigate(`/funeral-room/${roomId}`, {
       state: {
         funeralType: type,
-        backgroundImage: image, // Pass the background image corresponding to the funeral type
+        backgroundImage: image,
         password,
         name,
-        deceasedImage: deceasedImage || undefined,
       }
     });
   };
@@ -84,56 +85,12 @@ const CreateFuneralPage: React.FC = () => {
             src={funeralCreationBg}
             alt="Funeral Creation"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center' }}
+            style={{ objectPosition: 'center', 
+              width: '65%',
+              height: '50%',
+            }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-          </div>
-        </div>
-      </div>
-      
-      {/* Deceased Person Image Upload */}
-      <div className="mb-12 bg-white rounded-lg p-6 shadow-md">
-        <h2 className="text-3xl font-bold mb-2">Upload Image of the Deceased</h2>
-        <p className="text-lg text-gray-600 mb-4">
-          Upload a photo to remember your loved one
-        </p>
-        
-        <div className="flex items-center">
-          {/* Preview the uploaded image */}
-          {deceasedImage && (
-            <div className="mr-6">
-              <img 
-                src={deceasedImage} 
-                alt="Deceased" 
-                className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300" 
-              />
-            </div>
-          )}
-          
-          {/* Upload button */}
-          <div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              ref={fileInputRef}
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              {deceasedImage ? 'Change Image' : 'Upload Image'}
-            </button>
-            
-            {deceasedImage && (
-              <button
-                onClick={() => setDeceasedImage(null)}
-                className="ml-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-              >
-                Remove
-              </button>
-            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,10 @@
 // Database service for funeral rooms
-// This service provides functions to save and load funeral room data
+// This service provides functions to save and load funeral room data using MongoDB API
+
+import axios from 'axios';
+
+// Base API URL
+const API_URL = 'http://localhost:5001/api/funerals';
 
 // Interface for funeral room data
 export interface FuneralRoom {
@@ -14,14 +19,24 @@ export interface FuneralRoom {
   updatedAt: number;
 }
 
-// Use localStorage as a simple database solution
-const DB_KEY = 'funeral_rooms_db';
+// Canvas item interface
+export interface CanvasItem {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  name: string;
+  image?: string;
+}
 
-// Get all funeral rooms from database
-export const getAllFuneralRooms = (): FuneralRoom[] => {
+// Get all funeral rooms from database (admin only, should be authenticated)
+export const getAllFuneralRooms = async (): Promise<FuneralRoom[]> => {
   try {
-    const roomsData = localStorage.getItem(DB_KEY);
-    return roomsData ? JSON.parse(roomsData) : [];
+    // This is a placeholder - in a real app, this would require authentication
+    console.warn('getAllFuneralRooms is just a placeholder in this implementation');
+    return [];
   } catch (error) {
     console.error('Error getting funeral rooms:', error);
     return [];
@@ -29,32 +44,32 @@ export const getAllFuneralRooms = (): FuneralRoom[] => {
 };
 
 // Create or update a funeral room
-export const saveFuneralRoom = (room: FuneralRoom): FuneralRoom => {
+export const saveFuneralRoom = async (room: FuneralRoom): Promise<FuneralRoom> => {
   try {
-    // Get existing rooms
-    const rooms = getAllFuneralRooms();
-    
-    // Check if room already exists
-    const existingRoomIndex = rooms.findIndex(r => r.roomId === room.roomId);
-    
-    // Update timestamps
-    const now = Date.now();
-    const updatedRoom = { 
-      ...room, 
-      updatedAt: now,
-      createdAt: existingRoomIndex >= 0 ? rooms[existingRoomIndex].createdAt : now 
+    // Map frontend type keys to backend enum values if needed
+    const sceneTypeMapping: Record<string, string> = {
+      'church': 'Church Funeral',
+      'garden': 'Garden Funeral', 
+      'forest': 'Forest Funeral',
+      'seaside': 'Seaside Funeral',
+      'starryNight': 'Starry Night Funeral',
+      'chineseTraditional': 'Chinese Traditional Funeral'
     };
+
+    // Use mapped value if available, otherwise use the original
+    const sceneType = sceneTypeMapping[room.funeralType] || room.funeralType;
+
+    const response = await axios.post(`${API_URL}/room`, {
+      roomId: room.roomId,
+      password: room.password,
+      deceasedName: room.deceasedName,
+      funeralType: sceneType,
+      backgroundImage: room.backgroundImage,
+      deceasedImage: room.deceasedImage,
+      canvasItems: room.canvasItems,
+    });
     
-    // Update or add room
-    if (existingRoomIndex >= 0) {
-      rooms[existingRoomIndex] = updatedRoom;
-    } else {
-      rooms.push(updatedRoom);
-    }
-    
-    // Save to localStorage
-    localStorage.setItem(DB_KEY, JSON.stringify(rooms));
-    return updatedRoom;
+    return response.data;
   } catch (error) {
     console.error('Error saving funeral room:', error);
     throw new Error('Failed to save funeral room');
@@ -62,29 +77,65 @@ export const saveFuneralRoom = (room: FuneralRoom): FuneralRoom => {
 };
 
 // Get a funeral room by ID
-export const getFuneralRoomById = (roomId: string): FuneralRoom | null => {
+export const getFuneralRoomById = async (roomId: string, password?: string): Promise<FuneralRoom | null> => {
   try {
-    const rooms = getAllFuneralRooms();
-    const room = rooms.find(r => r.roomId === roomId);
-    return room || null;
+    const url = password 
+      ? `${API_URL}/room/${roomId}?password=${encodeURIComponent(password)}` 
+      : `${API_URL}/room/${roomId}`;
+      
+    const response = await axios.get(url);
+    
+    // Convert MongoDB data to FuneralRoom interface
+    const data = response.data;
+
+    // Map backend enum values to frontend type keys if needed
+    const typeMapping: Record<string, string> = {
+      'Church Funeral': 'church',
+      'Garden Funeral': 'garden',
+      'Forest Funeral': 'forest',
+      'Seaside Funeral': 'seaside',
+      'Starry Night Funeral': 'starryNight',
+      'Chinese Traditional Funeral': 'chineseTraditional'
+    };
+
+    // Use the mapped value if available, otherwise use the original
+    const funeralType = typeMapping[data.sceneType] || data.sceneType;
+
+    return {
+      roomId: data.stringId || data._id,
+      password: data.password,
+      deceasedName: data.deceasedName,
+      funeralType: funeralType,
+      backgroundImage: data.backgroundImage,
+      deceasedImage: data.deceasedImage,
+      canvasItems: data.canvasItems,
+      createdAt: new Date(data.createdAt).getTime(),
+      updatedAt: new Date(data.updatedAt).getTime(),
+    };
   } catch (error) {
     console.error('Error getting funeral room:', error);
     return null;
   }
 };
 
-// Delete a funeral room
-export const deleteFuneralRoom = (roomId: string): boolean => {
+// Update canvas items only
+export const updateCanvasItems = async (roomId: string, canvasItems: CanvasItem[]): Promise<boolean> => {
   try {
-    const rooms = getAllFuneralRooms();
-    const filteredRooms = rooms.filter(r => r.roomId !== roomId);
-    
-    if (filteredRooms.length === rooms.length) {
-      return false; // Room not found
-    }
-    
-    localStorage.setItem(DB_KEY, JSON.stringify(filteredRooms));
+    await axios.patch(`${API_URL}/room/${roomId}/canvas`, { canvasItems });
     return true;
+  } catch (error) {
+    console.error('Error updating canvas items:', error);
+    return false;
+  }
+};
+
+// Delete a funeral room
+export const deleteFuneralRoom = async (roomId: string): Promise<boolean> => {
+  try {
+    // This is just a placeholder - in a real app with authentication
+    // we would implement proper deletion via API
+    console.warn('deleteFuneralRoom is just a placeholder in this implementation');
+    return false;
   } catch (error) {
     console.error('Error deleting funeral room:', error);
     return false;
