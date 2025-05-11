@@ -9,7 +9,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [password, setPwd] = useState('');
-  const [userType, setUserType] = useState<'organizer' | 'visitor' | 'lovedOne'>('visitor');
+  const [userType, setUserType] = useState<'organizer' | 'visitor'>('visitor');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const nav = useNavigate();
@@ -172,7 +172,6 @@ export default function RegisterPage() {
               {[
                 { label: 'Visitor', value: 'visitor', icon: '👤' },
                 { label: 'Organizer', value: 'organizer', icon: '🏢' },
-                { label: 'Loved One', value: 'lovedOne', icon: '💖' },
               ].map(({ label, value, icon }) => (
               <label 
                 key={value} 

@@ -129,6 +129,9 @@ export default function App() {
             }
           />
         </Route>
+
+        {/* Visitor Dashboard */}
+        <Route path="/visitor-dashboard" element={<VisitorDashboard />} />
       </Routes>
     </div>
   );

@@ -13,7 +13,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<'organizer' | 'visitor' | 'lovedOne'>('visitor');
+  const [userType, setUserType] = useState<'organizer' | 'visitor'>('visitor');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +36,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
           navigate('/');
           break;
         case 'visitor':
-          navigate('/');
-          break;
-        case 'lovedOne':
-          navigate('/');
+          navigate('/visitor-dashboard');
           break;
       }
     } catch (err: any) {
@@ -116,10 +113,9 @@ export default function LoginPage({ setToken }: LoginPageProps) {
             />
           </div>
 
-          <select value={userType} onChange={(e) => setUserType(e.target.value)}>
-            <option value="organizer">组织者</option>
-            <option value="visitor">访客</option>
-            <option value="lovedOne">亲友</option>
+          <select value={userType} onChange={(e) => setUserType(e.target.value as 'organizer' | 'visitor')}>
+            <option value="organizer">Organizer</option>
+            <option value="visitor">Visitor</option>
           </select>
 
           <button
