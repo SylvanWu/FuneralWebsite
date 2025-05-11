@@ -48,7 +48,7 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024;
 const CROP_IMAGE_SIZE = 128; // 128x128px final size
 
 // Size constant for decoration items
-const DECORATION_ITEM_SIZE = 10; // 10x10px
+const DECORATION_ITEM_SIZE = 50; // 50x50px
 
 // Function to create an image from a file
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -662,17 +662,17 @@ const FuneralRoomPage: React.FC = () => {
         
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar / Toolbox */}
-          <div className="w-full md:w-64 bg-white bg-opacity-90 rounded-lg p-4 shadow-lg">
+          <div className="w-full md:w-80 bg-white bg-opacity-90 rounded-lg p-4 shadow-lg">
             <h2 className="text-xl font-bold mb-4">Decorations</h2>
             <div className="space-y-3">
               {decorationItems.map((item) => (
                 <div 
                   key={item.id}
-                  className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
+                  className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100"
                   onClick={() => handleAddItem(item)}
                 >
                   <div 
-                    className="mr-3 flex items-center justify-center"
+                    className="mr-4 flex items-center justify-center"
                     style={{ 
                       width: `${DECORATION_ITEM_SIZE}px`, 
                       height: `${DECORATION_ITEM_SIZE}px`,
@@ -700,10 +700,10 @@ const FuneralRoomPage: React.FC = () => {
                       ></div>
                     )}
                   </div>
-                  <div className="flex-1 ml-2">
-                    <div className="font-medium text-xs">{item.name}</div>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{item.name}</div>
                     {item.description && (
-                      <div className="text-xs text-gray-500 hidden md:block">{item.description}</div>
+                      <div className="text-xs text-gray-500">{item.description}</div>
                     )}
                   </div>
                 </div>
