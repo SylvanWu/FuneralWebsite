@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Stage, Layer, Rect, Text, Image as KonvaImage } from 'react-konva';
 import { saveFuneralRoom, getFuneralRoomById, FuneralRoom } from '../services/funeralRoomDatabase';
@@ -13,6 +13,14 @@ import seasideImage from '../assets/funeral type/seaside funeral.png';
 import starryNightImage from '../assets/funeral type/Starry Night Funeral.png';
 import chineseTraditionalImage from '../assets/funeral type/Chinese traditional funeral.png';
 
+// Import decoration images
+import chocolateImage from '../assets/small picture/chocolate.png';
+import milkImage from '../assets/small picture/milk.png';
+import strawberryMilkImage from '../assets/small picture/streberry milk.png';
+import blueFlowerImage from '../assets/small picture/blue flower.png';
+import redTreeImage from '../assets/small picture/red tree.png';
+import bianfuImage from '../assets/small picture/bianfu.png';
+
 // Background image mapping for fallback or replacement
 const backgroundImageMap = {
   'church': churchImage,
@@ -23,13 +31,14 @@ const backgroundImageMap = {
   'chineseTraditional': chineseTraditionalImage,
 };
 
-// Placeholder vector icons - replace with actual SVGs
-const placeholderIcons = [
-  { id: 'icon1', color: '#FFD700', name: 'Gold Candle' },
-  { id: 'icon2', color: '#FF6347', name: 'Red Flower' },
-  { id: 'icon3', color: '#4682B4', name: 'Blue Urn' },
-  { id: 'icon4', color: '#32CD32', name: 'Green Wreath' },
-  { id: 'icon5', color: '#9370DB', name: 'Purple Incense' },
+// Decoration items with images
+const decorationItems = [
+  { id: 'chocolate', color: '#8B4513', name: 'Memorial Chocolate', image: chocolateImage, description: 'Chocolate offering for the deceased' },
+  { id: 'milk', color: '#FFFFFF', name: 'Milk Offering', image: milkImage, description: 'Pure milk to symbolize purity and nourishment' },
+  { id: 'strawberryMilk', color: '#FFB6C1', name: 'Strawberry Milk', image: strawberryMilkImage, description: 'Sweet strawberry milk for comfort' },
+  { id: 'blueFlower', color: '#4169E1', name: 'Blue Flower', image: blueFlowerImage, description: 'Elegant blue flowers to express remembrance' },
+  { id: 'redTree', color: '#B22222', name: 'Memorial Tree', image: redTreeImage, description: 'A symbolic tree for growth and lasting memory' },
+  { id: 'bianfu', color: '#2F4F4F', name: 'Spiritual Symbol', image: bianfuImage, description: 'A spiritual symbol for protection and guidance' },
 ];
 
 // Maximum file size for deceased image (500MB in bytes)
@@ -37,6 +46,9 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 // Size constants for cropped image
 const CROP_IMAGE_SIZE = 128; // 128x128px final size
+
+// Size constant for decoration items
+const DECORATION_ITEM_SIZE = 10; // 10x10px
 
 // Function to create an image from a file
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -49,33 +61,45 @@ const createImage = (url: string): Promise<HTMLImageElement> =>
 
 // Function to get cropped canvas from image and crop area
 const getCroppedImg = async (imageSrc: string, pixelCrop: { x: number; y: number; width: number; height: number }): Promise<string> => {
-  const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  
-  if (!ctx) {
-    throw new Error('Could not get canvas context');
-  }
+  try {
+    console.log('Loading image for cropping...');
+    const image = await createImage(imageSrc);
+    console.log('Image loaded, dimensions:', image.width, 'x', image.height);
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
 
-  // Set the canvas size to the final desired size (128x128)
-  canvas.width = CROP_IMAGE_SIZE;
-  canvas.height = CROP_IMAGE_SIZE;
-  
-  // Draw the cropped image with scaling
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    CROP_IMAGE_SIZE,
-    CROP_IMAGE_SIZE
-  );
-  
-  // Return as data URL (base64 string)
-  return canvas.toDataURL('image/jpeg');
+    // Set the canvas size to the final desired size (128x128)
+    canvas.width = CROP_IMAGE_SIZE;
+    canvas.height = CROP_IMAGE_SIZE;
+    
+    console.log('Drawing cropped section on canvas...');
+    // Draw the cropped image with scaling
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      CROP_IMAGE_SIZE,
+      CROP_IMAGE_SIZE
+    );
+    
+    // Return as data URL (base64 string)
+    console.log('Converting canvas to data URL...');
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.95); // higher quality
+    console.log('Data URL generated, length:', dataUrl.length);
+    return dataUrl;
+  } catch (error) {
+    console.error('Error in getCroppedImg function:', error);
+    throw error;
+  }
 };
 
 // Interface for draggable items on the canvas
@@ -87,6 +111,7 @@ interface CanvasItem {
   height: number;
   color: string;
   name: string;
+  image?: string; // Path to the image
 }
 
 const FuneralRoomPage: React.FC = () => {
@@ -138,6 +163,9 @@ const FuneralRoomPage: React.FC = () => {
   // 添加背景图片状态
   const [backgroundImg, setBackgroundImg] = useState<HTMLImageElement | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  
+  // State to store loaded decoration images
+  const [decorationImages, setDecorationImages] = useState<{[key: string]: HTMLImageElement}>({});
   
   // Load funeral room data from database on mount
   useEffect(() => {
@@ -209,6 +237,39 @@ const FuneralRoomPage: React.FC = () => {
     };
   }, [state.funeralType]);
   
+  // Load images when component mounts
+  useEffect(() => {
+    // Preload all decoration images
+    decorationItems.forEach(item => {
+      if (item.image) {
+        const img = new Image();
+        img.src = item.image;
+        img.onload = () => {
+          setDecorationImages(prev => ({
+            ...prev,
+            [item.id]: img
+          }));
+        };
+      }
+    });
+  }, []);
+  
+  // Load or update item images when canvasItems changes
+  useEffect(() => {
+    canvasItems.forEach(item => {
+      if (item.image && !decorationImages[item.id.split('-')[0]]) {
+        const img = new Image();
+        img.src = item.image;
+        img.onload = () => {
+          setDecorationImages(prev => ({
+            ...prev,
+            [item.id.split('-')[0]]: img
+          }));
+        };
+      }
+    });
+  }, [canvasItems, decorationImages]);
+  
   // Handle deceased image upload
   const handleDeceasedImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Reset any previous error
@@ -244,21 +305,28 @@ const FuneralRoomPage: React.FC = () => {
   };
   
   // Handle save cropped image
-  const handleSaveCroppedImage = async () => {
-    if (!imageToCrop || !croppedAreaPixels) return;
+  const handleSaveCroppedImage = useCallback(async () => {
+    if (!imageToCrop || !croppedAreaPixels) {
+      console.error('Missing image or crop area data');
+      return;
+    }
     
     try {
+      console.log('Cropping image with parameters:', croppedAreaPixels);
+      
       // Get the cropped image
       const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
+      console.log('Image cropped successfully');
       
       // Update component state with the cropped image
-      setState({
-        ...state,
+      setState(prevState => ({
+        ...prevState,
         deceasedImage: croppedImage,
-      });
+      }));
       
       // Save to database
       if (roomId) {
+        console.log('Saving to database...');
         const updatedRoom: FuneralRoom = {
           roomId,
           password: state.password,
@@ -283,17 +351,18 @@ const FuneralRoomPage: React.FC = () => {
       // Reset cropping state
       setIsCropping(false);
       setImageToCrop(null);
+      console.log('Crop process completed');
     } catch (error) {
       console.error('Error cropping image:', error);
       setUploadError('Failed to crop image. Please try again.');
     }
-  };
+  }, [imageToCrop, croppedAreaPixels, roomId, state, canvasItems, setIsCropping, setImageToCrop, setSaveMessage, setUploadError]);
   
   // Cancel cropping
-  const handleCancelCrop = () => {
+  const handleCancelCrop = useCallback(() => {
     setIsCropping(false);
     setImageToCrop(null);
-  };
+  }, [setIsCropping, setImageToCrop]);
   
   // Function to remove deceased image
   const handleRemoveDeceasedImage = () => {
@@ -346,16 +415,17 @@ const FuneralRoomPage: React.FC = () => {
   };
   
   // Function to add a new item to the canvas
-  const handleAddItem = (item: { id: string; color: string; name: string }) => {
+  const handleAddItem = (item: { id: string; color: string; name: string; image?: string; description?: string }) => {
     // 调整新项目的位置，使其在画布中间位置
     const newItem: CanvasItem = {
       id: `${item.id}-${Date.now()}`,
       x: canvasSize.width / 2,
       y: canvasSize.height / 2,
-      width: 50,
-      height: 50,
+      width: DECORATION_ITEM_SIZE,
+      height: DECORATION_ITEM_SIZE,
       color: item.color,
       name: item.name,
+      image: item.image,
     };
     
     setCanvasItems([...canvasItems, newItem]);
@@ -410,6 +480,25 @@ const FuneralRoomPage: React.FC = () => {
       console.log(`Image for ${type}:`, imgSrc);
     });
   }, [state.backgroundImage, state.funeralType]);
+  
+  // Add keyboard event handling for Enter key to save cropped image and Escape to cancel
+  useEffect(() => {
+    if (!isCropping || !imageToCrop) return;
+    
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSaveCroppedImage();
+      } else if (e.key === 'Escape') {
+        handleCancelCrop();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [isCropping, imageToCrop, croppedAreaPixels, handleSaveCroppedImage, handleCancelCrop]);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -423,6 +512,7 @@ const FuneralRoomPage: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">Crop Image</h2>
           <p className="text-sm text-gray-600 mb-4">
             Adjust and crop the image to show the most important part. The image will be displayed as a square.
+            <span className="font-semibold block mt-1">Press Enter to save after cropping or Escape to cancel.</span>
           </p>
           
           <div className="relative h-96 mb-4 bg-gray-100 rounded-lg overflow-hidden">
@@ -455,14 +545,16 @@ const FuneralRoomPage: React.FC = () => {
             <button
               onClick={handleCancelCrop}
               className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              title="You can also press Escape to cancel"
             >
-              Cancel
+              Cancel (ESC)
             </button>
             <button
               onClick={handleSaveCroppedImage}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              title="You can also press Enter to save"
             >
-              Save Image
+              Save Image (Enter)
             </button>
           </div>
         </div>
@@ -573,17 +665,47 @@ const FuneralRoomPage: React.FC = () => {
           <div className="w-full md:w-64 bg-white bg-opacity-90 rounded-lg p-4 shadow-lg">
             <h2 className="text-xl font-bold mb-4">Decorations</h2>
             <div className="space-y-3">
-              {placeholderIcons.map((icon) => (
+              {decorationItems.map((item) => (
                 <div 
-                  key={icon.id}
+                  key={item.id}
                   className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleAddItem(icon)}
+                  onClick={() => handleAddItem(item)}
                 >
-                  <div
-                    className="w-10 h-10 rounded-md mr-3"
-                    style={{ backgroundColor: icon.color }}
-                  ></div>
-                  <span>{icon.name}</span>
+                  <div 
+                    className="mr-3 flex items-center justify-center"
+                    style={{ 
+                      width: `${DECORATION_ITEM_SIZE}px`, 
+                      height: `${DECORATION_ITEM_SIZE}px`,
+                      minWidth: `${DECORATION_ITEM_SIZE}px` // Prevent shrinking
+                    }}
+                  >
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        className="object-contain"
+                        style={{ 
+                          width: `${DECORATION_ITEM_SIZE}px`, 
+                          height: `${DECORATION_ITEM_SIZE}px`
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="rounded-md"
+                        style={{ 
+                          backgroundColor: item.color,
+                          width: `${DECORATION_ITEM_SIZE}px`, 
+                          height: `${DECORATION_ITEM_SIZE}px`
+                        }}
+                      ></div>
+                    )}
+                  </div>
+                  <div className="flex-1 ml-2">
+                    <div className="font-medium text-xs">{item.name}</div>
+                    {item.description && (
+                      <div className="text-xs text-gray-500 hidden md:block">{item.description}</div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -611,35 +733,67 @@ const FuneralRoomPage: React.FC = () => {
                 )}
                 
                 {/* decorations */}
-                {canvasItems.map((item) => (
-                  <React.Fragment key={item.id}>
-                    {/* Using rectangles as placeholders; replace with actual SVGs/images later */}
-                    <Rect
-                      x={item.x}
-                      y={item.y}
-                      width={item.width}
-                      height={item.height}
-                      fill={item.color}
-                      cornerRadius={5}
-                      draggable
-                      onDragEnd={(e) => {
-                        const updatedItems = canvasItems.map((i) => {
-                          if (i.id === item.id) {
-                            return {
-                              ...i,
-                              x: e.target.x(),
-                              y: e.target.y(),
-                            };
-                          }
-                          return i;
-                        });
-                        setCanvasItems(updatedItems);
-                      }}
-                      onClick={() => setSelectedItemId(item.id)}
-                      onTap={() => setSelectedItemId(item.id)}
-                    />
-                  </React.Fragment>
-                ))}
+                {canvasItems.map((item) => {
+                  // Get the base item ID (without timestamp)
+                  const baseId = item.id.split('-')[0];
+                  // Check if we have the image loaded
+                  const itemImage = item.image && decorationImages[baseId];
+                  
+                  return (
+                    <React.Fragment key={item.id}>
+                      {itemImage ? (
+                        <KonvaImage
+                          image={itemImage}
+                          x={item.x}
+                          y={item.y}
+                          width={item.width}
+                          height={item.height}
+                          draggable
+                          onDragEnd={(e) => {
+                            const updatedItems = canvasItems.map((i) => {
+                              if (i.id === item.id) {
+                                return {
+                                  ...i,
+                                  x: e.target.x(),
+                                  y: e.target.y(),
+                                };
+                              }
+                              return i;
+                            });
+                            setCanvasItems(updatedItems);
+                          }}
+                          onClick={() => setSelectedItemId(item.id)}
+                          onTap={() => setSelectedItemId(item.id)}
+                        />
+                      ) : (
+                        <Rect
+                          x={item.x}
+                          y={item.y}
+                          width={item.width}
+                          height={item.height}
+                          fill={item.color}
+                          cornerRadius={5}
+                          draggable
+                          onDragEnd={(e) => {
+                            const updatedItems = canvasItems.map((i) => {
+                              if (i.id === item.id) {
+                                return {
+                                  ...i,
+                                  x: e.target.x(),
+                                  y: e.target.y(),
+                                };
+                              }
+                              return i;
+                            });
+                            setCanvasItems(updatedItems);
+                          }}
+                          onClick={() => setSelectedItemId(item.id)}
+                          onTap={() => setSelectedItemId(item.id)}
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </Layer>
             </Stage>
           </div>
