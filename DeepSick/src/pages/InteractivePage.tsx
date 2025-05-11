@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import SharedCanvas from '../components/SharedCanvas';
 import '../App.css';
 import './InteractivePage.css';
 
@@ -35,6 +36,12 @@ const InteractivePage: React.FC = () => {
         <img src="/image.png" alt="Memorial Hall" className="hero-image" />
         <h1 className="hero-name">NAME</h1>
         <p className="hero-subtitle">MOTTO</p>
+      </section>
+
+      {/* Drawing canvas */}
+      <section className="drawing-area">
+        <h2>Collaborative Drawing Board</h2>
+        <SharedCanvas />
       </section>
 
       {/* Interaction cards */}

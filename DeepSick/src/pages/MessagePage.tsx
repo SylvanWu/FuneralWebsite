@@ -1,5 +1,5 @@
 // src/pages/MessagePage.tsx
-// Dedicated page for "Leave a Message" interaction with real-time chat canvas via WebSocket
+// Dedicated page for "Leave a Message" interaction
 
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
@@ -69,11 +69,12 @@ const MessagePage: React.FC = () => {
       {/* Header */}
       <section className="hero-section">
         <h1 className="hero-name">Message Board</h1>
-        <p className="hero-subtitle">Real-time chat, unlimited messages</p>
+        <p className="hero-subtitle">Leave your blessings and remembrances</p>
       </section>
 
       {/* Chat canvas */}
       <section className="interactive-area">
+        <h2>Message Board</h2>
         <div ref={canvasRef} className="message-canvas">
           {records.map((r, idx) => (
             <div key={idx} className="message-card">
