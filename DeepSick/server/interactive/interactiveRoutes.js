@@ -48,18 +48,24 @@ router.post('/music/upload', uploadMusic.single('music'), async (req, res) => {
 });
 
 // 献花记录
-router.post('/flower', async (req, res) => {
+router.post('/flower/:roomId', async (req, res) => {
     try {
-        const { username } = req.body;
+        const { roomId } = req.params;
+        const { username, flowerType } = req.body;
         const record = new InteractiveRecord({
+            roomId,
             type: 'flower',
             username,
+            flowerType,
             timestamp: new Date()
         });
         await record.save();
         
-        // 获取献花总数
-        const flowerCount = await InteractiveRecord.countDocuments({ type: 'flower' });
+        // 获取该房间的献花总数
+        const flowerCount = await InteractiveRecord.countDocuments({ 
+            roomId,
+            type: 'flower' 
+        });
         
         res.json({ 
             success: true, 
@@ -75,10 +81,13 @@ router.post('/flower', async (req, res) => {
 });
 
 // 获取蜡烛记录
-router.get('/candle', async (req, res) => {
+router.get('/candle/:roomId', async (req, res) => {
     try {
-        const records = await InteractiveRecord.find({ type: 'candle' })
-            .sort({ timestamp: -1 });
+        const { roomId } = req.params;
+        const records = await InteractiveRecord.find({ 
+            roomId,
+            type: 'candle' 
+        }).sort({ timestamp: -1 });
         
         res.json({ 
             success: true, 
@@ -93,12 +102,14 @@ router.get('/candle', async (req, res) => {
 });
 
 // 点亮蜡烛记录
-router.post('/candle', async (req, res) => {
+router.post('/candle/:roomId', async (req, res) => {
     try {
+        const { roomId } = req.params;
         const { username, candleId } = req.body;
 
-        // 检查该蜡烛是否已被点亮
+        // 检查该房间的蜡烛是否已被点亮
         const existingCandle = await InteractiveRecord.findOne({
+            roomId,
             type: 'candle',
             candleId
         });
@@ -111,6 +122,7 @@ router.post('/candle', async (req, res) => {
         }
 
         const record = new InteractiveRecord({
+            roomId,
             type: 'candle',
             username,
             candleId,
@@ -131,22 +143,67 @@ router.post('/candle', async (req, res) => {
 });
 
 // 留言记录
-router.post('/message', async (req, res) => {
+router.post('/message/:roomId', async (req, res) => {
     try {
-        const { username, content } = req.body;
+        const { roomId } = req.params;
+        const { username, message } = req.body;
+
+        console.log('Received message request:', { roomId, username, message });
+
+        if (!username || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username and message are required'
+            });
+        }
+
         const record = new InteractiveRecord({
+            roomId,
             type: 'message',
             username,
-            content,
+            content: message,
             timestamp: new Date()
         });
-        await record.save();
+
+        console.log('Saving record:', record);
+
+        const savedRecord = await record.save();
+        console.log('Record saved successfully:', savedRecord);
         
         res.json({ 
             success: true, 
-            record 
+            record: savedRecord
         });
     } catch (error) {
+        console.error('Error saving message:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
+
+// 获取留言记录
+router.get('/message/:roomId', async (req, res) => {
+    try {
+        const { roomId } = req.params;
+        console.log('Fetching messages for room:', roomId);
+
+        const records = await InteractiveRecord.find({ 
+            roomId,
+            type: 'message' 
+        })
+            .sort({ timestamp: -1 })
+            .limit(100);
+            
+        console.log(`Found ${records.length} messages for room ${roomId}`);
+        
+        res.json({ 
+            success: true, 
+            records
+        });
+    } catch (error) {
+        console.error('Error fetching messages:', error);
         res.status(500).json({ 
             success: false, 
             message: error.message 
@@ -155,14 +212,20 @@ router.post('/message', async (req, res) => {
 });
 
 // 获取历史记录
-router.get('/:type', async (req, res) => {
+router.get('/:type/:roomId', async (req, res) => {
     try {
-        const { type } = req.params;
-        const records = await InteractiveRecord.find({ type })
+        const { type, roomId } = req.params;
+        const records = await InteractiveRecord.find({ 
+            roomId,
+            type 
+        })
             .sort({ timestamp: -1 })
             .limit(100);
             
-        const totalCount = await InteractiveRecord.countDocuments({ type });
+        const totalCount = await InteractiveRecord.countDocuments({ 
+            roomId,
+            type 
+        });
         
         res.json({ 
             success: true, 
