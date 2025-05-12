@@ -33,7 +33,6 @@ import DreamShrink from './components/DreamList/DreamShrink';
 import ProfilePage from './pages/ProfilePage';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
-import LovedOneDashboard from './pages/LovedOneDashboard';
 
 import './App.css';
 import { SocketProvider } from './context/SocketContext';
