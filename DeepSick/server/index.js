@@ -33,7 +33,8 @@ app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:3000'], // Frontend development addresses
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
-    exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length']
+    exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length'],
+    credentials: true
 }));
 
 app.use(express.json());

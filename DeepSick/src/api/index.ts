@@ -3,9 +3,11 @@
 // src/api/index.ts
 import axios from 'axios';
 
-const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
-});
+const baseURL = process.env.NODE_ENV === 'production'
+  ? 'http://3.105.228.129:5001/api'
+  : 'http://localhost:5001/api';
+
+const API = axios.create({ baseURL });
 
 /* ---------- 注入 JWT ---------- */
 API.interceptors.request.use(
