@@ -163,10 +163,10 @@ const FuneralRoomPage: React.FC = () => {
 
   // State to hold funeral room data
   const [state, dispatch] = useReducer(roomReducer, {
-    funeralType: 'church',
-    backgroundImage: '',
-    password: '',
-    name: '',
+    funeralType: locationState?.funeralType || 'church',
+    backgroundImage: locationState?.backgroundImage || '',
+    password: locationState?.password || '',
+    name: locationState?.name || '',
   });
   
   // Canvas state
@@ -201,8 +201,41 @@ const FuneralRoomPage: React.FC = () => {
   // Add refs for transform operations
   const transformerRef = useRef<any>(null);
   
+  // Function to get background image, with fallback to mapping if needed
+  const getBackgroundImage = useCallback(() => {
+    // Check if we have state.funeralType and it exists in the mapping
+    if (state.funeralType && state.funeralType in backgroundImageMap) {
+      const type = state.funeralType as keyof typeof backgroundImageMap;
+      console.log('Using mapped image for type:', type);
+      return backgroundImageMap[type];
+    }
+    
+    // Fallback to church image
+    console.log('No matching type found, using default church image');
+    return churchImage;
+  }, [state.funeralType]);
+  
   // Load funeral room data from database on mount
   useEffect(() => {
+    // If we already have location state with funeral type, apply it immediately
+    if (locationState) {
+      console.log('Using location state for initial load:', locationState);
+      dispatch({
+        type: 'SET_ALL',
+        payload: {
+          name: locationState.name || '',
+          password: locationState.password || '',
+          backgroundImage: locationState.backgroundImage || '',
+          funeralType: locationState.funeralType || 'church',
+        }
+      });
+      
+      // Set canvas items if they exist in the location state
+      if (locationState.canvasItems && Array.isArray(locationState.canvasItems)) {
+        setCanvasItems(locationState.canvasItems);
+      }
+    }
+    
     const loadFuneralRoom = async () => {
       if (!roomId) return;
       
@@ -278,7 +311,7 @@ const FuneralRoomPage: React.FC = () => {
     bgImage.onerror = () => {
       console.error('Failed to load background image');
     };
-  }, [state.funeralType, isToolbarCollapsed]);
+  }, [state.funeralType, isToolbarCollapsed, getBackgroundImage]);
   
   // Add window resize handler
   useEffect(() => {
@@ -457,24 +490,6 @@ const FuneralRoomPage: React.FC = () => {
     
     // Save changes
     handleSave();
-  };
-
-  // Function to get background image, with fallback to mapping if needed
-  const getBackgroundImage = () => {
-    // Debug: print the background image path
-    console.log('Background Image from state:', state.backgroundImage);
-    console.log('Funeral Type:', state.funeralType);
-    
-    // 直接使用映射中的背景图片，确保我们使用的是已导入的图片对象
-    if (state.funeralType && state.funeralType in backgroundImageMap) {
-      const type = state.funeralType as keyof typeof backgroundImageMap;
-      console.log('Using mapped image for type:', type);
-      return backgroundImageMap[type];
-    }
-    
-    // 如果没有找到对应类型，返回默认图片或空字符串
-    console.log('No matching type found, using default or empty');
-    return churchImage; // 默认使用教堂背景
   };
   
   // Function to add a new item to the canvas
