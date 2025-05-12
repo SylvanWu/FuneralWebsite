@@ -52,7 +52,8 @@ export default function RegisterPage() {
       phone = contact;
     }
     try {
-      await API.post('/api/auth/register', {
+      //The /api has been removed
+      await API.post('/auth/register', {
         username: name,
         password,
         userType,

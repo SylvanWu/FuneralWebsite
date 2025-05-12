@@ -20,7 +20,8 @@ export default function LoginPage({ setToken }: LoginPageProps) {
     setError('');
     
     try {
-      const response = await API.post('/api/auth/login', {
+      //The /api has been removed
+      const response = await API.post('/auth/login', {
         username,
         password,
         userType

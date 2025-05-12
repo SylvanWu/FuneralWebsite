@@ -906,102 +906,11 @@ const FuneralRoomPage: React.FC = () => {
         }}
       >
         <div className="container mx-auto py-4 px-4">
-          <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-4">
+          <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-4"
+          style={{width: '100vh', height: '100vh'}}>
             {/* Display deceased person's info and image upload section */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-4">Deceased Person</h2>
-              <div className="flex flex-col md:flex-row items-center mb-4">
-                {/* Left side: Display the deceased image or placeholder */}
-                <div className="mb-4 md:mb-0 md:mr-8">
-                  {state.deceasedImage ? (
-                    <div className="relative">
-                      <img 
-                        src={state.deceasedImage} 
-                        alt={state.name}
-                        className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
-                        style={{ 
-                          width: `${CROP_IMAGE_SIZE}px`, 
-                          height: `${CROP_IMAGE_SIZE}px`,
-                          objectFit: 'cover'
-                        }}
-                      />
-                      <button
-                        onClick={handleRemoveDeceasedImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                        title="Remove image"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <div 
-                      className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
-                      style={{ 
-                        width: `${CROP_IMAGE_SIZE}px`, 
-                        height: `${CROP_IMAGE_SIZE}px` 
-                      }}
-                    >
-                      No image
-                    </div>
-                  )}
-                </div>
-                
-                {/* Right side: Upload controls */}
-                <div className="flex-1">
-                  <div className="mb-2">
-                    <h3 className="text-lg font-semibold">{state.name}</h3>
-                  </div>
-                  
-                  {/* Upload image section */}
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleDeceasedImageUpload}
-                      ref={fileInputRef}
-                      className="hidden"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    >
-                      {state.deceasedImage ? 'Change Image' : 'Upload Image'}
-                    </button>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Maximum size: 500MB
-                    </p>
-                    
-                    {/* Error message for file size */}
-                    {uploadError && (
-                      <p className="text-red-500 text-sm mt-1">{uploadError}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
-            <p className="text-gray-700 text-center mb-4">
-              Type: {state.funeralType} | Password: {state.password}
-            </p>
-            
-            {/* Save Button */}
-            <div className="mt-4 text-center">
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50"
-              >
-                {isSaving ? 'Saving...' : 'Save Room'}
-              </button>
-              
-              {saveMessage && (
-                <div className="mt-2 text-green-600">{saveMessage}</div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col md:flex-row gap-6">
             {/* Canvas Area */}
             <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
               <div className="text-center text-gray-500 py-2">
@@ -1173,6 +1082,99 @@ const FuneralRoomPage: React.FC = () => {
               </div>
             </div>
           </div>
+              <h2 className="text-2xl font-bold mb-4">Deceased Person</h2>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                {/* Left side: Display the deceased image or placeholder */}
+                <div className="mb-4 md:mb-0 md:mr-8">
+                  {state.deceasedImage ? (
+                    <div className="relative">
+                      <img 
+                        src={state.deceasedImage} 
+                        alt={state.name}
+                        className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
+                        style={{ 
+                          width: `${CROP_IMAGE_SIZE}px`, 
+                          height: `${CROP_IMAGE_SIZE}px`,
+                          objectFit: 'cover'
+                        }}
+                      />
+                      <button
+                        onClick={handleRemoveDeceasedImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                        title="Remove image"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
+                      style={{ 
+                        width: `${CROP_IMAGE_SIZE}px`, 
+                        height: `${CROP_IMAGE_SIZE}px` 
+                      }}
+                    >
+                      No image
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right side: Upload controls */}
+                <div className="flex-1">
+                  <div className="mb-2">
+                    <h3 className="text-lg font-semibold">{state.name}</h3>
+                  </div>
+                  
+                  {/* Upload image section */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleDeceasedImageUpload}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      {state.deceasedImage ? 'Change Image' : 'Upload Image'}
+                    </button>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Maximum size: 500MB
+                    </p>
+                    
+                    {/* Error message for file size */}
+                    {uploadError && (
+                      <p className="text-red-500 text-sm mt-1">{uploadError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
+            <p className="text-gray-700 text-center mb-4">
+              Type: {state.funeralType} | Password: {state.password}
+            </p>
+            
+            {/* Save Button */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Room'}
+              </button>
+              
+              {saveMessage && (
+                <div className="mt-2 text-green-600">{saveMessage}</div>
+              )}
+            </div>
+          </div>
+          
+
         </div>
       </div>
     </div>
