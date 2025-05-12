@@ -1,49 +1,83 @@
 // 愿望编辑组件(带预览)
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+
+interface Dream {
+  _id: string;
+  content: string;
+}
 
 const DreamEditor = () => {
-  const { dreamId } = useParams(); // 获取路由参数中的 dreamId
-  const [dream, setDream] = useState<{ content: string }>({ content: '' }); // 用于存储愿望数据
+  const location = useLocation();
+  // const { ids }: { ids: string[] } = location.state || { ids: [] };
 
-  useEffect(() => {
-    const fetchDream = async () => {
-      try {
-        const response = await fetch(`http://localhost:5001/api/dreams/${dreamId}`);
-        const data = await response.json();
-        setDream(data); // 假设返回的数据中包含 content 字段
-      } catch (error) {
-        console.error('Failed to fetch dream:', error);
-      }
-    };
+  // const [dreams, setDreams] = useState<Dream[]>([]);
+  const { dreams }: { dreams: Dream[] } = location.state || { dreams: [] };
 
-    fetchDream();
-  }, [dreamId]);
+  const [editableDreams, setEditableDreams] = useState<Dream[]>(dreams);
+  // useEffect(() => {
+  //   const fetchDreamsByIds = async () => {
+  //     try {
+  //       const fetched = await Promise.all(
+  //         ids.map(id =>
+  //           fetch(`http://localhost:5001/api/dreams/${id}`).then(res => res.json())
+  //         )
+  //       );
+  //       setDreams(fetched);
+  //     } catch (err) {
+  //       console.error('Failed to fetch dreams:', err);
+  //     }
+  //   };
+
+  //   if (ids.length > 0) {
+  //     fetchDreamsByIds();
+  //   }
+  // }, [ids]); // ← 加依赖数组，确保只在 ids 改变时触发
+
+
+
+
+  const handleDreamChange = (index: number, newContent: string) => {
+    // const updatedDreams = [...dreams];
+    const updatedDreams = [...editableDreams];
+    updatedDreams[index].content = newContent;
+    // setDreams(updatedDreams);
+    setEditableDreams(updatedDreams);
+  };
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/dreams/${dreamId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: dream.content }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update the dream');
-
-      // 更新成功后你可以选择做些操作，比如返回到清单页面
+      await Promise.all(
+        // dreams.map((dream) =>
+        editableDreams.map((dream) =>
+          fetch(`http://localhost:5001/api/dreams/${dream._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: dream.content }),
+          })
+        )
+      );
+      alert('All dreams saved!');
     } catch (error) {
-      console.error('Error saving dream:', error);
+      console.error('Error saving dreams:', error);
     }
   };
 
+
   return (
     <div>
-      <h1>Edit Dream</h1>
-      <textarea
-        value={dream.content}
-        onChange={(e) => setDream({ ...dream, content: e.target.value })}
-      />
-      <button onClick={handleSave}>Save</button>
+      <h1>Edit All Dreams</h1>
+      {/* {dreams.map((dream, index) => ( */}
+      {editableDreams.map((dream, index) => (
+        <div key={dream._id}>
+          <textarea
+            value={dream.content}
+            onChange={(e) => handleDreamChange(index, e.target.value)}
+            style={{ width: '100%', marginBottom: '10px' }}
+          />
+        </div>
+      ))}
+      <button onClick={handleSave}>Save All</button>
     </div>
   );
 };

@@ -28,12 +28,20 @@ export function DreamList() {
 
   const navigate = useNavigate(); // 初始化 navigate
 
-  // 编辑按钮点击事件
-  const handleEdit = (dreamId: string) => {
-    // 跳转到编辑页面，并传递dream的id
-    navigate(`/dreamlist/edit/${dreamId}`);
-  };
 
+  useEffect(() => {
+    const fetchAllDreams = async () => {
+      try {
+        const res = await fetch(`http://localhost:5001/api/dreams`);
+        const data = await res.json();
+        setDreams(data);
+      } catch (err) {
+        console.error('Failed to fetch dreams list:', err);
+      }
+    };
+
+    fetchAllDreams();
+  }, []);
 
   // 新增：创建新梦想的函数
   //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams`的网址写法 基于env。
@@ -73,8 +81,13 @@ export function DreamList() {
       return;
     }
     try {
-      const newDream = await createDream(newDreamContent); // 使用用户输入的内容
-      setDreams((prev) => [...prev, newDream]); // 将新梦想添加到列表
+      await createDream(newDreamContent); // 先创建
+      const res = await fetch(`http://localhost:5001/api/dreams`); // 再拉所有最新数据
+      const updatedDreams = await res.json();
+      setDreams(updatedDreams); // 覆盖原本 state，避免数据不一致
+
+
+
       setNewDreamContent(''); // 清空输入框
       setShowInput(false); // 提交后隐藏输入框
     } catch (err) {
@@ -106,6 +119,25 @@ export function DreamList() {
       console.error('failed to delete the wish:', err);
     }
   }
+
+  // 编辑按钮点击事件
+  const handleEdit = (dreamId: string) => {
+    // 跳转到编辑页面，并传递dream的id
+    navigate(`/dreamlist/edit/${dreamId}`);
+  };
+
+  const handleEditAll = async () => {
+    // const dreamIds = dreams.map(d => d._id);
+    // navigate('/dreamlist/edit', { state: { ids: dreamIds } });
+    try {
+    const res = await fetch(`http://localhost:5001/api/dreams`);
+    const data = await res.json();
+    // 传递所有的梦想内容
+    navigate('/dreamlist/edit', { state: { dreams: data } });
+  } catch (err) {
+    console.error('Failed to fetch latest dreams:', err);
+  }
+};
 
   return (
     <div>
@@ -145,9 +177,11 @@ export function DreamList() {
             </button>
           </div>
         )}
-        <button className="edit-toggle-button" onClick={() => navigate('/dreamlist/edit')}>
+
+        <button className="edit-toggle-button" onClick={handleEditAll}>
           🖉
         </button>
+
         <button className="add-button" onClick={handleAddDream}>
           {showInput ? '✓' : '+'}
         </button>
