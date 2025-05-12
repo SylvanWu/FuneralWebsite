@@ -1,1 +1,1 @@
-// 类型定义
+// Type definition

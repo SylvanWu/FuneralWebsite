@@ -1,4 +1,4 @@
-// 应用的头部组件，显示应用名称和描述信息
+// Header component of the application, displaying the app name and description
 import React from 'react';
 
 const Header: React.FC = () => {

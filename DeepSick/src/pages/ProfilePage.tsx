@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api'; // 你的 axios 实例
+import API from '../api'; // Your axios instance
 import defaultAvatar from '../assets/avatar.png';
 
-const backend = 'http://localhost:5001'; // 你的后端地址
+const backend = 'http://localhost:5001'; // Your backend address
 
 function getAvatarUrl(avatar) {
   if (!avatar || avatar === defaultAvatar) return defaultAvatar;
@@ -13,7 +13,8 @@ function getAvatarUrl(avatar) {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  // 读取本地用户信息
+
+  // Read user info from localStorage
   const user = JSON.parse(localStorage.getItem('user')) || {};
   const [username, setUsername] = useState(user.username || '');
   const [phone, setPhone] = useState(user.phone || '');
@@ -25,22 +26,22 @@ export default function ProfilePage() {
   const [msg, setMsg] = useState('');
   const [nickname, setNickname] = useState(user.nickname || user.username || '');
 
-  // 上传头像到服务器
+  // Upload avatar to server
   const handleAvatarChange = async e => {
     const file = e.target.files[0];
     if (file) {
       setAvatarFile(file);
-      setAvatar(URL.createObjectURL(file)); // 预览
+      setAvatar(URL.createObjectURL(file)); // Preview avatar
     }
   };
 
-  // 保存
+  // Save profile
   const handleSave = async () => {
     setLoading(true);
     setMsg('');
     let avatarUrl = avatar;
     try {
-      // 1. 先上传头像
+      // 1. Upload avatar first
       if (avatarFile) {
         const formData = new FormData();
         formData.append('file', avatarFile);
@@ -53,7 +54,7 @@ export default function ProfilePage() {
         }
         setAvatar(avatarUrl);
       }
-      // 2. 更新用户信息
+      // 2. Update user info
       const res = await API.put('/api/auth/profile', {
         nickname,
         phone,

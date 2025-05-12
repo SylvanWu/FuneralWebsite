@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createWill } from '../api';
 
-/* ---------------- 类型 ---------------- */
+/* ---------------- Types ---------------- */
 export interface Will {
     _id: string;
     uploaderName: string;
@@ -12,9 +12,9 @@ export interface Will {
 }
 interface Props { onCreated?: (w: Will) => void }
 
-/* ================ 组件 ================ */
+/* ================ Component ================ */
 export default function WillForm({ onCreated }: Props) {
-    /* ---------- 状态 ---------- */
+    /* ---------- State ---------- */
     const [uploaderName, setUploaderName] = useState('');
     const [farewellMessage, setFarewellMsg] = useState('');
     const [recording, setRecording] = useState(false);
@@ -24,9 +24,9 @@ export default function WillForm({ onCreated }: Props) {
     const [previewURL, setPreviewURL] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    /* ---------- 打开摄像头 ---------- */
-    /* 解决 React18‑StrictMode 下 effect 双调导致黑屏 */
-    const closedRef = useRef(false);          // 只关一次
+    /* ---------- Open camera ---------- */
+    /* Prevent black screen caused by double invocation in React 18 StrictMode */
+    const closedRef = useRef(false);          // Ensure stream is closed only once
     useEffect(() => {
         let localStream: MediaStream;
 
@@ -50,11 +50,11 @@ export default function WillForm({ onCreated }: Props) {
                 };
                 setMediaRecorder(rec);
             } catch (err) {
-                console.error('无法打开摄像头/麦克风：', err);
+                console.error('Failed to access camera/microphone:', err);
             }
         })();
 
-        /* --------- 清理 --------- */
+        /* --------- Cleanup --------- */
         return () => {
             if (!closedRef.current && localStream) {
                 localStream.getTracks().forEach(t => t.stop());
@@ -63,7 +63,7 @@ export default function WillForm({ onCreated }: Props) {
         };
     }, []);
 
-    /* ---------- 录制控制 ---------- */
+    /* ---------- Recording control ---------- */
     const startRec = () => {
         recordedChunksRef.current = [];
         setRecordedBlob(null);
@@ -76,7 +76,7 @@ export default function WillForm({ onCreated }: Props) {
         setRecording(false);
     };
 
-    /* ---------- 提交 ---------- */
+    /* ---------- Submit ---------- */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const fd = new FormData();
@@ -93,10 +93,10 @@ export default function WillForm({ onCreated }: Props) {
             setFarewellMsg('');
             setRecordedBlob(null);
             setPreviewURL('');
-            alert('提交成功！');
+            alert('Submitted successfully!');
         } catch (err) {
-            console.error('提交失败：', err);
-            alert('提交失败，请稍后重试');
+            console.error('Submission failed:', err);
+            alert('Submission failed, please try again later.');
         }
     };
 
@@ -104,63 +104,63 @@ export default function WillForm({ onCreated }: Props) {
     return (
         <div className="will-panel">
             <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* 姓名 */}
+                {/* Name */}
                 <div>
-                    <label className="block mb-1 font-medium">你的姓名</label>
+                    <label className="block mb-1 font-medium">Your Name</label>
                     <input
                         value={uploaderName}
                         onChange={e => setUploaderName(e.target.value)}
-                        placeholder="你的姓名（可选）"
+                        placeholder="Your name (optional)"
                     />
                 </div>
 
-                {/* 留言 */}
+                {/* Farewell message */}
                 <div>
-                    <label className="block mb-1 font-medium">你的告别留言</label>
+                    <label className="block mb-1 font-medium">Your Farewell Message</label>
                     <textarea
                         value={farewellMessage}
                         onChange={e => setFarewellMsg(e.target.value)}
                         className="h-28"
-                        placeholder="输入文字留言"
+                        placeholder="Enter a farewell message"
                     />
                 </div>
 
-                {/* 摄像头 + 预览 */}
+                {/* Camera + Preview */}
                 <div className="grid md:grid-cols-2 gap-4">
-                    {/* 摄像头实时 */}
+                    {/* Live Camera */}
                     <div className="flex flex-col items-center">
                         <video
                             ref={videoRef}
                             autoPlay
-                            playsInline           /* ★关键 */
+                            playsInline           /* ★Important */
                             muted
-                            className="w-full h-48 rounded object-cover bg-black/40" /* 半透明占位 */
+                            className="w-full h-48 rounded object-cover bg-black/40" /* semi-transparent placeholder */
                         />
                         <button
                             type="button"
                             onClick={recording ? stopRec : startRec}
                             className={recording ? 'btn-ghost mt-2' : 'btn-primary mt-2'}
                         >
-                            {recording ? '停止录制' : '开始录制'}
+                            {recording ? 'Stop Recording' : 'Start Recording'}
                         </button>
                     </div>
 
-                    {/* 录制结果预览 */}
+                    {/* Recorded Video Preview */}
                     <div>
-                        <label className="block mb-1 font-medium">预览已录制视频</label>
+                        <label className="block mb-1 font-medium">Preview Recorded Video</label>
                         {previewURL ? (
                             <video src={previewURL} controls className="w-full h-48 rounded object-cover" />
                         ) : (
                             <div className="w-full h-48 flex items-center justify-center bg-warm-light rounded text-warm-gray">
-                                暂无录制
+                                No Recording Yet
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* 提交 */}
+                {/* Submit */}
                 <button type="submit" disabled={!recordedBlob} className="btn-primary w-full text-lg">
-                    提交告别留言
+                    Submit Farewell Message
                 </button>
             </form>
         </div>

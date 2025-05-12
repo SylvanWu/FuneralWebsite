@@ -1,26 +1,26 @@
-//时间线组件，展示记忆内容列表，并提供删除记忆内容的回调函数。
+// Timeline component that displays a list of memories and provides a callback to delete them
 import React from 'react';
 import MemoryCard from './MemoryCard';
 
-/** 供父组件传入的内存条目类型 */
+/** Memory entry type passed in by the parent component */
 export interface Memory {
-  id: string;                 // 如果后端字段叫 _id，请把这里和 key 全部改成 _id
+  id: string;                 // If the backend field is _id, please change this and all related keys to _id
   type: 'image' | 'video' | 'text';
-  preview: string;            // 预览 URL 或文字
+  preview: string;            // Preview URL or text
   uploadTime: Date;
   uploaderName?: string;
 }
 
 interface TimelineProps {
   memories: Memory[];
-  /** 删除后端记录成功后，父组件传来的回调 */
+  /** Callback passed from the parent component after successful deletion from backend */
   onDeleteMemory: (id: string) => void;
-  /** 是否显示删除按钮 */
+  /** Whether to show the delete button */
   canDelete?: boolean;
 }
 
 const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory, canDelete = false }) => {
-  /* 内部再包一层，方便 <MemoryCard> 调用 */
+  /* Wrap internally for <MemoryCard> to call */
   const handleDelete = (id: string) => {
     console.log('Timeline: handleDelete called for ID:', id);
     onDeleteMemory(id);
@@ -43,7 +43,7 @@ const Timeline: React.FC<TimelineProps> = ({ memories, onDeleteMemory, canDelete
       <div className="space-y-8 timeline-line">
         {memories.map((m) => (
           <MemoryCard
-            key={m.id}          /* 如果后端字段是 _id 就写 m._id */
+            key={m.id}          /* If the backend field is _id, use m._id here */
             memory={m}
             onDeleteMemory={handleDelete}
             canDelete={canDelete}

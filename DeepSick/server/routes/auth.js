@@ -1,4 +1,9 @@
-//处理用户的注册和登录请求。注册时检查用户名是否已存在，若不存在则创建新用户并生成 JWT 令牌；登录时验证用户名和密码，若正确则签发 JWT 令牌。
+// Handles user registration and login requests.
+// During registration, checks whether the username already exists.
+// If not, creates a new user and generates a JWT token.
+// During login, verifies the username and password,
+// and issues a JWT token if correct.
+
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -24,19 +29,19 @@ const storage = multer.diskStorage({
         cb(null, path.join(process.cwd(), 'server/uploads'));
     },
     filename: function (req, file, cb) {
-        // 保证文件名唯一
+        // Ensure unique file name
         const ext = path.extname(file.originalname);
         cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + ext);
     }
 });
 const upload = multer({ storage });
 
-// 注册新用户
+// Register new user
 router.post('/register', async (req, res) => {
     const { username, password, userType } = req.body;
     
     try {
-        // 1. 先加密密码
+        // 1. Encrypt password
         const hashedPwd = await bcrypt.hash(password, 10);
 
         let user;
@@ -51,17 +56,17 @@ router.post('/register', async (req, res) => {
                 user = new LovedOne({ username, password: hashedPwd });
                 break;
             default:
-                return res.status(400).json({ message: '无效的用户类型' });
+                return res.status(400).json({ message: 'Invalid user type' });
         }
         
         await user.save();
-        res.status(201).json({ message: '注册成功' });
+        res.status(201).json({ message: 'Registration successful' });
     } catch (error) {
-        res.status(500).json({ message: '注册失败', error: error.message });
+        res.status(500).json({ message: 'Registration failed', error: error.message });
     }
 });
 
-// 用户登录
+// User login
 router.post('/login', async (req, res) => {
     const { username, password, userType } = req.body;
     
@@ -78,24 +83,24 @@ router.post('/login', async (req, res) => {
                 user = await LovedOne.findOne({ username });
                 break;
             default:
-                return res.status(400).json({ message: '无效的用户类型' });
+                return res.status(400).json({ message: 'Invalid user type' });
         }
 
         if (!user) {
-            return res.status(404).json({ message: '用户不存在' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        console.log('登录用户名:', username, 'userType:', userType);
-        console.log('数据库密码:', user.password);
-        console.log('前端密码:', password);
+        console.log('Login username:', username, 'userType:', userType);
+        console.log('Password in DB:', user.password);
+        console.log('Password from client:', password);
 
-        // 验证密码
+        // Verify password
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            return res.status(401).json({ message: '密码错误' });
+            return res.status(401).json({ message: 'Incorrect password' });
         }
 
-        // 生成 token
+        // Generate token
         const token = jwt.sign(
             { userId: user._id, userType: userType },
             JWT_SECRET,
@@ -117,11 +122,11 @@ router.post('/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ message: '登录失败', error: error.message });
+        res.status(500).json({ message: 'Login failed', error: error.message });
     }
 });
 
-// 更新用户信息
+// Update user profile
 router.put('/profile', authMiddleware, async (req, res) => {
     const userId = req.user && req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -152,14 +157,14 @@ router.put('/profile', authMiddleware, async (req, res) => {
     }
 });
 
-// 上传头像接口
+// Upload avatar
 router.post('/avatar', upload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-    // 返回图片的可访问 URL
+    // Return accessible image URL
     res.json({ url: `/uploads/${req.file.filename}` });
 });
 
-// 修改密码接口
+// Change password
 router.put('/password', authMiddleware, async (req, res) => {
     const userId = req.user && req.user.id;
     const { currentPassword, newPassword } = req.body;
@@ -182,14 +187,14 @@ router.put('/password', authMiddleware, async (req, res) => {
     }
 });
 
-// JWT 验证中间件
+// JWT auth middleware
 const auth = (userType) => async (req, res, next) => {
     try {
-        // 检查 JWT_SECRET
+        // Check JWT_SECRET
         if (!process.env.JWT_SECRET) {
             console.error('JWT_SECRET is not configured');
             return res.status(500).json({ 
-                message: '服务器配置错误',
+                message: 'Server configuration error',
                 error: 'JWT_SECRET not configured'
             });
         }
@@ -198,12 +203,12 @@ const auth = (userType) => async (req, res, next) => {
         console.log('Auth header:', authHeader);
         
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: '无效的认证头' });
+            return res.status(401).json({ message: 'Invalid authorization header' });
         }
         
         const token = authHeader.split(' ')[1];
         if (!token) {
-            return res.status(401).json({ message: '未提供token' });
+            return res.status(401).json({ message: 'Token not provided' });
         }
         
         try {
@@ -212,7 +217,7 @@ const auth = (userType) => async (req, res, next) => {
             
             if (userType && decoded.userType !== userType) {
                 return res.status(403).json({ 
-                    message: '权限不足',
+                    message: 'Insufficient permissions',
                     required: userType,
                     got: decoded.userType
                 });
@@ -223,13 +228,13 @@ const auth = (userType) => async (req, res, next) => {
         } catch (jwtError) {
             console.error('JWT verification failed:', jwtError);
             return res.status(401).json({ 
-                message: 'token验证失败',
+                message: 'Token verification failed',
                 error: jwtError.message
             });
         }
     } catch (error) {
         console.error('Auth middleware error:', error);
-        res.status(500).json({ message: '服务器错误' });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 

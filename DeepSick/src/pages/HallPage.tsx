@@ -96,9 +96,9 @@ const HallPage: React.FC = () => {
 
   return (
     <div className="hall-container">
-      {/* 两栏布局主区域 */}
+      {/* Two-column layout main section */}
       <div className="hall-header-section">
-        {/* 左侧图片 */}
+        {/* Left image */}
         <div className="hall-image-container">
           <img
             src="/photo2.png"
@@ -107,7 +107,7 @@ const HallPage: React.FC = () => {
           />
         </div>
         
-        {/* 右侧内容区 */}
+        {/* Right content area */}
         <div className="hall-content">
           {/* <h1 className="hall-title">Digital Memorial Hall</h1> */}
           {/* <p className="hall-description">
@@ -137,7 +137,7 @@ const HallPage: React.FC = () => {
         </div>
       </div>
       
-      {/* 时间线区域 */}
+      {/* Timeline section */}
       <div className="timeline-section">
         <Timeline
           memories={memories}
@@ -149,4 +149,4 @@ const HallPage: React.FC = () => {
   );
 };
 
-export default HallPage; 
+export default HallPage;

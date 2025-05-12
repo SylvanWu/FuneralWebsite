@@ -1,4 +1,4 @@
-//处理与记忆内容相关的路由请求，包括获取所有记忆内容、上传新的记忆内容和删除记忆内容。使用 multer 进行文件上传，并在删除记忆内容时尝试删除对应的文件。
+//Handles routes related to memory content, including retrieving all memory entries, uploading new memories, and deleting memory entries. Uses multer for file uploads and attempts to delete the corresponding file when a memory is removed.
 // routes/memories.js
 
 import express from 'express';

@@ -1,6 +1,6 @@
 import { SceneType } from '../components/SceneCard';
 
-// 场景类型数据，确保与线框图显示的类型一致
+// Scene type data, ensure consistency with the types shown in the wireframe.
 const funeralScenes: SceneType[] = [
   {
     id: 'church',

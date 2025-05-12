@@ -1,4 +1,4 @@
-// 愿望编辑组件(带预览)
+// Wish editing component (with preview)
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ const DreamEditor = () => {
   //   if (ids.length > 0) {
   //     fetchDreamsByIds();
   //   }
-  // }, [ids]); // ← 加依赖数组，确保只在 ids 改变时触发
+  // }, [ids]); // ← Add dependency array to ensure it only triggers when ids change
 
 
 
@@ -82,5 +82,5 @@ const DreamEditor = () => {
   );
 };
 
-// 默认导出 DreamEditor 组件
+// Default export of the DreamEditor component
 export default DreamEditor;
