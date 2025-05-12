@@ -9,6 +9,7 @@ import {
 } from '../services/funeralRoomDatabase';
 import DeceasedImage from '../components/DeceasedImage';
 import Cropper from 'react-easy-crop';
+import { VectorToolbar, VectorItem } from '../components/VectorToolbar';
 
 // Import background images for direct reference
 import churchImage from '../assets/funeral type/church funeral.png';
@@ -190,6 +191,9 @@ const FuneralRoomPage: React.FC = () => {
   // State to store loaded decoration images
   const [decorationImages, setDecorationImages] = useState<{[key: string]: HTMLImageElement}>({});
   
+  // Add state for toolbar collapse
+  const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
+  
   // Load funeral room data from database on mount
   useEffect(() => {
     const loadFuneralRoom = async () => {
@@ -239,29 +243,66 @@ const FuneralRoomPage: React.FC = () => {
     bgImage.onload = () => {
       setBackgroundImg(bgImage);
       
-      // 根据窗口大小调整画布尺寸
-      const maxWidth = Math.min(window.innerWidth - 100, 1200);
-      const maxHeight = Math.min(window.innerHeight - 200, 800);
+      // Calculate canvas size enforcing 16:9 aspect ratio
+      const aspectRatio = 16/9;
+      const sidebarWidth = isToolbarCollapsed ? 48 : 220;
+      const horizontalPadding = 40;
       
-      // 保持图片比例
-      const imgRatio = bgImage.width / bgImage.height;
-      let canvasWidth = maxWidth;
-      let canvasHeight = canvasWidth / imgRatio;
+      // Start with available width
+      const availableWidth = window.innerWidth - sidebarWidth - (horizontalPadding * 2);
+      const availableHeight = window.innerHeight - 220;
       
-      if (canvasHeight > maxHeight) {
-        canvasHeight = maxHeight;
-        canvasWidth = canvasHeight * imgRatio;
+      // Calculate dimensions based on 16:9 ratio
+      let canvasWidth = availableWidth;
+      let canvasHeight = canvasWidth / aspectRatio;
+      
+      // If height exceeds available height, scale down
+      if (canvasHeight > availableHeight) {
+        canvasHeight = availableHeight;
+        canvasWidth = canvasHeight * aspectRatio;
       }
       
+      // Set canvas size
       setCanvasSize({
-        width: canvasWidth,
-        height: canvasHeight
+        width: Math.floor(canvasWidth),
+        height: Math.floor(canvasHeight)
       });
     };
     bgImage.onerror = () => {
       console.error('Failed to load background image');
     };
-  }, [state.funeralType]);
+  }, [state.funeralType, isToolbarCollapsed]);
+  
+  // Add window resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      if (backgroundImg) {
+        // Maintain 16:9 aspect ratio on resize
+        const aspectRatio = 16/9;
+        const sidebarWidth = isToolbarCollapsed ? 48 : 220;
+        const horizontalPadding = 40;
+        
+        const availableWidth = window.innerWidth - sidebarWidth - (horizontalPadding * 2);
+        const availableHeight = window.innerHeight - 220;
+        
+        let canvasWidth = availableWidth;
+        let canvasHeight = canvasWidth / aspectRatio;
+        
+        if (canvasHeight > availableHeight) {
+          canvasHeight = availableHeight;
+          canvasWidth = canvasHeight * aspectRatio;
+        }
+        
+        setCanvasSize({
+          width: Math.floor(canvasWidth),
+          height: Math.floor(canvasHeight)
+        });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [backgroundImg, isToolbarCollapsed]);
   
   // Load images when component mounts
   useEffect(() => {
@@ -586,6 +627,91 @@ const FuneralRoomPage: React.FC = () => {
     };
   }, [isCropping, imageToCrop, croppedAreaPixels, handleSaveCroppedImage, handleCancelCrop]);
 
+  // Handle vector item drag start
+  const handleVectorDragStart = (e: React.DragEvent<HTMLDivElement>, item: VectorItem) => {
+    // Get stage container bounds
+    const stageContainer = stageRef.current?.container();
+    if (!stageContainer) return;
+
+    const containerRect = stageContainer.getBoundingClientRect();
+    
+    // Calculate position relative to stage
+    const pos = {
+      x: e.clientX - containerRect.left,
+      y: e.clientY - containerRect.top
+    };
+
+    // Create new canvas item
+    const newItem: CanvasItem = {
+      id: `${item.id}-${Date.now()}`,
+      x: pos.x,
+      y: pos.y,
+      width: DECORATION_ITEM_SIZE,
+      height: DECORATION_ITEM_SIZE,
+      color: '#ffffff',
+      name: item.name,
+      image: item.src
+    };
+
+    // Add to canvas items
+    const updatedItems = [...canvasItems, newItem];
+    setCanvasItems(updatedItems);
+
+    // Load the image
+    const img = new Image();
+    img.src = item.src;
+    img.onload = () => {
+      setDecorationImages(prev => ({
+        ...prev,
+        [item.id]: img
+      }));
+    };
+
+    // Auto-save
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after adding vector item:', err)
+    );
+  };
+
+  // Handle vector item click
+  const handleVectorItemClick = (item: VectorItem) => {
+    // Create new canvas item at the center of the canvas
+    const newItem: CanvasItem = {
+      id: `${item.id}-${Date.now()}`,
+      x: canvasSize.width / 2,
+      y: canvasSize.height / 2,
+      width: DECORATION_ITEM_SIZE,
+      height: DECORATION_ITEM_SIZE,
+      color: '#ffffff',
+      name: item.name,
+      image: item.src
+    };
+
+    // Add to canvas items
+    const updatedItems = [...canvasItems, newItem];
+    setCanvasItems(updatedItems);
+
+    // Load the image
+    const img = new Image();
+    img.src = item.src;
+    img.onload = () => {
+      setDecorationImages(prev => ({
+        ...prev,
+        [item.id]: img
+      }));
+    };
+
+    // Auto-save
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after adding vector item:', err)
+    );
+  };
+
+  // Handle toolbar collapse
+  const handleToolbarCollapse = (isCollapsed: boolean) => {
+    setIsToolbarCollapsed(isCollapsed);
+  };
+
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -649,275 +775,266 @@ const FuneralRoomPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto py-8 px-4">
-        <div className="bg-white bg-opacity-80 rounded-lg p-6 mb-8">
-          {/* Display deceased person's info and image upload section */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-4">Deceased Person</h2>
-            <div className="flex flex-col md:flex-row items-center mb-4">
-              {/* Left side: Display the deceased image or placeholder */}
-              <div className="mb-4 md:mb-0 md:mr-8">
-                {state.deceasedImage ? (
-                  <div className="relative">
-                    <img 
-                      src={state.deceasedImage} 
-                      alt={state.name}
-                      className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
-                      style={{ 
-                        width: `${CROP_IMAGE_SIZE}px`, 
-                        height: `${CROP_IMAGE_SIZE}px`,
-                        objectFit: 'cover'
-                      }}
-                    />
-                    <button
-                      onClick={handleRemoveDeceasedImage}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                      title="Remove image"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <div 
-                    className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
-                    style={{ 
-                      width: `${CROP_IMAGE_SIZE}px`, 
-                      height: `${CROP_IMAGE_SIZE}px` 
-                    }}
-                  >
-                    No image
-                  </div>
-                )}
-              </div>
-              
-              {/* Right side: Upload controls */}
-              <div className="flex-1">
-                <div className="mb-2">
-                  <h3 className="text-lg font-semibold">{state.name}</h3>
-                </div>
-                
-                {/* Upload image section */}
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleDeceasedImageUpload}
-                    ref={fileInputRef}
-                    className="hidden"
-                  />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                  >
-                    {state.deceasedImage ? 'Change Image' : 'Upload Image'}
-                  </button>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Maximum size: 500MB
-                  </p>
-                  
-                  {/* Error message for file size */}
-                  {uploadError && (
-                    <p className="text-red-500 text-sm mt-1">{uploadError}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
-          <p className="text-gray-700 text-center mb-4">
-            Type: {state.funeralType} | Password: {state.password}
-          </p>
-          
-          {/* Save Button */}
-          <div className="mt-4 text-center">
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Room'}
-            </button>
-            
-            {saveMessage && (
-              <div className="mt-2 text-green-600">{saveMessage}</div>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar / Toolbox */}
-          <div className="w-full md:w-80 bg-white bg-opacity-90 rounded-lg p-4 shadow-lg">
-            <h2 className="text-xl font-bold mb-4">Decorations</h2>
-            <div className="space-y-3">
-              {decorationItems.map((item) => (
-                <div 
-                  key={item.id}
-                  className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleAddItem(item)}
-                >
-                  <div 
-                    className="mr-4 flex items-center justify-center"
-                    style={{ 
-                      width: `${DECORATION_ITEM_SIZE}px`, 
-                      height: `${DECORATION_ITEM_SIZE}px`,
-                      minWidth: `${DECORATION_ITEM_SIZE}px` // Prevent shrinking
-                    }}
-                  >
-                    {item.image ? (
+    <div className="min-h-screen bg-gray-50">
+      {/* Vector Toolbar */}
+      <VectorToolbar 
+        onItemDragStart={handleVectorDragStart}
+        onCollapseChange={handleToolbarCollapse}
+        onItemClick={handleVectorItemClick}
+      />
+      
+      {/* Main content area with proper margin */}
+      <div 
+        className={`p-4 h-full ${isToolbarCollapsed ? 'sidebar-collapsed' : ''}`}
+        style={{ 
+          marginLeft: isToolbarCollapsed ? '48px' : '220px',
+          transition: 'margin-left 0.3s ease'
+        }}
+      >
+        <div className="container mx-auto py-4 px-4">
+          <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-4">
+            {/* Display deceased person's info and image upload section */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-4">Deceased Person</h2>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                {/* Left side: Display the deceased image or placeholder */}
+                <div className="mb-4 md:mb-0 md:mr-8">
+                  {state.deceasedImage ? (
+                    <div className="relative">
                       <img 
-                        src={item.image} 
-                        alt={item.name}
-                        className="object-contain"
+                        src={state.deceasedImage} 
+                        alt={state.name}
+                        className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
                         style={{ 
-                          width: `${DECORATION_ITEM_SIZE}px`, 
-                          height: `${DECORATION_ITEM_SIZE}px`
+                          width: `${CROP_IMAGE_SIZE}px`, 
+                          height: `${CROP_IMAGE_SIZE}px`,
+                          objectFit: 'cover'
                         }}
                       />
-                    ) : (
-                      <div
-                        className="rounded-md"
-                        style={{ 
-                          backgroundColor: item.color,
-                          width: `${DECORATION_ITEM_SIZE}px`, 
-                          height: `${DECORATION_ITEM_SIZE}px`
-                        }}
-                      ></div>
-                    )}
+                      <button
+                        onClick={handleRemoveDeceasedImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                        title="Remove image"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
+                      style={{ 
+                        width: `${CROP_IMAGE_SIZE}px`, 
+                        height: `${CROP_IMAGE_SIZE}px` 
+                      }}
+                    >
+                      No image
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right side: Upload controls */}
+                <div className="flex-1">
+                  <div className="mb-2">
+                    <h3 className="text-lg font-semibold">{state.name}</h3>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{item.name}</div>
-                    {item.description && (
-                      <div className="text-xs text-gray-500">{item.description}</div>
+                  
+                  {/* Upload image section */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleDeceasedImageUpload}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      {state.deceasedImage ? 'Change Image' : 'Upload Image'}
+                    </button>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Maximum size: 500MB
+                    </p>
+                    
+                    {/* Error message for file size */}
+                    {uploadError && (
+                      <p className="text-red-500 text-sm mt-1">{uploadError}</p>
                     )}
                   </div>
                 </div>
-              ))}
+              </div>
+            </div>
+            
+            <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
+            <p className="text-gray-700 text-center mb-4">
+              Type: {state.funeralType} | Password: {state.password}
+            </p>
+            
+            {/* Save Button */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Room'}
+              </button>
+              
+              {saveMessage && (
+                <div className="mt-2 text-green-600">{saveMessage}</div>
+              )}
             </div>
           </div>
           
-          {/* Canvas Area */}
-          <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
-            <div className="text-center text-gray-500 py-2">
-              <p>Click on decorations to add them to the scene. Drag to position them. Items are automatically saved.</p>
-            </div>
-            <Stage
-              ref={stageRef}
-              width={canvasSize.width}
-              height={canvasSize.height}
-              className="mx-auto"
-            >
-              <Layer>
-                {/* background image */}
-                {backgroundImg && (
-                  <KonvaImage
-                    image={backgroundImg}
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Canvas Area */}
+            <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
+              <div className="text-center text-gray-500 py-2">
+                <p>Click on items in the left toolbar to add them to the scene. Drag to position them. Items are automatically saved.</p>
+              </div>
+              <div 
+                className="canvas-container" 
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  padding: '10px',
+                  backgroundColor: '#f0f0f0',
+                  overflow: 'hidden'
+                }}
+              >
+                <div 
+                  style={{ 
+                    width: `${canvasSize.width}px`, 
+                    height: `${canvasSize.height}px`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    margin: '0 auto'
+                  }}
+                >
+                  <Stage
+                    ref={stageRef}
                     width={canvasSize.width}
                     height={canvasSize.height}
-                  />
-                )}
-                
-                {/* decorations */}
-                {canvasItems.map((item) => {
-                  // Get the base item ID (without timestamp)
-                  const baseId = item.id.split('-')[0];
-                  // Check if we have the image loaded
-                  const itemImage = item.image && decorationImages[baseId];
-                  const isSelected = selectedItemId === item.id;
-                  
-                  return (
-                    <React.Fragment key={item.id}>
-                      {itemImage ? (
-                        <>
-                          {/* Selection border for images */}
-                          {isSelected && (
-                            <Rect
-                              x={item.x - 2}
-                              y={item.y - 2}
-                              width={item.width + 4}
-                              height={item.height + 4}
-                              stroke="#0096FF"
-                              strokeWidth={2}
-                            />
-                          )}
-                          <KonvaImage
-                            image={itemImage}
-                            x={item.x}
-                            y={item.y}
-                            width={item.width}
-                            height={item.height}
-                            draggable
-                            onDragEnd={(e) => {
-                              const updatedItems = canvasItems.map((i) => {
-                                if (i.id === item.id) {
-                                  return {
-                                    ...i,
-                                    x: e.target.x(),
-                                    y: e.target.y(),
-                                  };
-                                }
-                                return i;
-                              });
-                              setCanvasItems(updatedItems);
-                              // Auto-save when moving an item
-                              saveToDatabase(updatedItems);
-                            }}
-                            onClick={() => setSelectedItemId(item.id)}
-                            onTap={() => setSelectedItemId(item.id)}
-                          />
-                        </>
-                      ) : (
-                        <>
-                          {/* Selection border for rectangles */}
-                          {isSelected && (
-                            <Rect
-                              x={item.x - 2}
-                              y={item.y - 2}
-                              width={item.width + 4}
-                              height={item.height + 4}
-                              stroke="#0096FF"
-                              strokeWidth={2}
-                            />
-                          )}
-                          <Rect
-                            x={item.x}
-                            y={item.y}
-                            width={item.width}
-                            height={item.height}
-                            fill={item.color}
-                            cornerRadius={5}
-                            draggable
-                            onDragEnd={(e) => {
-                              const updatedItems = canvasItems.map((i) => {
-                                if (i.id === item.id) {
-                                  return {
-                                    ...i,
-                                    x: e.target.x(),
-                                    y: e.target.y(),
-                                  };
-                                }
-                                return i;
-                              });
-                              setCanvasItems(updatedItems);
-                              // Auto-save when moving an item
-                              saveToDatabase(updatedItems);
-                            }}
-                            onClick={() => setSelectedItemId(item.id)}
-                            onTap={() => setSelectedItemId(item.id)}
-                          />
-                        </>
+                    style={{ 
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    <Layer>
+                      {/* background image - ensure it fills the container */}
+                      {backgroundImg && (
+                        <KonvaImage
+                          image={backgroundImg}
+                          width={canvasSize.width}
+                          height={canvasSize.height}
+                          listening={false}
+                        />
                       )}
-                    </React.Fragment>
-                  );
-                })}
-              </Layer>
-            </Stage>
-            {selectedItemId && (
-              <div className="text-center text-gray-500 py-2 bg-gray-100 rounded-b-lg">
-                <p>Press <span className="font-bold">Delete</span> key to remove the selected item</p>
+                      
+                      {/* decorations */}
+                      {canvasItems.map((item) => {
+                        // Get the base item ID (without timestamp)
+                        const baseId = item.id.split('-')[0];
+                        // Check if we have the image loaded
+                        const itemImage = item.image && decorationImages[baseId];
+                        const isSelected = selectedItemId === item.id;
+                        
+                        return (
+                          <React.Fragment key={item.id}>
+                            {itemImage ? (
+                              <>
+                                {/* Selection border for images */}
+                                {isSelected && (
+                                  <Rect
+                                    x={item.x - 2}
+                                    y={item.y - 2}
+                                    width={item.width + 4}
+                                    height={item.height + 4}
+                                    stroke="#0096FF"
+                                    strokeWidth={2}
+                                  />
+                                )}
+                                <KonvaImage
+                                  image={itemImage}
+                                  x={item.x}
+                                  y={item.y}
+                                  width={item.width}
+                                  height={item.height}
+                                  draggable
+                                  onDragEnd={(e) => {
+                                    const updatedItems = canvasItems.map((i) => {
+                                      if (i.id === item.id) {
+                                        return {
+                                          ...i,
+                                          x: e.target.x(),
+                                          y: e.target.y(),
+                                        };
+                                      }
+                                      return i;
+                                    });
+                                    setCanvasItems(updatedItems);
+                                    // Auto-save when moving an item
+                                    saveToDatabase(updatedItems);
+                                  }}
+                                  onClick={() => setSelectedItemId(item.id)}
+                                  onTap={() => setSelectedItemId(item.id)}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                {/* Selection border for rectangles */}
+                                {isSelected && (
+                                  <Rect
+                                    x={item.x - 2}
+                                    y={item.y - 2}
+                                    width={item.width + 4}
+                                    height={item.height + 4}
+                                    stroke="#0096FF"
+                                    strokeWidth={2}
+                                  />
+                                )}
+                                <Rect
+                                  x={item.x}
+                                  y={item.y}
+                                  width={item.width}
+                                  height={item.height}
+                                  fill={item.color}
+                                  cornerRadius={5}
+                                  draggable
+                                  onDragEnd={(e) => {
+                                    const updatedItems = canvasItems.map((i) => {
+                                      if (i.id === item.id) {
+                                        return {
+                                          ...i,
+                                          x: e.target.x(),
+                                          y: e.target.y(),
+                                        };
+                                      }
+                                      return i;
+                                    });
+                                    setCanvasItems(updatedItems);
+                                    // Auto-save when moving an item
+                                    saveToDatabase(updatedItems);
+                                  }}
+                                  onClick={() => setSelectedItemId(item.id)}
+                                  onTap={() => setSelectedItemId(item.id)}
+                                />
+                              </>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </Layer>
+                  </Stage>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
