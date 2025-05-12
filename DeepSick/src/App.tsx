@@ -36,6 +36,7 @@ import VisitorDashboard from './pages/VisitorDashboard';
 import LovedOneDashboard from './pages/LovedOneDashboard';
 
 import './App.css';
+import { SocketProvider } from './context/SocketContext';
 
 // NavLink Component for highlighting active links
 const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) => {
@@ -78,64 +79,66 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-gray-800">
-      <Routes>
-        {/* 登录注册页面 */}
-        <Route path="/login" element={<LoginPage setToken={setToken} />} />
-        <Route path="/register" element={<RegisterPage />} />
+    <SocketProvider>
+      <div className="min-h-screen bg-transparent text-gray-800">
+        <Routes>
+          {/* 登录注册页面 */}
+          <Route path="/login" element={<LoginPage setToken={setToken} />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        {/* 其他页面由 Layout 包裹 */}
-        <Route element={<Layout onLogout={handleLogout} />}>
-          {/* 首页 */}
-          <Route path="/" element={<HomePage />} />
+          {/* 其他页面由 Layout 包裹 */}
+          <Route element={<Layout onLogout={handleLogout} />}>
+            {/* 首页 */}
+            <Route path="/" element={<HomePage />} />
 
-          {/* 其他公共页面 */}
-          <Route path="/hall" element={<HallPage />} />
-          <Route path="/interactive" element={<InteractivePage />} />
-          <Route path="/candle" element={<CandlePage />} />
-          <Route path="/flower" element={<FlowerPage />} />
-          <Route path="/message" element={<MessagePage />} />
-          <Route path="/create-funeral" element={<CreateFuneralPage />} />
-          <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          
-          {/* Room 占位页面 */}
-          <Route path="/room" element={<div className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">Room</h1>
-            <p className="text-gray-600">This page is under construction.</p>
-          </div>} />
+            {/* 其他公共页面 */}
+            <Route path="/hall" element={<HallPage />} />
+            <Route path="/interactive" element={<InteractivePage />} />
+            <Route path="/candle" element={<CandlePage />} />
+            <Route path="/flower" element={<FlowerPage />} />
+            <Route path="/message" element={<MessagePage />} />
+            <Route path="/create-funeral" element={<CreateFuneralPage />} />
+            <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            
+            {/* Room 占位页面 */}
+            <Route path="/room" element={<div className="p-8 text-center">
+              <h1 className="text-2xl font-bold mb-4">Room</h1>
+              <p className="text-gray-600">This page is under construction.</p>
+            </div>} />
 
-          {/* Admin 占位页面 */}
-          <Route path="/admin" element={<div className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">Admin</h1>
-            <p className="text-gray-600">This page is under construction.</p>
-          </div>} />
+            {/* Admin 占位页面 */}
+            <Route path="/admin" element={<div className="p-8 text-center">
+              <h1 className="text-2xl font-bold mb-4">Admin</h1>
+              <p className="text-gray-600">This page is under construction.</p>
+            </div>} />
 
-          {/* Wills 和 DreamList 页面 */}
-          <Route
-            path="/wills"
-            element={
-              <RoleProtected userType="organizer">
-                <WillsPage />
-              </RoleProtected>
-            }
-          />
-          <Route
-            path="/dreamlist"
-            element={
-              <RoleProtected userType="organizer">
-                <DreamList />
-              </RoleProtected>
-            }
-          />
-        </Route>
+            {/* Wills 和 DreamList 页面 */}
+            <Route
+              path="/wills"
+              element={
+                <RoleProtected userType="organizer">
+                  <WillsPage />
+                </RoleProtected>
+              }
+            />
+            <Route
+              path="/dreamlist"
+              element={
+                <RoleProtected userType="organizer">
+                  <DreamList />
+                </RoleProtected>
+              }
+            />
+          </Route>
 
-        {/* Visitor Dashboard */}
-        <Route path="/visitor-dashboard" element={<VisitorDashboard />} />
+          {/* Visitor Dashboard */}
+          <Route path="/visitor-dashboard" element={<VisitorDashboard />} />
 
-        {/* Organizer Dashboard */}
-        <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
-      </Routes>
-    </div>
+          {/* Organizer Dashboard */}
+          <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
+        </Routes>
+      </div>
+    </SocketProvider>
   );
 }

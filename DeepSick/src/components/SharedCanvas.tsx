@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import './SharedCanvas.css';
+import { useSocket } from '../context/SocketContext';
 
 interface Point {
   x: number;
@@ -100,8 +101,8 @@ const hexToRgb = (hex: string) => {
 const SharedCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const socket = useSocket();
   const [isDrawing, setIsDrawing] = useState(false);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [currentColor, setCurrentColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(5);
   const [opacity, setOpacity] = useState(1);
@@ -123,144 +124,6 @@ const SharedCanvas: React.FC = () => {
     setDrawings(newDrawings);
     drawingsRef.current = newDrawings;
   }, []);
-
-  // Initialize Socket.io connection
-  const initializeSocket = useCallback(() => {
-    if (socket) return socket;
-
-    try {
-      const newSocket = io('http://localhost:5001', {
-        reconnectionAttempts: SOCKET_RECONNECT_ATTEMPTS,
-        reconnectionDelay: SOCKET_RECONNECT_DELAY,
-        timeout: 20000,
-        transports: ['polling', 'websocket'],
-        forceNew: true,
-        reconnection: true,
-        reconnectionDelayMax: 5000,
-        randomizationFactor: 0.5,
-        autoConnect: true,
-        withCredentials: true,
-        path: '/socket.io/',
-        upgrade: true,
-        rememberUpgrade: true,
-        extraHeaders: {
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
-
-      newSocket.on('connect', () => {
-        console.log('Socket connected');
-        setIsConnected(true);
-        setError(null);
-        reconnectAttemptsRef.current = 0;
-      });
-
-      newSocket.on('connect_error', (err) => {
-        console.error('Connection error:', err);
-        reconnectAttemptsRef.current += 1;
-        if (reconnectAttemptsRef.current >= SOCKET_RECONNECT_ATTEMPTS) {
-          setError('Failed to connect to server. Please refresh the page.');
-          setIsConnected(false);
-        } else {
-          setError(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${SOCKET_RECONNECT_ATTEMPTS})`);
-        }
-      });
-
-      newSocket.on('disconnect', (reason) => {
-        console.log('Socket disconnected:', reason);
-        setIsConnected(false);
-        if (reason === 'io server disconnect') {
-          setError('Server disconnected. Please refresh the page.');
-        } else if (reason === 'transport close') {
-          setError('Connection lost. Attempting to reconnect...');
-        } else if (reason === 'ping timeout') {
-          setError('Connection timeout. Attempting to reconnect...');
-        } else {
-          setError('Network connection lost. Attempting to reconnect...');
-        }
-      });
-
-      newSocket.on('error', (err) => {
-        console.error('Socket error:', err);
-        setError(`Error occurred: ${err.message}`);
-      });
-
-      // Receive canvas states
-      newSocket.on('canvasStates', (states: CanvasStates) => {
-        try {
-          console.log('Received canvas states:', states);
-          setCanvasList(Object.keys(states));
-          if (states[currentCanvasId]) {
-            redrawCanvas(states[currentCanvasId].drawings);
-          }
-        } catch (err) {
-          console.error('Failed to redraw canvas:', err);
-          setError('Failed to redraw canvas. Please refresh the page.');
-        }
-      });
-
-      // Receive canvas state
-      newSocket.on('canvasState', (state: CanvasState) => {
-        try {
-          console.log('Received canvas state:', state);
-          redrawCanvas(state.drawings);
-          updateDrawings(state.drawings);
-        } catch (err) {
-          console.error('Failed to redraw canvas:', err);
-          setError('Failed to redraw canvas. Please refresh the page.');
-        }
-      });
-
-      // Listen for drawing data from other users
-      newSocket.on('draw', (data: { canvasId: string; drawingData: DrawingData }) => {
-        try {
-          console.log('Received drawing data:', data);
-          if (data.canvasId === currentCanvasId) {
-            drawOnCanvas(data.drawingData);
-            updateDrawings([...drawingsRef.current, data.drawingData]);
-          }
-        } catch (err) {
-          console.error('Failed to draw:', err);
-        }
-      });
-
-      // Listen for canvas clear event
-      newSocket.on('canvasCleared', (canvasId: string) => {
-        try {
-          console.log('Canvas cleared:', canvasId);
-          if (canvasId === currentCanvasId) {
-            initCanvas();
-            updateDrawings([]);
-          }
-        } catch (err) {
-          console.error('Failed to clear canvas:', err);
-        }
-      });
-
-      // Listen for canvas creation
-      newSocket.on('canvasCreated', (canvasId: string) => {
-        console.log('Canvas created:', canvasId);
-        setCanvasList(prev => [...prev, canvasId]);
-      });
-
-      // Listen for undo event
-      newSocket.on('undo', (canvasId: string) => {
-        console.log('Undo event:', canvasId);
-        if (canvasId === currentCanvasId && drawingsRef.current.length > 0) {
-          const newDrawings = drawingsRef.current.slice(0, -1);
-          updateDrawings(newDrawings);
-          redrawCanvas(newDrawings);
-        }
-      });
-
-      setSocket(newSocket);
-      return newSocket;
-    } catch (err) {
-      console.error('Failed to initialize Socket:', err);
-      setError('Failed to initialize connection. Please refresh the page.');
-      return null;
-    }
-  }, [currentCanvasId, updateDrawings]);
 
   // Initialize canvas
   const initCanvas = useCallback(() => {
@@ -335,19 +198,110 @@ const SharedCanvas: React.FC = () => {
   useEffect(() => {
     // Initialize canvas
     initCanvas();
-
-    // Initialize Socket.io connection
-    const socket = initializeSocket();
-
     // Listen for window resize
     window.addEventListener('resize', calculateScale);
     calculateScale();
-
+    // Socket event listeners
+    if (socket) {
+      // Add all socket event listeners here (connect, disconnect, error, canvasStates, etc.)
+      socket.on('connect', () => {
+        console.log('Socket connected');
+        setIsConnected(true);
+        setError(null);
+        reconnectAttemptsRef.current = 0;
+      });
+      socket.on('connect_error', (err) => {
+        console.error('Connection error:', err);
+        reconnectAttemptsRef.current += 1;
+        if (reconnectAttemptsRef.current >= SOCKET_RECONNECT_ATTEMPTS) {
+          setError('Failed to connect to server. Please refresh the page.');
+          setIsConnected(false);
+        } else {
+          setError(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${SOCKET_RECONNECT_ATTEMPTS})`);
+        }
+      });
+      socket.on('disconnect', (reason) => {
+        console.log('Socket disconnected:', reason);
+        setIsConnected(false);
+        if (reason === 'io server disconnect') {
+          setError('Server disconnected. Please refresh the page.');
+        } else if (reason === 'transport close') {
+          setError('Connection lost. Attempting to reconnect...');
+        } else if (reason === 'ping timeout') {
+          setError('Connection timeout. Attempting to reconnect...');
+        } else {
+          setError('Network connection lost. Attempting to reconnect...');
+        }
+      });
+      socket.on('error', (err) => {
+        console.error('Socket error:', err);
+        setError(`Error occurred: ${err.message}`);
+      });
+      socket.on('canvasStates', (states: CanvasStates) => {
+        try {
+          console.log('Received canvas states:', states);
+          setCanvasList(Object.keys(states));
+          if (states[currentCanvasId]) {
+            redrawCanvas(states[currentCanvasId].drawings);
+          }
+        } catch (err) {
+          console.error('Failed to redraw canvas:', err);
+          setError('Failed to redraw canvas. Please refresh the page.');
+        }
+      });
+      socket.on('canvasState', (state: CanvasState) => {
+        try {
+          console.log('Received canvas state:', state);
+          redrawCanvas(state.drawings);
+          updateDrawings(state.drawings);
+        } catch (err) {
+          console.error('Failed to redraw canvas:', err);
+          setError('Failed to redraw canvas. Please refresh the page.');
+        }
+      });
+      socket.on('draw', (data: { canvasId: string; drawingData: DrawingData }) => {
+        try {
+          console.log('Received drawing data:', data);
+          if (data.canvasId === currentCanvasId) {
+            drawOnCanvas(data.drawingData);
+            updateDrawings([...drawingsRef.current, data.drawingData]);
+          }
+        } catch (err) {
+          console.error('Failed to draw:', err);
+        }
+      });
+      socket.on('canvasCleared', (canvasId: string) => {
+        try {
+          console.log('Canvas cleared:', canvasId);
+          if (canvasId === currentCanvasId) {
+            initCanvas();
+            updateDrawings([]);
+          }
+        } catch (err) {
+          console.error('Failed to clear canvas:', err);
+        }
+      });
+      socket.on('canvasCreated', (canvasId: string) => {
+        console.log('Canvas created:', canvasId);
+        setCanvasList(prev => [...prev, canvasId]);
+      });
+      socket.on('undo', (canvasId: string) => {
+        console.log('Undo event:', canvasId);
+        if (canvasId === currentCanvasId && drawingsRef.current.length > 0) {
+          const newDrawings = drawingsRef.current.slice(0, -1);
+          updateDrawings(newDrawings);
+          redrawCanvas(newDrawings);
+        }
+      });
+    }
     return () => {
-      socket?.disconnect();
+      // Remove all socket event listeners on unmount
+      if (socket) {
+        socket.removeAllListeners();
+      }
       window.removeEventListener('resize', calculateScale);
     };
-  }, [initCanvas, initializeSocket, calculateScale]);
+  }, [initCanvas, calculateScale, socket, currentCanvasId, redrawCanvas, updateDrawings]);
 
   const drawOnCanvas = (data: DrawingData) => {
     const canvas = canvasRef.current;
@@ -524,14 +478,6 @@ const SharedCanvas: React.FC = () => {
     socket?.emit('selectCanvas', canvasId);
   };
 
-  // Handle new canvas creation
-  const handleCreateCanvas = () => {
-    if (newCanvasName && !canvasList.includes(newCanvasName)) {
-      socket?.emit('createCanvas', newCanvasName);
-      setNewCanvasName('');
-    }
-  };
-
   // Handle undo functionality
   const handleUndo = useCallback(() => {
     if (drawingsRef.current.length > 0) {
@@ -561,36 +507,19 @@ const SharedCanvas: React.FC = () => {
     }
   };
 
+  // Request canvas state from backend every time the component mounts or currentCanvasId changes
+  useEffect(() => {
+    if (socket && socket.connected) {
+      // Actively request the latest canvas state from backend
+      socket.emit('selectCanvas', currentCanvasId);
+    }
+  }, [socket, currentCanvasId]);
+
   return (
     <div className="shared-canvas-container" ref={containerRef}>
       <div className="shared-toolbar">
         <div className="shared-tool-group">
-          <select
-            value={currentCanvasId}
-            onChange={(e) => handleCanvasSelect(e.target.value)}
-            className="canvas-select"
-          >
-            {canvasList.map((canvasId) => (
-              <option key={canvasId} value={canvasId}>
-                Canvas {canvasId}
-              </option>
-            ))}
-          </select>
-          <div className="new-canvas-input">
-            <input
-              type="text"
-              value={newCanvasName}
-              onChange={(e) => setNewCanvasName(e.target.value)}
-              placeholder="New canvas name"
-            />
-            <button
-              className="shared-tool-button"
-              onClick={handleCreateCanvas}
-              title="Create New Canvas"
-            >
-              ➕
-            </button>
-          </div>
+          {/* Removed canvas selection dropdown to disable switching between canvases */}
         </div>
 
         <div className="shared-tool-group">
