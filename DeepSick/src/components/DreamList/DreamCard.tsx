@@ -1,48 +1,48 @@
-// drag with the mouse can move the wish box鼠标拖拽功能
+// drag with the mouse can move the wish box
 import React, { useEffect, useRef } from 'react';
 import '../DreamList/DreamList.css';
 
 export const DreamCard = ({ children, shrunk = false }: { children: React.ReactNode; shrunk?: boolean }) => {
-  // 使用useRef引用DOM元素，用于后续操作
+  // Use useRef to reference the DOM element for later operations
   const dragRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const startY = useRef(0);
-  // 标记是否正在拖拽
+  // Flag to indicate whether dragging is in progress
   const isDragging = useRef(false);
 
 
-  // 组件挂载后执行的副作用
+  // Side effect executed after the component is mounted
   useEffect(() => {
-    // 获取引用的DOM元素
+    // Get the referenced DOM element
     const divElement = dragRef.current;
     if (divElement) {
-      // 为元素添加鼠标按下.抬起.移动事件监听
+      // Add mouse down, up, and move event listeners to the element
       divElement.addEventListener('mousedown', handleMouseDown);
-      // 为整个文档添加鼠标释放事件监听
+      // Add mouse up event listener to the whole document
       document.addEventListener('mouseup', handleMouseUp);
       document.addEventListener('mousemove', handleMouseMove);
 
-      // 组件卸载时执行的清理函数
+      // Cleanup function executed when the component unmounts
       return () => {
-        // 移除事件监听，防止内存泄漏
+        // Remove event listeners to prevent memory leaks
         divElement.removeEventListener('mousedown', handleMouseDown);
         document.removeEventListener('mouseup', handleMouseUp);
         document.removeEventListener('mousemove', handleMouseMove);
       };
     }
-  }, []); // 空依赖数组表示只在挂载和卸载时执行
+  }, []); //  An empty dependency array means this runs only on mount and unmount
 
-  // 鼠标按下handleMouseDown function
+  // handleMouseDown function triggered on mouse down
   const handleMouseDown = (e: MouseEvent) => {
     if (dragRef.current) {
       startX.current = e.clientX;
       startY.current = e.clientY;
-      // 正在拖拽
+      // Dragging in progress
       isDragging.current = true;
     }
   };
 
-  // 鼠标移动handleMouseMove function
+  // handleMouseMove function triggered on mouse move
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging.current && dragRef.current) {
       const dx = e.clientX - startX.current;
@@ -50,35 +50,35 @@ export const DreamCard = ({ children, shrunk = false }: { children: React.ReactN
 
       const div = dragRef.current;
 
-      // 获取元素当前值并加上移动距离，得到新的值
+      // Get the current element position and add the movement offset to calculate the new position
       const left = parseInt(div.style.left || '0', 10) + dx;
       const top = parseInt(div.style.top || '0', 10) + dy;
 
-      // 设置元素新的位置
+      // Set the new position of the element
       div.style.left = `${left}px`;
       div.style.top = `${top}px`;
 
-      // 更新鼠标位置记录，用于下一次移动计算
+      // Update mouse position record for the next move calculation
       startX.current = e.clientX;
       startY.current = e.clientY;
     }
   };
 
-  // 鼠标释放handleMouseUp function
+  // handleMouseUp function triggered on mouse up
   const handleMouseUp = () => {
-    // 停止拖拽
+    // Stop dragging
     isDragging.current = false;
   };
 
   return (
     <div
-      ref={dragRef} // 将ref绑定到这个div
-      className={`dream-card ${shrunk ? 'shrunk' : ''}`} // 关键：动态加上 shrunk 样式
+      ref={dragRef} // Bind ref to this div
+      className={`dream-card ${shrunk ? 'shrunk' : ''}`} // Key: Dynamically apply the shrunk style class
       style={{
-        position: 'absolute', // 使用绝对定位以便拖拽
-        top: 100, // 初始顶部位置
-        left: 100, // 初始左侧位置
-        cursor: 'grab' // 鼠标悬停时显示抓手图标
+        position: 'absolute', // Use absolute positioning to enable dragging
+        top: 100, // Initial top position
+        left: 100, // Initial left position
+        cursor: 'grab' // Show grab cursor when hovering
       }}
     >
       {children}

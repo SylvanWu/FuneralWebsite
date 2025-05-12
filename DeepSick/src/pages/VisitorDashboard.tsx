@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 
 export default function VisitorHome() {
-  // 假设你有 userType 判断
+  // Assume you have userType for checking
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isVisitor = user.userType === 'visitor';
 
-  // 控制是否已通过房间验证
+  // Control whether the room is verified
   const [verified, setVerified] = useState(false);
   const [roomId, setRoomId] = useState('');
   const [roomPwd, setRoomPwd] = useState('');
   const [error, setError] = useState('');
 
-  // 简单前端验证
+  // Simple front-end verification
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
     if (!roomId.trim() || !roomPwd.trim()) {
       setError('Room ID and Password are required');
       return;
     }
-    // 这里可以替换为真实接口校验
+    // Replace with real API verification
     if (roomId === roomPwd) {
       setVerified(true);
       setError('');
@@ -27,7 +27,7 @@ export default function VisitorHome() {
     }
   };
 
-  // visitor 未验证时显示表单
+  // Show verification form if visitor and not verified
   if (isVisitor && !verified) {
     return (
       <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -60,10 +60,10 @@ export default function VisitorHome() {
     );
   }
 
-  // visitor 验证通过 或 organizer 直接显示原主页
+  // Show main page directly if visitor is verified or user is organizer
   return (
     <div>
-      {/* 这里是你原来的主页内容 */}
+      {/* This is your original home page content */}
       <div className="w-full min-h-screen flex flex-col items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-2">Digital Memorial Hall</h1>

@@ -1,12 +1,12 @@
 import { Server } from 'socket.io';
 import Canvas from '../models/Canvas.js';
 
-// 画布状态接口
+// Interface for canvas state
 const canvasStates = {};
 
-// 初始化画布 Socket.IO 处理
+// Initialize Canvas Socket.IO handler
 export const initializeCanvasSocket = (io) => {
-  // 从数据库加载所有画布
+  // Load all canvases from the database
   const loadCanvases = async () => {
     try {
       const canvases = await Canvas.find();
@@ -24,7 +24,7 @@ export const initializeCanvasSocket = (io) => {
     }
   };
 
-  // 保存画布到数据库
+  // Save a canvas to the database
   const saveCanvas = async (canvasId) => {
     try {
       const canvasData = canvasStates[canvasId];
@@ -44,19 +44,19 @@ export const initializeCanvasSocket = (io) => {
     }
   };
 
-  // 初始加载画布
+  // Load initial canvases
   loadCanvases();
 
   io.on('connection', (socket) => {
     console.log('Canvas client connected');
 
-    // 发送当前画布状态给新连接的客户端
+    // Send current canvas states to the newly connected client
     socket.emit('canvasStates', canvasStates);
 
-    // 处理画布选择
+    // Handle canvas selection
     socket.on('selectCanvas', async (canvasId) => {
       if (!canvasStates[canvasId]) {
-        // 尝试从数据库加载
+        // Try to load from database
         const canvas = await Canvas.findOne({ canvasId });
         if (canvas) {
           canvasStates[canvasId] = {
@@ -66,21 +66,21 @@ export const initializeCanvasSocket = (io) => {
             drawings: canvas.drawings
           };
         } else {
-          // 创建新画布
+          // Create new canvas
           canvasStates[canvasId] = {
             width: 800,
             height: 600,
             backgroundColor: '#ffffff',
             drawings: []
           };
-          // 保存到数据库
+          // Save to database
           await saveCanvas(canvasId);
         }
       }
       socket.emit('canvasState', canvasStates[canvasId]);
     });
 
-    // 处理绘图数据
+    // Handle drawing data
     socket.on('draw', async (data) => {
       const { canvasId, drawingData } = data;
       if (!canvasStates[canvasId]) {
@@ -91,37 +91,37 @@ export const initializeCanvasSocket = (io) => {
           drawings: []
         };
       }
-      // 保存绘图数据
+      // Save drawing data
       canvasStates[canvasId].drawings.push(drawingData);
-      // 广播给其他客户端
+      // Broadcast to other clients
       socket.broadcast.emit('draw', { canvasId, drawingData });
-      // 保存到数据库
+      // Save to database
       await saveCanvas(canvasId);
     });
 
-    // 处理撤销操作
+    // Handle undo action
     socket.on('undo', async (canvasId) => {
       if (canvasStates[canvasId] && canvasStates[canvasId].drawings.length > 0) {
-        // 只移除最后一个绘图操作
+        // Remove only the last drawing action
         canvasStates[canvasId].drawings.pop();
-        // 广播撤销操作给所有客户端
+        // Broadcast undo to all clients
         io.emit('undo', canvasId);
-        // 保存到数据库
+        // Save to database
         await saveCanvas(canvasId);
       }
     });
 
-    // 处理画布清除
+    // Handle canvas clear
     socket.on('clearCanvas', async (canvasId) => {
       if (canvasStates[canvasId]) {
         canvasStates[canvasId].drawings = [];
         io.emit('canvasCleared', canvasId);
-        // 保存到数据库
+        // Save to database
         await saveCanvas(canvasId);
       }
     });
 
-    // 处理新画布创建
+    // Handle new canvas creation
     socket.on('createCanvas', async (canvasId) => {
       if (!canvasStates[canvasId]) {
         canvasStates[canvasId] = {
@@ -130,7 +130,7 @@ export const initializeCanvasSocket = (io) => {
           backgroundColor: '#ffffff',
           drawings: []
         };
-        // 保存到数据库
+        // Save to database
         await saveCanvas(canvasId);
         io.emit('canvasCreated', canvasId);
       }
@@ -140,4 +140,4 @@ export const initializeCanvasSocket = (io) => {
       console.log('Canvas client disconnected');
     });
   });
-}; 
+};

@@ -1,15 +1,15 @@
-//JWT中间件函数 authMiddleware,验证 HTTP 请求中的 JWT 令牌，确保请求者身份合法
-// 若验证成功，将用户信息挂载到req.user上，否则返回 401 错误。
+// JWT middleware function `authMiddleware` verifies the JWT token in HTTP requests to ensure the requester is authenticated
+// If verification succeeds, attaches user info to `req.user`; otherwise responds with 401 Unauthorized
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// 确保正确加载 .env 文件
+// Ensure the .env file is properly loaded
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-// 添加调试日志
+// Debug logs
 console.log('=== JWT Configuration ===');
 console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
 console.log('JWT_SECRET length:', process.env.JWT_SECRET?.length);
@@ -18,7 +18,7 @@ console.log('Env file path:', path.join(__dirname, '..', '.env'));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_very_long_and_secure_secret_key_at_least_32_chars';
 
-// JWT 验证中间件
+// JWT verification middleware
 const auth = (userType) => async (req, res, next) => {
     try {
         console.log('=== Auth Middleware Start ===');
@@ -30,7 +30,7 @@ const auth = (userType) => async (req, res, next) => {
         
         if (!token) {
             console.log('No token found in request');
-            return res.status(401).json({ message: '未授权' });
+            return res.status(401).json({ message: 'Unauthorized' });
         }
 
         console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
@@ -46,7 +46,7 @@ const auth = (userType) => async (req, res, next) => {
                 required: userType,
                 got: decoded.userType
             });
-            return res.status(403).json({ message: '权限不足' });
+            return res.status(403).json({ message: 'Forbidden' });
         }
 
         console.log('=== Auth Middleware Passed ===');
@@ -58,7 +58,7 @@ const auth = (userType) => async (req, res, next) => {
             stack: error.stack
         });
         res.status(401).json({ 
-            message: '无效的token', 
+            message: 'Invalid token', 
             error: error.message 
         });
     }

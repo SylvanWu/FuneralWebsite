@@ -1,4 +1,4 @@
-// 记忆内容卡片组件，显示记忆内容的上传者、时间和具体内容（图片、视频或文本），并提供删除功能。
+// Memory content card component that displays the uploader, time, and specific content (image, video, or text), with delete functionality.
 import React, { useEffect, useState } from 'react';
 import { Memory } from './Timeline';
 
@@ -17,7 +17,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
     const [isDeleting, setIsDeleting] = useState(false);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
-    /* 进入动画，只在首次挂载时执行一次 */
+    /* Entry animation, runs only once on initial mount */
     useEffect(() => {
         const timer = setTimeout(() => setIsNew(false), 500);
         return () => clearTimeout(timer);
@@ -108,7 +108,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             className={`border border-gray-200 rounded-lg shadow-sm p-5 bg-white ${isNew ? 'memory-card-new' : ''
                 } ${isDeleting ? 'opacity-50' : ''}`}
         >
-            {/* 头部：头像 + 上传者 + 时间 */}
+            {/* Header: avatar + uploader + time */}
             <div className="flex items-center">
                 <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white">
                     <span>
@@ -125,10 +125,10 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 </div>
             </div>
 
-            {/* 主体内容（图 / 视频 / 文本） */}
+            {/* Main content (image / video / text) */}
             {renderContent()}
 
-            {/* 删除按钮，仅在canDelete为true时显示 */}
+            {/* Delete button, shown only when canDelete is true */}
             {canDelete && (
                 <button
                     onClick={handleDelete}

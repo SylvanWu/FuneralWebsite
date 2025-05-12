@@ -136,7 +136,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
             />
           </div>
 
-          {/* 用户类型选择区域 */}
+          {/*  User type selection area */}
           <div className="space-y-3 pt-2">
             <div className="flex flex-wrap items-center justify-center ">
               {[
@@ -159,7 +159,8 @@ export default function LoginPage({ setToken }: LoginPageProps) {
                     value={value}
                     checked={userType === value}
                     onChange={() => setUserType(value as any)}
-                    className="sr-only" // 隐藏原始单选按钮，使用自定义样式
+                    className="sr-only" // Hide the native radio buttons and use custom styles instead
+
                   />
                   <span className="text-xl">{icon}</span>
                   <span>{label}</span>

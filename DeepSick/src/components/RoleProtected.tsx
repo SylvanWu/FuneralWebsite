@@ -17,11 +17,11 @@ export default function RoleProtected(
   console.log('RoleProtected user:', user);
 
   if (!user.userType) {
-    // 未登录或user丢失
+    // Not logged in or user info missing
     return <Navigate to="/login" replace />;
   }
 
-  // 只允许指定 userType 访问
+  // Only allow access for the specified userType
   if (user.userType !== userType) {
     return <Navigate to="/" replace />;
   }

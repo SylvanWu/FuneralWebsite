@@ -1,4 +1,4 @@
-/* 应用的全局样式表，定义通用的样式和动画效果 */
+/*  Global stylesheet for the application, defining common styles and animation effects */
 #root {
   width: 100%;
   max-width: 100%;
@@ -48,7 +48,7 @@
 
 /* App-specific styles that are not utilities */
 
-/* 导航链接样式 */
+/* Styles for navigation links */
 .nav-link {
   color: #444444;
   transition: color 0.2s, background-color 0.2s;

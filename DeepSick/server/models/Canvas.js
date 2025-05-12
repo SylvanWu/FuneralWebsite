@@ -32,7 +32,7 @@ const canvasSchema = new mongoose.Schema({
   }
 });
 
-// 更新时自动更新 updatedAt
+// Automatically update updatedAt on modification
 canvasSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();

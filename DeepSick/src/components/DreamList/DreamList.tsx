@@ -1,11 +1,11 @@
-// 愿望列表主组件 包括增加
+// Main component for wish list management, including add functionality
 import React, { useEffect, useRef } from 'react';
 import { DreamCard } from './DreamCard';
 import '../DreamList/DreamList.css';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 导入 useNavigate 用于路由跳转
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
 
-// 新增接口定义
+// Interface definition for new dreams
 interface Dream {
   _id: string;
   content: string;
@@ -19,14 +19,14 @@ interface Dream {
 
 // export function DreamList({ onShrink }: DreamListProps) {
 export function DreamList() {
-  // 状态管理梦想列表
+  // State management for dream list
   const [dreams, setDreams] = useState<Dream[]>([]);
-  // 用户输入的愿望内容
+  // User input for wish content
   const [newDreamContent, setNewDreamContent] = useState<string>('');
-  // 新增状态控制输入框显示
+  // Control input box visibility for adding
   const [showInput, setShowInput] = useState<boolean>(false);
 
-  const navigate = useNavigate(); // 初始化 navigate
+  const navigate = useNavigate(); // Initialize navigate
 
 
   useEffect(() => {
@@ -43,8 +43,8 @@ export function DreamList() {
     fetchAllDreams();
   }, []);
 
-  // 新增：创建新梦想的函数
-  //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams`的网址写法 基于env。
+  // Function to create a new dream
+  //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams` is the version based on env)
   const createDream = async (content: string) => {
     try {
       const response = await fetch(`http://localhost:5001/api/dreams`, {
@@ -54,7 +54,7 @@ export function DreamList() {
         },
         body: JSON.stringify({
           content,
-          position: { x: 0, y: 0 } // 初始位置
+          position: { x: 0, y: 0 } // Initial position
         })
       });
 
@@ -66,36 +66,34 @@ export function DreamList() {
     }
   };
 
-  // 完善 handleAddDream 函数
+  // Complete the handleAddDream function
   const handleAddDream = async () => {
 
     if (!showInput) {
-      // 如果输入框未显示，则显示输入框
+      // If input box is hidden, show it
       setShowInput(true);
       return;
     }
 
-    // 如果已经显示输入框，则提交内容
+    // If input box is visible, submit content
     if (newDreamContent.trim() === '') {
       alert('Please input the content of your wish');
       return;
     }
     try {
-      await createDream(newDreamContent); // 先创建
-      const res = await fetch(`http://localhost:5001/api/dreams`); // 再拉所有最新数据
+      await createDream(newDreamContent); // First create
+      const res = await fetch(`http://localhost:5001/api/dreams`); // Then fetch latest data
       const updatedDreams = await res.json();
-      setDreams(updatedDreams); // 覆盖原本 state，避免数据不一致
+      setDreams(updatedDreams); // Update state to avoid inconsistency
 
-
-
-      setNewDreamContent(''); // 清空输入框
-      setShowInput(false); // 提交后隐藏输入框
+      setNewDreamContent(''); // Clear input
+      setShowInput(false); // Hide input after submit
     } catch (err) {
       alert('Failed to add. Try again');
     }
   }
 
-  //Press the enter key to add the dream 
+  // Press the enter key to add the dream 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleAddDream();
@@ -105,7 +103,7 @@ export function DreamList() {
     }
   }
 
-  //delete dream function
+  // Delete dream function
   const handleDelete = async (id: string) => {
     try {
       const response = await fetch(`http://localhost:5001/api/dreams/${id}`, {
@@ -114,25 +112,23 @@ export function DreamList() {
 
       if (!response.ok) throw new Error('failed to delete');
 
-      setDreams((prev) => prev.filter(dream => dream._id !== id)); // 更新状态，移除已删除的梦想
+      setDreams((prev) => prev.filter(dream => dream._id !== id)); // Update state to remove deleted dream
     } catch (err) {
       console.error('failed to delete the wish:', err);
     }
   }
 
-  // 编辑按钮点击事件
+  // Edit button click event
   const handleEdit = (dreamId: string) => {
-    // 跳转到编辑页面，并传递dream的id
+    // Navigate to edit page, passing dream id
     navigate(`/dreamlist/edit/${dreamId}`);
   };
 
   const handleEditAll = async () => {
-    // const dreamIds = dreams.map(d => d._id);
-    // navigate('/dreamlist/edit', { state: { ids: dreamIds } });
     try {
     const res = await fetch(`http://localhost:5001/api/dreams`);
     const data = await res.json();
-    // 传递所有的梦想内容
+    // Pass all dream contents
     navigate('/dreamlist/edit', { state: { dreams: data } });
   } catch (err) {
     console.error('Failed to fetch latest dreams:', err);
@@ -143,7 +139,7 @@ export function DreamList() {
     <div>
       <h1 className="dream-list-title">Wish List</h1>
       <div className="dream-list-content">
-        {/* 显示愿望清单 */}
+        {/* Display wish list */}
         {dreams.map(dream => (
           <div key={dream._id} className="dream-item">
             <span>{dream.content}</span>
@@ -154,7 +150,7 @@ export function DreamList() {
             </div>
           </div>
         ))}
-        {/* 输入框与添加按钮 */}
+        {/* Input field and add button */}
         {showInput && (
           <div className="input-container">
             <input
