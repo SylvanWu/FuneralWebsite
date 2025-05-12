@@ -11,7 +11,10 @@ export const initializeCanvasSocket = (io) => {
     try {
       const canvases = await Canvas.find();
       canvases.forEach(canvas => {
-        canvasStates[canvas.canvasId] = {
+        if (!canvasStates[canvas.roomId]) {
+          canvasStates[canvas.roomId] = {};
+        }
+        canvasStates[canvas.roomId][canvas.canvasId] = {
           width: canvas.width,
           height: canvas.height,
           backgroundColor: canvas.backgroundColor,
@@ -25,13 +28,14 @@ export const initializeCanvasSocket = (io) => {
   };
 
   // Save a canvas to the database
-  const saveCanvas = async (canvasId) => {
+  const saveCanvas = async (roomId, canvasId) => {
     try {
-      const canvasData = canvasStates[canvasId];
+      const canvasData = canvasStates[roomId][canvasId];
       await Canvas.findOneAndUpdate(
-        { canvasId },
+        { canvasId, roomId },
         {
           canvasId,
+          roomId,
           width: canvasData.width,
           height: canvasData.height,
           backgroundColor: canvasData.backgroundColor,
@@ -50,16 +54,29 @@ export const initializeCanvasSocket = (io) => {
   io.on('connection', (socket) => {
     console.log('Canvas client connected');
 
-    // Send current canvas states to the newly connected client
-    socket.emit('canvasStates', canvasStates);
+    // Handle room joining
+    socket.on('joinRoom', (roomId) => {
+      socket.join(roomId);
+      // Send current canvas states for this room
+      if (canvasStates[roomId]) {
+        socket.emit('canvasStates', canvasStates[roomId]);
+      } else {
+        canvasStates[roomId] = {};
+        socket.emit('canvasStates', {});
+      }
+    });
 
     // Handle canvas selection
-    socket.on('selectCanvas', async (canvasId) => {
-      if (!canvasStates[canvasId]) {
+    socket.on('selectCanvas', async (data) => {
+      const { roomId, canvasId } = data;
+      if (!canvasStates[roomId]) {
+        canvasStates[roomId] = {};
+      }
+      if (!canvasStates[roomId][canvasId]) {
         // Try to load from database
-        const canvas = await Canvas.findOne({ canvasId });
+        const canvas = await Canvas.findOne({ canvasId, roomId });
         if (canvas) {
-          canvasStates[canvasId] = {
+          canvasStates[roomId][canvasId] = {
             width: canvas.width,
             height: canvas.height,
             backgroundColor: canvas.backgroundColor,
@@ -67,24 +84,27 @@ export const initializeCanvasSocket = (io) => {
           };
         } else {
           // Create new canvas
-          canvasStates[canvasId] = {
+          canvasStates[roomId][canvasId] = {
             width: 800,
             height: 600,
             backgroundColor: '#ffffff',
             drawings: []
           };
           // Save to database
-          await saveCanvas(canvasId);
+          await saveCanvas(roomId, canvasId);
         }
       }
-      socket.emit('canvasState', canvasStates[canvasId]);
+      socket.emit('canvasState', canvasStates[roomId][canvasId]);
     });
 
     // Handle drawing data
     socket.on('draw', async (data) => {
-      const { canvasId, drawingData } = data;
-      if (!canvasStates[canvasId]) {
-        canvasStates[canvasId] = {
+      const { roomId, canvasId, drawingData } = data;
+      if (!canvasStates[roomId]) {
+        canvasStates[roomId] = {};
+      }
+      if (!canvasStates[roomId][canvasId]) {
+        canvasStates[roomId][canvasId] = {
           width: 800,
           height: 600,
           backgroundColor: '#ffffff',
@@ -92,47 +112,55 @@ export const initializeCanvasSocket = (io) => {
         };
       }
       // Save drawing data
-      canvasStates[canvasId].drawings.push(drawingData);
-      // Broadcast to other clients
-      socket.broadcast.emit('draw', { canvasId, drawingData });
+      canvasStates[roomId][canvasId].drawings.push(drawingData);
+      // Broadcast to other clients in the same room
+      socket.to(roomId).emit('draw', { canvasId, drawingData });
       // Save to database
-      await saveCanvas(canvasId);
+      await saveCanvas(roomId, canvasId);
     });
 
     // Handle undo action
-    socket.on('undo', async (canvasId) => {
-      if (canvasStates[canvasId] && canvasStates[canvasId].drawings.length > 0) {
+    socket.on('undo', async (data) => {
+      const { roomId, canvasId } = data;
+      if (canvasStates[roomId] && 
+          canvasStates[roomId][canvasId] && 
+          canvasStates[roomId][canvasId].drawings.length > 0) {
         // Remove only the last drawing action
-        canvasStates[canvasId].drawings.pop();
-        // Broadcast undo to all clients
-        io.emit('undo', canvasId);
+        canvasStates[roomId][canvasId].drawings.pop();
+        // Broadcast undo to all clients in the same room
+        io.to(roomId).emit('undo', canvasId);
         // Save to database
-        await saveCanvas(canvasId);
+        await saveCanvas(roomId, canvasId);
       }
     });
 
     // Handle canvas clear
-    socket.on('clearCanvas', async (canvasId) => {
-      if (canvasStates[canvasId]) {
-        canvasStates[canvasId].drawings = [];
-        io.emit('canvasCleared', canvasId);
+    socket.on('clearCanvas', async (data) => {
+      const { roomId, canvasId } = data;
+      if (canvasStates[roomId] && canvasStates[roomId][canvasId]) {
+        canvasStates[roomId][canvasId].drawings = [];
+        io.to(roomId).emit('canvasCleared', canvasId);
         // Save to database
-        await saveCanvas(canvasId);
+        await saveCanvas(roomId, canvasId);
       }
     });
 
     // Handle new canvas creation
-    socket.on('createCanvas', async (canvasId) => {
-      if (!canvasStates[canvasId]) {
-        canvasStates[canvasId] = {
+    socket.on('createCanvas', async (data) => {
+      const { roomId, canvasId } = data;
+      if (!canvasStates[roomId]) {
+        canvasStates[roomId] = {};
+      }
+      if (!canvasStates[roomId][canvasId]) {
+        canvasStates[roomId][canvasId] = {
           width: 800,
           height: 600,
           backgroundColor: '#ffffff',
           drawings: []
         };
         // Save to database
-        await saveCanvas(canvasId);
-        io.emit('canvasCreated', canvasId);
+        await saveCanvas(roomId, canvasId);
+        io.to(roomId).emit('canvasCreated', canvasId);
       }
     });
 

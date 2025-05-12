@@ -108,7 +108,7 @@ const InteractivePage: React.FC = () => {
       {/* Drawing canvas */}
       <section className="drawing-area">
         <h2>Collaborative Drawing Board</h2>
-        <SharedCanvas />
+        <SharedCanvas roomId={roomData.roomId} />
       </section>
 
       {/* Interaction cards */}

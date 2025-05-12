@@ -6,6 +6,11 @@ const canvasSchema = new mongoose.Schema({
     required: true, 
     unique: true 
   },
+  roomId: {
+    type: String,
+    required: true,
+    index: true
+  },
   width: { 
     type: Number, 
     default: 800 

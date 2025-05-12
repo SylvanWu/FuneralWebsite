@@ -27,6 +27,10 @@ interface CanvasStates {
   [key: string]: CanvasState;
 }
 
+interface SharedCanvasProps {
+  roomId: string;
+}
+
 const SOCKET_RECONNECT_ATTEMPTS = 5;
 const SOCKET_RECONNECT_DELAY = 3000;
 
@@ -98,7 +102,7 @@ const hexToRgb = (hex: string) => {
   } : null;
 };
 
-const SharedCanvas: React.FC = () => {
+const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const socket = useSocket();
@@ -195,48 +199,13 @@ const SharedCanvas: React.FC = () => {
     }
   }, [scale]);
 
+  // Initialize socket connection and event listeners
   useEffect(() => {
-    // Initialize canvas
-    initCanvas();
-    // Listen for window resize
-    window.addEventListener('resize', calculateScale);
-    calculateScale();
-    // Socket event listeners
     if (socket) {
-      // Add all socket event listeners here (connect, disconnect, error, canvasStates, etc.)
-      socket.on('connect', () => {
-        console.log('Socket connected');
-        setIsConnected(true);
-        setError(null);
-        reconnectAttemptsRef.current = 0;
-      });
-      socket.on('connect_error', (err) => {
-        console.error('Connection error:', err);
-        reconnectAttemptsRef.current += 1;
-        if (reconnectAttemptsRef.current >= SOCKET_RECONNECT_ATTEMPTS) {
-          setError('Failed to connect to server. Please refresh the page.');
-          setIsConnected(false);
-        } else {
-          setError(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${SOCKET_RECONNECT_ATTEMPTS})`);
-        }
-      });
-      socket.on('disconnect', (reason) => {
-        console.log('Socket disconnected:', reason);
-        setIsConnected(false);
-        if (reason === 'io server disconnect') {
-          setError('Server disconnected. Please refresh the page.');
-        } else if (reason === 'transport close') {
-          setError('Connection lost. Attempting to reconnect...');
-        } else if (reason === 'ping timeout') {
-          setError('Connection timeout. Attempting to reconnect...');
-        } else {
-          setError('Network connection lost. Attempting to reconnect...');
-        }
-      });
-      socket.on('error', (err) => {
-        console.error('Socket error:', err);
-        setError(`Error occurred: ${err.message}`);
-      });
+      // Join the room
+      socket.emit('joinRoom', roomId);
+
+      // Set up event listeners
       socket.on('canvasStates', (states: CanvasStates) => {
         try {
           console.log('Received canvas states:', states);
@@ -249,6 +218,7 @@ const SharedCanvas: React.FC = () => {
           setError('Failed to redraw canvas. Please refresh the page.');
         }
       });
+
       socket.on('canvasState', (state: CanvasState) => {
         try {
           console.log('Received canvas state:', state);
@@ -259,6 +229,7 @@ const SharedCanvas: React.FC = () => {
           setError('Failed to redraw canvas. Please refresh the page.');
         }
       });
+
       socket.on('draw', (data: { canvasId: string; drawingData: DrawingData }) => {
         try {
           console.log('Received drawing data:', data);
@@ -270,6 +241,7 @@ const SharedCanvas: React.FC = () => {
           console.error('Failed to draw:', err);
         }
       });
+
       socket.on('canvasCleared', (canvasId: string) => {
         try {
           console.log('Canvas cleared:', canvasId);
@@ -281,10 +253,12 @@ const SharedCanvas: React.FC = () => {
           console.error('Failed to clear canvas:', err);
         }
       });
+
       socket.on('canvasCreated', (canvasId: string) => {
         console.log('Canvas created:', canvasId);
         setCanvasList(prev => [...prev, canvasId]);
       });
+
       socket.on('undo', (canvasId: string) => {
         console.log('Undo event:', canvasId);
         if (canvasId === currentCanvasId && drawingsRef.current.length > 0) {
@@ -294,14 +268,14 @@ const SharedCanvas: React.FC = () => {
         }
       });
     }
+
     return () => {
-      // Remove all socket event listeners on unmount
       if (socket) {
         socket.removeAllListeners();
       }
       window.removeEventListener('resize', calculateScale);
     };
-  }, [initCanvas, calculateScale, socket, currentCanvasId, redrawCanvas, updateDrawings]);
+  }, [initCanvas, calculateScale, socket, currentCanvasId, redrawCanvas, updateDrawings, roomId]);
 
   const drawOnCanvas = (data: DrawingData) => {
     const canvas = canvasRef.current;
@@ -395,7 +369,7 @@ const SharedCanvas: React.FC = () => {
       };
       drawOnCanvas(drawingData);
       updateDrawings([...drawingsRef.current, drawingData]);
-      socket?.emit('draw', { canvasId: currentCanvasId, drawingData });
+      socket?.emit('draw', { roomId, canvasId: currentCanvasId, drawingData });
       setIsDrawing(false);
       setStartPoint(null);
     }
@@ -428,7 +402,6 @@ const SharedCanvas: React.FC = () => {
       case 'LINE':
       case 'RECTANGLE':
       case 'CIRCLE':
-        // Redraw previous canvas state with all saved drawings
         redrawCanvas(drawings);
         const shapeData: DrawingData = {
           points: [startPoint, currentPoint],
@@ -457,7 +430,7 @@ const SharedCanvas: React.FC = () => {
         type: currentTool === 'ERASER' ? 'erase' : 'brush'
       };
       updateDrawings([...drawingsRef.current, drawingData]);
-      socket?.emit('draw', { canvasId: currentCanvasId, drawingData });
+      socket?.emit('draw', { roomId, canvasId: currentCanvasId, drawingData });
       setCurrentPath([]);
     } else if (currentTool === 'LINE' || currentTool === 'RECTANGLE' || currentTool === 'CIRCLE') {
       const drawingData: DrawingData = {
@@ -465,7 +438,7 @@ const SharedCanvas: React.FC = () => {
         type: TOOL_TYPES[currentTool] as DrawingData['type']
       };
       updateDrawings([...drawingsRef.current, drawingData]);
-      socket?.emit('draw', { canvasId: currentCanvasId, drawingData });
+      socket?.emit('draw', { roomId, canvasId: currentCanvasId, drawingData });
     }
 
     setIsDrawing(false);
@@ -475,15 +448,15 @@ const SharedCanvas: React.FC = () => {
   // Handle canvas selection
   const handleCanvasSelect = (canvasId: string) => {
     setCurrentCanvasId(canvasId);
-    socket?.emit('selectCanvas', canvasId);
+    socket?.emit('selectCanvas', { roomId, canvasId });
   };
 
   // Handle undo functionality
   const handleUndo = useCallback(() => {
     if (drawingsRef.current.length > 0) {
-      socket?.emit('undo', currentCanvasId);
+      socket?.emit('undo', { roomId, canvasId: currentCanvasId });
     }
-  }, [socket, currentCanvasId]);
+  }, [socket, currentCanvasId, roomId]);
 
   // Add keyboard event listener
   useEffect(() => {
@@ -503,23 +476,32 @@ const SharedCanvas: React.FC = () => {
   // Handle canvas clear
   const handleClearCanvas = () => {
     if (socket) {
-      socket.emit('clearCanvas', currentCanvasId);
+      socket.emit('clearCanvas', { roomId, canvasId: currentCanvasId });
     }
   };
 
   // Request canvas state from backend every time the component mounts or currentCanvasId changes
   useEffect(() => {
     if (socket && socket.connected) {
-      // Actively request the latest canvas state from backend
-      socket.emit('selectCanvas', currentCanvasId);
+      socket.emit('selectCanvas', { roomId, canvasId: currentCanvasId });
     }
-  }, [socket, currentCanvasId]);
+  }, [socket, currentCanvasId, roomId]);
 
   return (
     <div className="shared-canvas-container" ref={containerRef}>
       <div className="shared-toolbar">
         <div className="shared-tool-group">
-          {/* Removed canvas selection dropdown to disable switching between canvases */}
+          <select
+            className="canvas-select"
+            value={currentCanvasId}
+            onChange={(e) => handleCanvasSelect(e.target.value)}
+          >
+            {canvasList.map((id) => (
+              <option key={id} value={id}>
+                Canvas {id}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="shared-tool-group">
