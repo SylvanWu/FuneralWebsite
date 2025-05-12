@@ -30,10 +30,15 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true }); // Ensure directory exists
 
 /* ──────────── Common Middleware ──────────── */
 app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend development address
+    origin: [
+        'http://localhost:5173',
+        'http://3.105.228.129'
+      ],
+    
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
-    exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length']
+    exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length'],
+    credentials: true
 }));
 
 app.use(express.json());
