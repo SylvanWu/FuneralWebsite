@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { Stage, Layer, Rect, Text, Image as KonvaImage } from 'react-konva';
+import { Stage, Layer, Rect, Text, Image as KonvaImage, Transformer, Group, Circle } from 'react-konva';
 import { 
   FuneralRoom, 
   getFuneralRoomById, 
@@ -55,6 +55,10 @@ const CROP_IMAGE_SIZE = 128; // 128x128px final size
 
 // Size constant for decoration items
 const DECORATION_ITEM_SIZE = 50; // 50x50px
+
+// Define the selection threshold for resize handles
+const ANCHOR_STROKE_WIDTH = 1;
+const RESIZE_HANDLE_SIZE = 8;
 
 // Function to create an image from a file
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -193,6 +197,9 @@ const FuneralRoomPage: React.FC = () => {
   
   // Add state for toolbar collapse
   const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
+  
+  // Add refs for transform operations
+  const transformerRef = useRef<any>(null);
   
   // Load funeral room data from database on mount
   useEffect(() => {
@@ -511,7 +518,27 @@ const FuneralRoomPage: React.FC = () => {
     }
   }, [roomId, state.password]);
   
-  // Function to remove a selected item
+  // Update transformer whenever selection changes
+  useEffect(() => {
+    if (transformerRef.current && selectedItemId) {
+      // Find the selected node by id
+      const stage = stageRef.current;
+      if (!stage) return;
+      
+      const selectedNode = stage.findOne(`#${selectedItemId}`);
+      if (selectedNode) {
+        // Attach transformer to the selected node
+        transformerRef.current.nodes([selectedNode]);
+        transformerRef.current.getLayer().batchDraw();
+      }
+    } else if (transformerRef.current) {
+      // Clear transformer if no selection
+      transformerRef.current.nodes([]);
+      transformerRef.current.getLayer().batchDraw();
+    }
+  }, [selectedItemId]);
+  
+  // Function to remove a selected item with delete icon
   const handleRemoveSelectedItem = useCallback(() => {
     if (!selectedItemId) return;
     
@@ -710,6 +737,78 @@ const FuneralRoomPage: React.FC = () => {
   // Handle toolbar collapse
   const handleToolbarCollapse = (isCollapsed: boolean) => {
     setIsToolbarCollapsed(isCollapsed);
+  };
+
+  // Handle item transform complete
+  const handleTransformEnd = (id: string, e: any) => {
+    // Get the node that was transformed
+    const node = e.target;
+    
+    // Update the item with the new position and size
+    const updatedItems = canvasItems.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          x: node.x(),
+          y: node.y(),
+          width: node.width() * node.scaleX(),
+          height: node.height() * node.scaleY()
+        };
+      }
+      return item;
+    });
+    
+    // Update state and save
+    setCanvasItems(updatedItems);
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after transform:', err)
+    );
+    
+    // Reset scale to avoid accumulating
+    if (node) {
+      node.scaleX(1);
+      node.scaleY(1);
+    }
+  };
+
+  // Add item delete button component
+  const DeleteButton = ({ visible, x, y, onClick }: { 
+    visible: boolean, 
+    x: number, 
+    y: number, 
+    onClick: () => void 
+  }) => {
+    if (!visible) return null;
+    
+    return (
+      <Group x={x} y={y}>
+        <Circle 
+          radius={10}
+          fill="red"
+          stroke="white"
+          strokeWidth={1}
+        />
+        <Text 
+          text="×" 
+          fill="white"
+          fontSize={16}
+          align="center"
+          verticalAlign="middle"
+          x={-6}
+          y={-8}
+          fontStyle="bold"
+        />
+        <Rect 
+          width={20} 
+          height={20} 
+          x={-10} 
+          y={-10}
+          opacity={0}
+          onClick={onClick}
+          onTap={onClick}
+        />
+      </Group>
+    );
   };
 
   if (isLoading) {
@@ -949,18 +1048,8 @@ const FuneralRoomPage: React.FC = () => {
                           <React.Fragment key={item.id}>
                             {itemImage ? (
                               <>
-                                {/* Selection border for images */}
-                                {isSelected && (
-                                  <Rect
-                                    x={item.x - 2}
-                                    y={item.y - 2}
-                                    width={item.width + 4}
-                                    height={item.height + 4}
-                                    stroke="#0096FF"
-                                    strokeWidth={2}
-                                  />
-                                )}
                                 <KonvaImage
+                                  id={item.id}
                                   image={itemImage}
                                   x={item.x}
                                   y={item.y}
@@ -984,22 +1073,21 @@ const FuneralRoomPage: React.FC = () => {
                                   }}
                                   onClick={() => setSelectedItemId(item.id)}
                                   onTap={() => setSelectedItemId(item.id)}
+                                  onTransformEnd={(e) => handleTransformEnd(item.id, e)}
+                                />
+                                
+                                {/* Delete button */}
+                                <DeleteButton 
+                                  visible={isSelected}
+                                  x={item.x + item.width}
+                                  y={item.y - 10}
+                                  onClick={handleRemoveSelectedItem}
                                 />
                               </>
                             ) : (
                               <>
-                                {/* Selection border for rectangles */}
-                                {isSelected && (
-                                  <Rect
-                                    x={item.x - 2}
-                                    y={item.y - 2}
-                                    width={item.width + 4}
-                                    height={item.height + 4}
-                                    stroke="#0096FF"
-                                    strokeWidth={2}
-                                  />
-                                )}
                                 <Rect
+                                  id={item.id}
                                   x={item.x}
                                   y={item.y}
                                   width={item.width}
@@ -1024,12 +1112,46 @@ const FuneralRoomPage: React.FC = () => {
                                   }}
                                   onClick={() => setSelectedItemId(item.id)}
                                   onTap={() => setSelectedItemId(item.id)}
+                                  onTransformEnd={(e) => handleTransformEnd(item.id, e)}
+                                />
+                                
+                                {/* Delete button */}
+                                <DeleteButton 
+                                  visible={isSelected}
+                                  x={item.x + item.width}
+                                  y={item.y - 10}
+                                  onClick={handleRemoveSelectedItem}
                                 />
                               </>
                             )}
                           </React.Fragment>
                         );
                       })}
+                      
+                      {/* Add transformer for resizing */}
+                      <Transformer
+                        ref={transformerRef}
+                        boundBoxFunc={(oldBox, newBox) => {
+                          // Limit minimum size
+                          if (newBox.width < 20 || newBox.height < 20) {
+                            return oldBox;
+                          }
+                          return newBox;
+                        }}
+                        anchorStroke="#0096FF"
+                        anchorFill="#ffffff"
+                        anchorSize={RESIZE_HANDLE_SIZE}
+                        anchorStrokeWidth={ANCHOR_STROKE_WIDTH}
+                        borderStroke="#0096FF"
+                        borderStrokeWidth={1}
+                        borderDash={[4, 4]}
+                        rotateEnabled={true}
+                        enabledAnchors={[
+                          'top-left', 'top-right', 
+                          'bottom-left', 'bottom-right'
+                        ]}
+                      />
+                      
                     </Layer>
                   </Stage>
                 </div>
