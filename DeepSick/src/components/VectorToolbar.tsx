@@ -119,6 +119,43 @@ import treasurechestImage from '../assets/small picture/treasurechest.png';
 import treasurechest1Image from '../assets/small picture/treasurechest1.png';
 import appletreeImage from '../assets/small picture/appletree.png';
 import tree1Image from '../assets/small picture/tree1.png';
+import whitedogImage from '../assets/small picture/whitedog.png';
+import monkeyImage from '../assets/small picture/monkey.png';
+import birdImage from '../assets/small picture/bird.png';
+import devilImage from '../assets/small picture/devil.png';
+import devil1Image from '../assets/small picture/devil1.png';
+import peachImage from '../assets/small picture/peach.png';
+import bearImage from '../assets/small picture/bear.png';
+import axeImage from '../assets/small picture/axe.png';
+import turtleImage from '../assets/small picture/turtle.png';
+import fairyImage from '../assets/small picture/fairy.png';
+import redfishImage from '../assets/small picture/redfish.png';
+import yellowfishImage from '../assets/small picture/yellowfish.png';
+import blueseahorseImage from '../assets/small picture/blueseahorse.png';
+import giftImage from '../assets/small picture/gift.png';
+import buildingImage from '../assets/small picture/building.png';
+import bonsaiImage from '../assets/small picture/bonsai.png';
+import submarineImage from '../assets/small picture/submarine.png';
+import icecreamImage from '../assets/small picture/icecream.png';
+import wreathImage from '../assets/small picture/wreath.png';
+import cakeImage from '../assets/small picture/cake.png';
+import cake1Image from '../assets/small picture/cake1.png';
+import cattle1Image from '../assets/small picture/cattle1.png';
+import sushiImage from '../assets/small picture/sushi.png';
+import sushi1Image from '../assets/small picture/sushi1.png';
+import sushi2Image from '../assets/small picture/sushi2.png';
+import sushi3Image from '../assets/small picture/sushi3.png';
+import sushi4Image from '../assets/small picture/sushi4.png';
+import sushi5Image from '../assets/small picture/sushi5.png';
+import sushi6Image from '../assets/small picture/sushi6.png';
+import ghostImage from '../assets/small picture/ghost.png';
+import dragonImage from '../assets/small picture/dragon.png';
+import snakeImage from '../assets/small picture/snake.png';
+import yellowsheepImage from '../assets/small picture/yellowsheep.png';
+import sheepImage from '../assets/small picture/sheep.png';
+import chicken3Image from '../assets/small picture/chicken2.png';
+
+
 
 interface VectorItem {
   id: string;
@@ -142,6 +179,7 @@ const CATEGORIES = [
   { key: 'character', label: 'Character' },
   { key: 'animals', label: 'Animals' },
   { key: 'objects', label: 'Objects' },
+  { key: 'buildings', label: 'Buildings' },
 ];
 
 // Vector items with actual images
@@ -196,6 +234,13 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Tree',
     src: tree1Image
   },
+  // Buildings category
+  { 
+    id: 'building',
+    category: 'buildings',
+    name: 'Building',
+    src: buildingImage
+  },
   // Food category
   { 
     id: 'chocolate',
@@ -215,6 +260,67 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Strawberry Milk',
     src: strawberryMilkImage
   },
+  { 
+    id: 'icecream',
+    category: 'food',
+    name: 'Ice Cream',
+    src: icecreamImage
+  },
+  { 
+    id: 'cake',
+    category: 'food',
+    name: 'Cake',
+    src: cakeImage
+  },
+  { 
+    id: 'cake1',
+    category: 'food',
+    name: 'Cake',
+    src: cake1Image
+  },
+  { 
+    id: 'sushi',
+    category: 'food',
+    name: 'Sushi',
+    src: sushiImage
+  },
+  { 
+    id: 'sushi1',
+    category: 'food',
+    name: 'Sushi',
+    src: sushi1Image
+  },
+  { 
+    id: 'sushi2',
+    category: 'food',
+    name: 'Sushi',
+    src: sushi2Image
+  },
+  { 
+    id: 'sushi3',
+    category: 'food',
+    name: 'Sushi',
+    src: sushi3Image
+  },
+  { 
+    id: 'sushi4',
+    category: 'food',
+    name: 'Sushi',
+    src: sushi4Image
+  },
+  { 
+    id: 'sushi5',
+    category: 'food',
+    name: 'Sushi',
+    src: sushi5Image
+  },
+  { 
+    id: 'sushi6',
+    category: 'food',
+    name: 'Sushi',
+    src: sushi6Image
+  },
+
   // Fruits category
   { 
     id: 'grapes',
@@ -264,6 +370,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Lemon',
     src: lemonImage
   },
+  { 
+    id: 'peach',
+    category: 'fruits',
+    name: 'Peach',
+    src: peachImage
+  },
   // Symbols category
   { 
     id: 'heart',
@@ -283,7 +395,24 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Bonfire',
     src: bonfireImage
   },
-  
+  { 
+    id: 'devil',
+    category: 'symbols',
+    name: 'Devil',
+    src: devilImage
+  },
+  { 
+    id: 'devil1',
+    category: 'symbols',
+    name: 'Devil',
+    src: devil1Image
+  },
+  { 
+    id: 'ghost',
+    category: 'symbols',
+    name: 'Ghost',
+    src: ghostImage
+  },
   // Animals category
   { 
     id: 'bianfu',
@@ -369,12 +498,102 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Cat',
     src: catImage
   },
+  { 
+    id: 'whitedog',
+    category: 'animals',
+    name: 'White Dog',
+    src: whitedogImage
+  },
+  { 
+    id: 'monkey',
+    category: 'animals',
+    name: 'Monkey',
+    src: monkeyImage
+  },
+  { 
+    id: 'bird',
+    category: 'animals',
+    name: 'Bird',
+    src: birdImage
+  },
+  { 
+    id: 'bear',
+    category: 'animals',
+    name: 'Bear',
+    src: bearImage
+  },
+  { 
+    id: 'turtle',
+    category: 'animals',
+    name: 'Turtle',
+    src: turtleImage
+  },
+  { 
+    id: 'redfish',
+    category: 'animals',
+    name: 'Red Fish',
+    src: redfishImage
+  },
+  { 
+    id: 'yellowfish',
+    category: 'animals',
+    name: 'Yellow Fish',
+    src: yellowfishImage
+  },
+  { 
+    id: 'blueseahorse',
+    category: 'animals',
+    name: 'Blue Sea Horse',
+    src: blueseahorseImage
+  },
+  { 
+    id: 'cattle1',
+    category: 'animals',
+    name: 'Cattle',
+    src: cattle1Image
+  },
+  { 
+    id: 'dragon',
+    category: 'animals',
+    name: 'Dragon',
+    src: dragonImage
+  },
+  { 
+    id: 'snake',
+    category: 'animals',
+    name: 'Snake',
+    src: snakeImage
+  },
+  { 
+    id: 'yellowsheep',
+    category: 'animals',
+    name: 'Yellow Sheep',
+    src: yellowsheepImage
+  },
+  { 
+    id: 'sheep',
+    category: 'animals',
+    name: 'Sheep',
+    src: sheepImage
+  },
+  { 
+    id: 'chicken3',
+    category: 'animals',
+    name: 'Chicken',
+    src: chicken3Image
+  },
   // Objects category
   { 
     id: 'redtelevision',
     category: 'objects',
     name: 'Red Television',
     src: redtelevisionImage
+  },
+  { 
+    id: 'bonsai',
+    category: 'objects',
+    name: 'Bonsai',
+    src: bonsaiImage
   },
   { 
     id: 'pinktelevision',
@@ -402,9 +621,21 @@ const VECTOR_ITEMS: VectorItem[] = [
   },
   { 
     id: 'bomb',
-    category: 'symbols',
+    category: 'objects',
     name: 'Bomb',
     src: bombImage
+  },
+  { 
+    id: 'wreath',
+    category: 'objects',
+    name: 'Wreath',
+    src: wreathImage
+  },
+  { 
+    id: 'gift',
+    category: 'objects',
+    name: 'Gift',
+    src: giftImage
   },
   { 
     id: 'forklift',
@@ -431,6 +662,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     src: loader1Image
   },
   { 
+    id: 'submarine',
+    category: 'objects',
+    name: 'Submarine',
+    src: submarineImage
+  },
+  { 
     id: 'fence',
     category: 'objects',
     name: 'Fence',
@@ -447,6 +684,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'objects',
     name: 'Treasure Chest',
     src: treasurechest1Image
+  },
+  { 
+    id: 'axe',
+    category: 'objects',
+    name: 'Axe',
+    src: axeImage
   },
   // Character category
   { 
@@ -856,6 +1099,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'character',
     name: 'Man',
     src: man30Image
+  },
+  { 
+    id: 'fairy',
+    category: 'character',
+    name: 'Fairy',
+    src: fairyImage
   },
   
   
