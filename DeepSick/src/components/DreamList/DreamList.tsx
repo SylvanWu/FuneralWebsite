@@ -34,7 +34,7 @@ export function DreamList() {
       try {
         const res = await fetch(`http://localhost:5001/api/dreams`);
         const data = await res.json();
-        setDreams(data);
+        setDreams(data);// 更新状态为最新的梦想列表
       } catch (err) {
         console.error('Failed to fetch dreams list:', err);
       }
@@ -130,14 +130,14 @@ export function DreamList() {
     // const dreamIds = dreams.map(d => d._id);
     // navigate('/dreamlist/edit', { state: { ids: dreamIds } });
     try {
-    const res = await fetch(`http://localhost:5001/api/dreams`);
-    const data = await res.json();
-    // 传递所有的梦想内容
-    navigate('/dreamlist/edit', { state: { dreams: data } });
-  } catch (err) {
-    console.error('Failed to fetch latest dreams:', err);
-  }
-};
+      const res = await fetch(`http://localhost:5001/api/dreams`);
+      const data = await res.json();
+      // 传递所有的梦想内容
+      navigate('/dreamlist/edit', { state: { dreams: data } });
+    } catch (err) {
+      console.error('Failed to fetch latest dreams:', err);
+    }
+  };
 
   return (
     <div>

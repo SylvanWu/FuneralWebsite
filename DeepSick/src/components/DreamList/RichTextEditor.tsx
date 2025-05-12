@@ -48,12 +48,16 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) => {
+  console.log("📥 初始传入 content 是：", content); // ✅ 这里加
   // Initialize the editor with necessary extensions
   const editor = useEditor({
     extensions: [StarterKit, TextStyle, Color, FontSize],  // Added FontSize extension here
     content,
     onUpdate({ editor }) {
-      onChange(editor.getHTML()); // Send updated content to parent
+      // onChange(editor.getHTML()); // Send updated content to parent
+      const html = editor.getHTML();
+      console.log("📝 用户编辑后新的 HTML：", html); // ✅ 这里加
+      onChange(html);
     },
   });
 
@@ -80,6 +84,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) =>
   // Ensure the editor content is updated if `content` prop changes
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
+      console.log("🔄 外部 content 改变了，重新写入编辑器：", content); // ✅ 这里加
+      console.log("当前编辑器内容：", editor.getHTML());  // 打印编辑器当前内容
       editor.commands.setContent(content);
     }
   }, [content, editor]);
@@ -92,22 +98,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) =>
           <strong>BOLD</strong>
         </button>
 
-        {/* Font family buttons */}
-        {/* <div style={{ marginBottom: '10px' }}>
-          <span>FONT FAMILY: </span>
-          <button onClick={() => setFontFamily('Arial')}>Arial</button>
-          <button onClick={() => setFontFamily('Georgia')}>Georgia</button>
-          <button onClick={() => setFontFamily('Courier New')}>Courier New</button>
-        </div> */}
-
-        {/* Font size buttons */}
-        {/* <div style={{ marginBottom: '10px' }}>
-          <button onClick={() => setFontSize('10px')}>小字体</button>
-          <button onClick={() => setFontSize('30px')}>中字体</button>
-          <button onClick={() => setFontSize('70px')}>大字体</button>
-        </div> */}
-
-        {/* Color buttons */}
         <div>
           <span>COLOR: </span>
           <button onClick={() => setColor('red')}>Red</button>
@@ -135,11 +125,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) =>
         dangerouslySetInnerHTML={{ __html: content }}
       />
     </div> */}
-      <div style={{ flex: 1 }}>
+      {/* 右边的预览区域 */}
+      {/* <div style={{ flex: 1 }}>
         <div className="dream-card">
           <div className="dream-list-content" dangerouslySetInnerHTML={{ __html: content }} />
+
         </div>
-      </div>
+
+      </div> */}
     </div> // 👈 这一整块是 return 的完整包裹 div
   );
 };
