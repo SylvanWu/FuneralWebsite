@@ -77,7 +77,11 @@ export default function LoginPage({ setToken }: LoginPageProps) {
             overflow: 'hidden',                              
            }}>
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800"
-        style={{ paddingBottom: '2vh'}}>Sign In</h1>
+        style={{ paddingBottom: '2vh'}}>
+          <span className="relative inline-block pb-2 after:content-[''] after:absolute after:w-1/2 after:h-0.5 after:bg-indigo-500 after:bottom-0 after:left-1/4">
+            Sign In
+          </span>
+        </h1>
 
         {error && (
           <div
@@ -92,7 +96,9 @@ export default function LoginPage({ setToken }: LoginPageProps) {
             {/* <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label> */}
             <input
               id="username"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
+                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
+                       shadow-sm transition-all duration-200 ease-in-out"
               placeholder="Enter your username"
               value={username}
               onChange={e => setUsername(e.target.value)}
@@ -105,7 +111,9 @@ export default function LoginPage({ setToken }: LoginPageProps) {
             <input
               id="password"
               type="password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
+                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
+                       shadow-sm transition-all duration-200 ease-in-out"
               placeholder="Enter your password"
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -113,10 +121,37 @@ export default function LoginPage({ setToken }: LoginPageProps) {
             />
           </div>
 
-          <select value={userType} onChange={(e) => setUserType(e.target.value as 'organizer' | 'visitor')}>
-            <option value="organizer">Organizer</option>
-            <option value="visitor">Visitor</option>
-          </select>
+          {/* 用户类型选择区域 */}
+          <div className="space-y-3 pt-2">
+            <div className="flex flex-wrap items-center justify-center ">
+              {[
+                { label: 'Visitor', value: 'visitor', icon: '👤' },
+                { label: 'Organizer', value: 'organizer', icon: '🏢' },
+              ].map(({ label, value, icon }) => (
+              <label 
+                key={value} 
+                className={`
+                  inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
+                  transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
+                  ${userType === value 
+                    ? 'text-indigo-700 shadow-md' 
+                    : 'text-gray-700'}
+                `}
+              >
+                  <input
+                    type="radio"
+                    name="userType"
+                    value={value}
+                    checked={userType === value}
+                    onChange={() => setUserType(value as any)}
+                    className="sr-only" // 隐藏原始单选按钮，使用自定义样式
+                  />
+                  <span className="text-xl">{icon}</span>
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
 
           <button
             type="submit"
