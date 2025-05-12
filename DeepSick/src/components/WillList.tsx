@@ -108,7 +108,7 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
     };
 
     /* ============= 渲染 ============= */
-    if (!wills.length) {
+    if (!Array.isArray(wills) || !wills.length) {
         return (
             <p className="text-center text-warm-gray mt-6">
                 暂无告别留言。
