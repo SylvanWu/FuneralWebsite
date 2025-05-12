@@ -57,7 +57,69 @@ import bombImage from '../assets/small picture/Bomb.png';
 import womanImage from '../assets/small picture/woman.png';
 import woman11Image from '../assets/small picture/woman11.png';
 import man0Image from '../assets/small picture/man.png';
-// Define interfaces
+import man11Image from '../assets/small picture/man11.png';
+import woman12Image from '../assets/small picture/woman12.png';
+import man12Image from '../assets/small picture/man12.png';
+import man13Image from '../assets/small picture/man13.png';
+import man14Image from '../assets/small picture/man14.png';
+import man15Image from '../assets/small picture/man15.png';
+import man16Image from '../assets/small picture/man16.png';
+import man17Image from '../assets/small picture/man17.png';
+import cowImage from '../assets/small picture/cow.png';
+import cow1Image from '../assets/small picture/cow1.png';
+import cattleImage from '../assets/small picture/cattle.png';
+import yellowpigImage from '../assets/small picture/yellowpig.png';
+import pinkpigImage from '../assets/small picture/pinkpig.png';
+import greypigImage from '../assets/small picture/greypig.png';
+import chickenImage from '../assets/small picture/chicken.png';
+import chicken1Image from '../assets/small picture/chicken1.png';
+import chicken2Image from '../assets/small picture/chicken3.png';
+import treeImage from '../assets/small picture/tree.png';
+import grassImage from '../assets/small picture/grass.png';
+import man18Image from '../assets/small picture/man18.png';
+import man19Image from '../assets/small picture/man19.png';
+import man20Image from '../assets/small picture/man20.png';
+import man21Image from '../assets/small picture/man21.png';
+import man22Image from '../assets/small picture/man22.png';
+import man23Image from '../assets/small picture/man23.png';
+import man24Image from '../assets/small picture/man24.png';
+import man25Image from '../assets/small picture/man25.png';
+import man26Image from '../assets/small picture/man26.png';
+import man27Image from '../assets/small picture/man27.png';
+import woman13Image from '../assets/small picture/woman13.png';
+import woman14Image from '../assets/small picture/woman14.png';
+import woman15Image from '../assets/small picture/woman15.png';
+import man28Image from '../assets/small picture/man28.png';
+import brotherImage from '../assets/small picture/brothers.png';
+import driverImage from '../assets/small picture/driver.png';
+import driver1Image from '../assets/small picture/driver1.png';
+import driver2Image from '../assets/small picture/driver2.png';
+import driver3Image from '../assets/small picture/driver3.png';
+import grapesImage from '../assets/small picture/grapes.png';
+import kiwifruitImage from '../assets/small picture/kiwifruit.png';
+import pineappleImage from '../assets/small picture/pineapple.png';
+import cherryImage from '../assets/small picture/cherry.png';
+import hamimelonImage from '../assets/small picture/hamimelon.png';
+import orangeImage from '../assets/small picture/orange.png';
+import appleImage from '../assets/small picture/apple.png';
+import lemonImage from '../assets/small picture/lemon.png';
+import forkliftImage from '../assets/small picture/forklift.png';
+import forklift1Image from '../assets/small picture/forklift1.png';
+import loaderImage from '../assets/small picture/loader.png';
+import loader1Image from '../assets/small picture/loader1.png';
+import man29Image from '../assets/small picture/man29.png';
+import man30Image from '../assets/small picture/man30.png';
+import fireImage from '../assets/small picture/fire.png';
+import bonfireImage from '../assets/small picture/bonfire.png';
+import fenceImage from '../assets/small picture/fence.png';
+import cactusImage from '../assets/small picture/cactus.png';
+import blackcatImage from '../assets/small picture/blackcat.png';
+import catImage from '../assets/small picture/cat.png';
+import treasurechestImage from '../assets/small picture/treasurechest.png';
+import treasurechest1Image from '../assets/small picture/treasurechest1.png';
+import appletreeImage from '../assets/small picture/appletree.png';
+import tree1Image from '../assets/small picture/tree1.png';
+
 interface VectorItem {
   id: string;
   category: string;
@@ -75,6 +137,7 @@ interface VectorToolbarProps {
 const CATEGORIES = [
   { key: 'plants', label: 'Plants' },
   { key: 'food', label: 'Food' },
+  { key: 'fruits', label: 'Fruits' },
   { key: 'symbols', label: 'Symbols' },
   { key: 'character', label: 'Character' },
   { key: 'animals', label: 'Animals' },
@@ -97,7 +160,42 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Memorial Tree',
     src: redTreeImage
   },
-  
+  { 
+    id: 'tree',
+    category: 'plants',
+    name: 'Tree',
+    src: treeImage
+  }, 
+  { 
+    id: 'Christmastree',
+    category: 'plants',
+    name: 'Christmas Tree',
+    src: ChristmastreeImage
+  }, 
+  { 
+    id: 'grass',
+    category: 'plants',
+    name: 'Grass',
+    src: grassImage
+  },
+  { 
+    id: 'cactus',
+    category: 'plants',
+    name: 'Cactus',
+    src: cactusImage
+  },
+  { 
+    id: 'appletree',
+    category: 'plants',
+    name: 'Apple Tree',
+    src: appletreeImage
+  },
+  { 
+    id: 'tree1',
+    category: 'plants',
+    name: 'Tree',
+    src: tree1Image
+  },
   // Food category
   { 
     id: 'chocolate',
@@ -117,6 +215,55 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Strawberry Milk',
     src: strawberryMilkImage
   },
+  // Fruits category
+  { 
+    id: 'grapes',
+    category: 'fruits',
+    name: 'Grapes',
+    src: grapesImage
+  },
+  { 
+    id: 'kiwifruit',
+    category: 'fruits',
+    name: 'Kiwi Fruit',
+    src: kiwifruitImage
+  },
+  { 
+    id: 'pineapple',
+    category: 'fruits',
+    name: 'Pineapple',
+    src: pineappleImage
+  },
+  { 
+    id: 'cherry',
+    category: 'fruits',
+    name: 'Cherry',
+    src: cherryImage
+  },
+  { 
+    id: 'hamimelon',
+    category: 'fruits',
+    name: 'Hamimelon',
+    src: hamimelonImage
+  },
+  { 
+    id: 'orange',
+    category: 'fruits',
+    name: 'Orange',
+    src: orangeImage
+  },
+  { 
+    id: 'apple',
+    category: 'fruits',
+    name: 'Apple',
+    src: appleImage
+  },
+  { 
+    id: 'lemon',
+    category: 'fruits',
+    name: 'Lemon',
+    src: lemonImage
+  },
   // Symbols category
   { 
     id: 'heart',
@@ -124,6 +271,19 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Heart',
     src: heartImage
   },
+  { 
+    id: 'fire',
+    category: 'symbols',
+    name: 'Fire',
+    src: fireImage
+  },
+  { 
+    id: 'bonfire',
+    category: 'symbols',
+    name: 'Bonfire',
+    src: bonfireImage
+  },
+  
   // Animals category
   { 
     id: 'bianfu',
@@ -142,6 +302,72 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'animals',
     name: 'Dog',
     src: dogImage
+  },
+  { 
+    id: 'cow',
+    category: 'animals',
+    name: 'Cow',
+    src: cowImage
+  },
+  { 
+    id: 'cow1',
+    category: 'animals',
+    name: 'Cow',
+    src: cow1Image
+  },
+  { 
+    id: 'cattle',
+    category: 'animals',
+    name: 'Cattle',
+    src: cattleImage
+  },
+  { 
+    id: 'yellowpig',
+    category: 'animals',
+    name: 'Yellow Pig',
+    src: yellowpigImage
+  },
+  { 
+    id: 'pinkpig',
+    category: 'animals',
+    name: 'Pink Pig',
+    src: pinkpigImage
+  },
+  { 
+    id: 'greypig',
+    category: 'animals',
+    name: 'Grey Pig',
+    src: greypigImage
+  },
+  { 
+    id: 'chicken',
+    category: 'animals',
+    name: 'Chicken',
+    src: chickenImage
+  },
+  { 
+    id: 'chicken1',
+    category: 'animals',
+    name: 'Chicken',
+    src: chicken1Image
+  },
+  { 
+    id: 'chicken2',
+    category: 'animals',
+    name: 'Chicken',
+    src: chicken2Image
+  },
+  { 
+    id: 'blackcat',
+    category: 'animals',
+    name: 'Black Cat',
+    src: blackcatImage
+  },
+  { 
+    id: 'cat',
+    category: 'animals',
+    name: 'Cat',
+    src: catImage
   },
   // Objects category
   { 
@@ -169,12 +395,6 @@ const VECTOR_ITEMS: VectorItem[] = [
     src: snowmanImage
   },
   { 
-    id: 'Christmastree',
-    category: 'objects',
-    name: 'Christmas Tree',
-    src: ChristmastreeImage
-  },
-  { 
     id: 'bag',
     category: 'objects',
     name: 'Bag',
@@ -185,6 +405,48 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'symbols',
     name: 'Bomb',
     src: bombImage
+  },
+  { 
+    id: 'forklift',
+    category: 'objects',
+    name: 'Forklift',
+    src: forkliftImage
+  },
+  { 
+    id: 'forklift1',
+    category: 'objects',
+    name: 'Forklift',
+    src: forklift1Image
+  },
+  { 
+    id: 'loader',
+    category: 'objects',
+    name: 'Loader',
+    src: loaderImage
+  },
+  { 
+    id: 'loader1',
+    category: 'objects',
+    name: 'Loader',
+    src: loader1Image
+  },
+  { 
+    id: 'fence',
+    category: 'objects',
+    name: 'Fence',
+    src: fenceImage
+  },
+  { 
+    id: 'treasurechest',
+    category: 'objects',
+    name: 'Treasure Chest',
+    src: treasurechestImage
+  },
+  { 
+    id: 'treasurechest1',
+    category: 'objects',
+    name: 'Treasure Chest',
+    src: treasurechest1Image
   },
   // Character category
   { 
@@ -421,7 +683,180 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Man',
     src: man0Image
   },
-  
+  { 
+    id: 'man11',
+    category: 'character',
+    name: 'Man',
+    src: man11Image
+  },
+  { 
+    id: 'woman12',
+    category: 'character',
+    name: 'Woman',
+    src: woman12Image
+  },
+  { 
+    id: 'man12',
+    category: 'character',
+    name: 'Man',
+    src: man12Image
+  },
+  { 
+    id: 'man13',
+    category: 'character',
+    name: 'Man',
+    src: man13Image
+  },
+  { 
+    id: 'man14',
+    category: 'character',
+    name: 'Man',
+    src: man14Image
+  },
+  { 
+    id: 'man15',
+    category: 'character',
+    name: 'Man',
+    src: man15Image
+  },
+  { 
+    id: 'man16',
+    category: 'character',
+    name: 'Man',
+    src: man16Image
+  },
+  { 
+    id: 'man17',
+    category: 'character',
+    name: 'Man',
+    src: man17Image
+  },
+  { 
+    id: 'man18',
+    category: 'character',
+    name: 'Man',
+    src: man18Image
+  },
+  { 
+    id: 'man19',
+    category: 'character',
+    name: 'Man',
+    src: man19Image
+  },
+  { 
+    id: 'man20',
+    category: 'character',
+    name: 'Man',
+    src: man20Image
+  },
+  { 
+    id: 'man21',
+    category: 'character',
+    name: 'Man',
+    src: man21Image
+  },
+  { 
+    id: 'man22',
+    category: 'character',
+    name: 'Man',
+    src: man22Image
+  },
+  { 
+    id: 'man23',
+    category: 'character',
+    name: 'Man',
+    src: man23Image
+  },
+  { 
+    id: 'man24',
+    category: 'character',
+    name: 'Man',
+    src: man24Image
+  },
+  { 
+    id: 'man25',
+    category: 'character',
+    name: 'Man',
+    src: man25Image
+  },
+  { 
+    id: 'man26',
+    category: 'character',
+    name: 'Man',
+    src: man26Image
+  },
+  { 
+    id: 'man27',
+    category: 'character',
+    name: 'Man',
+    src: man27Image
+  },
+  { 
+    id: 'woman13',
+    category: 'character',
+    name: 'Woman',
+    src: woman13Image
+  },
+  { 
+    id: 'woman14',
+    category: 'character',
+    name: 'Woman',
+    src: woman14Image
+  },
+  { 
+    id: 'woman15',
+    category: 'character',
+    name: 'Woman',
+    src: woman15Image
+  },
+  { 
+    id: 'man28',
+    category: 'character',
+    name: 'Man',
+    src: man28Image
+  },
+  { 
+    id: 'brothers',
+    category: 'character',
+    name: 'Brothers',
+    src: brotherImage
+  },
+  { 
+    id: 'driver',
+    category: 'character',
+    name: 'Driver',
+    src: driverImage
+  },
+  { 
+    id: 'driver1',
+    category: 'character',
+    name: 'Driver',
+    src: driver1Image
+  },
+  { 
+    id: 'driver2',
+    category: 'character',
+    name: 'Driver',
+    src: driver2Image
+  },
+  { 
+    id: 'driver3',
+    category: 'character',
+    name: 'Driver',
+    src: driver3Image
+  },
+  { 
+    id: 'man29',
+    category: 'character',
+    name: 'Man',
+    src: man29Image
+  },
+  { 
+    id: 'man30',
+    category: 'character',
+    name: 'Man',
+    src: man30Image
+  },
   
   
   
