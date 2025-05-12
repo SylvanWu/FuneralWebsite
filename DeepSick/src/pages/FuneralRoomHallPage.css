@@ -1,0 +1,490 @@
+/* FuneralRoomHallPage.css */
+
+
+/* Main container */
+
+.funeral-hall-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+
+/* Header styles */
+
+.funeral-hall-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.funeral-hall-header h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.funeral-hall-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+
+/* Search section styles */
+
+.search-section {
+    margin-bottom: 3rem;
+    /* Increased spacing between search and room grid */
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-box-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.search-box-container form {
+    display: flex;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.8rem 3.5rem 0.8rem 1rem;
+    /* Right padding for the button */
+    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 50px;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    background-color: #fff;
+}
+
+.search-button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+    background-color: #2980b9;
+}
+
+.search-results-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.reset-search-btn {
+    background-color: #f1f2f3;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.reset-search-btn:hover {
+    background-color: #e0e0e0;
+}
+
+
+/* Grid layout for rooms */
+
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+
+/* Room card styles */
+
+.room-card {
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.room-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.room-card-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+}
+
+.room-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.room-card:hover .room-card-image img {
+    transform: scale(1.05);
+}
+
+.room-card-info {
+    padding: 1rem;
+}
+
+.room-card-name {
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-weight: bold;
+}
+
+.room-card-id {
+    font-size: 0.9rem;
+    color: #777;
+    margin: 0;
+}
+
+
+/* Loading state */
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #3498db;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* Error state */
+
+.error-container {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.retry-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-right: 0.5rem;
+}
+
+.retry-button:hover {
+    background-color: #2980b9;
+}
+
+.mock-button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.mock-button:hover {
+    background-color: #219653;
+}
+
+.mock-button.large {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.mock-button.large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.mock-button-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: 1px dashed #ddd;
+}
+
+.mock-button-container p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+
+/* Debug Information */
+
+.debug-info {
+    margin: 1rem 0;
+    text-align: left;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.debug-info p {
+    color: #495057;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.debug-info pre {
+    background-color: #f1f3f5;
+    padding: 0.75rem;
+    border-radius: 4px;
+    color: #343a40;
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.debug-info-footer {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.debug-info-footer pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+
+/* No rooms message */
+
+.no-rooms-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #666;
+}
+
+
+/* Password modal */
+
+.password-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.password-modal {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.password-modal-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.password-modal-header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #777;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.password-modal-body {
+    padding: 1.5rem;
+}
+
+.password-modal-body p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #555;
+}
+
+.password-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.password-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.password-modal-footer {
+    padding: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #eee;
+    gap: 0.75rem;
+}
+
+.cancel-btn {
+    background-color: #f1f2f3;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.submit-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.submit-btn:hover {
+    background-color: #2980b9;
+}
+
+.submit-btn:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+
+/* Responsive adjustments */
+
+@media (max-width: 768px) {
+    .funeral-hall-container {
+        padding: 1rem;
+    }
+    .room-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+    .room-card-image {
+        height: 140px;
+    }
+    .room-card-name {
+        font-size: 1rem;
+    }
+    .room-card-id {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .room-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .funeral-hall-header h1 {
+        font-size: 1.5rem;
+    }
+    .debug-info {
+        max-height: 150px;
+    }
+    .mock-button-container {
+        padding: 1rem;
+    }
+    .mock-button.large {
+        width: 100%;
+    }
+}

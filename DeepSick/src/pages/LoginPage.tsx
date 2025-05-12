@@ -26,18 +26,24 @@ export default function LoginPage({ setToken }: LoginPageProps) {
         userType
       });
       
-      // 保存用户信息和token
+      // Save user info and token
       localStorage.setItem('user', JSON.stringify(response.data.user));
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.user.userType);
       
-      // 根据用户类型跳转
+      // Call the setToken function passed from App.tsx to update app state
+      setToken(response.data.token);
+      
+      // Redirect based on user type
       switch(response.data.user.userType) {
         case 'organizer':
           navigate('/organizer-dashboard');
           break;
         case 'visitor':
-          navigate('/visitor-dashboard');
+          navigate('/funeralhall');
           break;
+        default:
+          navigate('/');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
@@ -46,10 +52,18 @@ export default function LoginPage({ setToken }: LoginPageProps) {
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
-    if (localStorage.getItem('token') && userStr) {
+    const token = localStorage.getItem('token');
+    
+    if (token && userStr) {
       const user = JSON.parse(userStr);
+      
+      // Redirect if already logged in
       if (user.userType === 'lovedOne') {
         navigate('/loved-one-dashboard/wills');
+      } else if (user.userType === 'visitor') {
+        navigate('/funeralhall');
+      } else if (user.userType === 'organizer') {
+        navigate('/organizer-dashboard');
       } else {
         navigate('/');
       }

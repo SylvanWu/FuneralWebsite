@@ -13,131 +13,26 @@ const validateObjectId = (req, res, next) => {
     next();
 };
 
-// Create a new funeral (POST /api/funerals)
-router.post('/', auth, async(req, res) => {
+// --- FUNERAL ROOM PUBLIC ROUTES ---
+
+// Get all public funeral rooms (GET /api/funerals/rooms)
+// This route must come before other routes to avoid being overridden by params
+router.get('/rooms', async(req, res) => {
     try {
-        const { title, sceneType, ceremonySteps = [] } = req.body;
+        console.log('GET /api/funerals/rooms called');
 
-        // Validate required fields
-        if (!title || !sceneType) {
-            return res.status(400).json({ message: 'Title and scene type are required' });
-        }
+        // Find all funeral rooms and select only necessary fields
+        const funerals = await Funeral.find({})
+            .select('stringId deceasedName sceneType deceasedImage createdAt updatedAt')
+            .sort({ createdAt: -1 });
 
-        // Create new funeral with the organizer ID from the authenticated user
-        const funeral = new Funeral({
-            title,
-            sceneType,
-            organizerId: req.user.id,
-            ceremonySteps
-        });
-
-        // Save to database
-        await funeral.save();
-
-        res.status(201).json(funeral);
-    } catch (error) {
-        console.error('Create funeral error:', error);
-        res.status(500).json({ message: 'Server error while creating funeral' });
-    }
-});
-
-// Get a specific funeral by ID (GET /api/funerals/:id)
-router.get('/:id', auth, validateObjectId, async(req, res) => {
-    try {
-        const funeral = await Funeral.findById(req.params.id);
-
-        if (!funeral) {
-            return res.status(404).json({ message: 'Funeral not found' });
-        }
-
-        // Check if user is authorized (either the organizer or an admin)
-        if (funeral.organizerId.toString() !== req.user.id.toString() &&
-            req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Not authorized to access this funeral' });
-        }
-
-        res.json(funeral);
-    } catch (error) {
-        console.error('Get funeral error:', error);
-        res.status(500).json({ message: 'Server error while retrieving funeral' });
-    }
-});
-
-// Get all funerals for the current user (GET /api/funerals)
-router.get('/', auth, async(req, res) => {
-    try {
-        let query = {};
-
-        // If not admin, only show user's own funerals
-        if (req.user.role !== 'admin') {
-            query.organizerId = req.user.id;
-        }
-
-        const funerals = await Funeral.find(query)
-            .sort({ createdAt: -1 })
-            .populate('organizerId', 'username');
-
+        console.log(`Found ${funerals.length} funeral rooms`);
         res.json(funerals);
     } catch (error) {
-        console.error('Get funerals error:', error);
-        res.status(500).json({ message: 'Server error while retrieving funerals' });
+        console.error('Get all funeral rooms error:', error);
+        res.status(500).json({ message: 'Server error while retrieving funeral rooms' });
     }
 });
-
-// Update a funeral (PUT /api/funerals/:id)
-router.put('/:id', auth, validateObjectId, async(req, res) => {
-    try {
-        const { title, sceneType, ceremonySteps } = req.body;
-        const funeral = await Funeral.findById(req.params.id);
-
-        if (!funeral) {
-            return res.status(404).json({ message: 'Funeral not found' });
-        }
-
-        // Check if user is authorized (either the organizer or an admin)
-        if (funeral.organizerId.toString() !== req.user.id.toString() &&
-            req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Not authorized to update this funeral' });
-        }
-
-        // Update fields if provided
-        if (title) funeral.title = title;
-        if (sceneType) funeral.sceneType = sceneType;
-        if (ceremonySteps) funeral.ceremonySteps = ceremonySteps;
-
-        await funeral.save();
-        res.json(funeral);
-    } catch (error) {
-        console.error('Update funeral error:', error);
-        res.status(500).json({ message: 'Server error while updating funeral' });
-    }
-});
-
-// Delete a funeral (DELETE /api/funerals/:id)
-router.delete('/:id', auth, validateObjectId, async(req, res) => {
-    try {
-        const funeral = await Funeral.findById(req.params.id);
-
-        if (!funeral) {
-            return res.status(404).json({ message: 'Funeral not found' });
-        }
-
-        // Check if user is authorized (either the organizer or an admin)
-        if (funeral.organizerId.toString() !== req.user.id.toString() &&
-            req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Not authorized to delete this funeral' });
-        }
-
-        // Using deleteOne instead of deprecated remove()
-        await Funeral.deleteOne({ _id: req.params.id });
-        res.json({ message: 'Funeral deleted successfully' });
-    } catch (error) {
-        console.error('Delete funeral error:', error);
-        res.status(500).json({ message: 'Server error while deleting funeral' });
-    }
-});
-
-// --- FUNERAL ROOM SPECIFIC ROUTES ---
 
 // Get a funeral room by roomId (GET /api/funerals/room/:roomId)
 router.get('/room/:roomId', async(req, res) => {
@@ -324,6 +219,168 @@ router.patch('/room/:roomId/canvas', async(req, res) => {
     } catch (error) {
         console.error('Update canvas items error:', error);
         res.status(500).json({ message: 'Server error while updating canvas items' });
+    }
+});
+
+// Verify a funeral room password (POST /api/funerals/room/verify)
+router.post('/room/verify', async(req, res) => {
+    try {
+        const { roomId, password } = req.body;
+
+        if (!roomId || !password) {
+            return res.status(400).json({ message: 'Room ID and password are required' });
+        }
+
+        // Find the room
+        let funeral;
+
+        if (mongoose.Types.ObjectId.isValid(roomId)) {
+            // If valid ObjectId, search by _id
+            funeral = await Funeral.findById(roomId);
+        } else {
+            // If not a valid ObjectId, search by a string identifier
+            funeral = await Funeral.findOne({
+                stringId: roomId
+            });
+        }
+
+        if (!funeral) {
+            return res.status(404).json({ message: 'Funeral room not found', valid: false });
+        }
+
+        // Check if the password matches
+        const isValid = funeral.password === password;
+
+        res.json({ valid: isValid });
+    } catch (error) {
+        console.error('Password verification error:', error);
+        res.status(500).json({ message: 'Server error while verifying password', valid: false });
+    }
+});
+
+// --- AUTHENTICATED FUNERAL ROUTES ---
+
+// Create a new funeral (POST /api/funerals)
+router.post('/', auth, async(req, res) => {
+    try {
+        const { title, sceneType, ceremonySteps = [] } = req.body;
+
+        // Validate required fields
+        if (!title || !sceneType) {
+            return res.status(400).json({ message: 'Title and scene type are required' });
+        }
+
+        // Create new funeral with the organizer ID from the authenticated user
+        const funeral = new Funeral({
+            title,
+            sceneType,
+            organizerId: req.user.id,
+            ceremonySteps
+        });
+
+        // Save to database
+        await funeral.save();
+
+        res.status(201).json(funeral);
+    } catch (error) {
+        console.error('Create funeral error:', error);
+        res.status(500).json({ message: 'Server error while creating funeral' });
+    }
+});
+
+// Get a specific funeral by ID (GET /api/funerals/:id)
+router.get('/:id', auth, validateObjectId, async(req, res) => {
+    try {
+        const funeral = await Funeral.findById(req.params.id);
+
+        if (!funeral) {
+            return res.status(404).json({ message: 'Funeral not found' });
+        }
+
+        // Check if user is authorized (either the organizer or an admin)
+        if (funeral.organizerId.toString() !== req.user.id.toString() &&
+            req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to access this funeral' });
+        }
+
+        res.json(funeral);
+    } catch (error) {
+        console.error('Get funeral error:', error);
+        res.status(500).json({ message: 'Server error while retrieving funeral' });
+    }
+});
+
+// Get all funerals for the current user (GET /api/funerals)
+router.get('/', auth, async(req, res) => {
+    try {
+        let query = {};
+
+        // If not admin, only show user's own funerals
+        if (req.user.role !== 'admin') {
+            query.organizerId = req.user.id;
+        }
+
+        const funerals = await Funeral.find(query)
+            .sort({ createdAt: -1 })
+            .populate('organizerId', 'username');
+
+        res.json(funerals);
+    } catch (error) {
+        console.error('Get funerals error:', error);
+        res.status(500).json({ message: 'Server error while retrieving funerals' });
+    }
+});
+
+// Update a funeral (PUT /api/funerals/:id)
+router.put('/:id', auth, validateObjectId, async(req, res) => {
+    try {
+        const { title, sceneType, ceremonySteps } = req.body;
+        const funeral = await Funeral.findById(req.params.id);
+
+        if (!funeral) {
+            return res.status(404).json({ message: 'Funeral not found' });
+        }
+
+        // Check if user is authorized (either the organizer or an admin)
+        if (funeral.organizerId.toString() !== req.user.id.toString() &&
+            req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to update this funeral' });
+        }
+
+        // Update fields if provided
+        if (title) funeral.title = title;
+        if (sceneType) funeral.sceneType = sceneType;
+        if (ceremonySteps) funeral.ceremonySteps = ceremonySteps;
+
+        await funeral.save();
+        res.json(funeral);
+    } catch (error) {
+        console.error('Update funeral error:', error);
+        res.status(500).json({ message: 'Server error while updating funeral' });
+    }
+});
+
+// Delete a funeral (DELETE /api/funerals/:id)
+router.delete('/:id', auth, validateObjectId, async(req, res) => {
+    try {
+        const funeral = await Funeral.findById(req.params.id);
+
+        if (!funeral) {
+            return res.status(404).json({ message: 'Funeral not found' });
+        }
+
+        // Check if user is authorized (either the organizer or an admin)
+        if (funeral.organizerId.toString() !== req.user.id.toString() &&
+            req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to delete this funeral' });
+        }
+
+        // Using deleteOne instead of deprecated remove()
+        await Funeral.deleteOne({ _id: req.params.id });
+        res.json({ message: 'Funeral deleted successfully' });
+    } catch (error) {
+        console.error('Delete funeral error:', error);
+        res.status(500).json({ message: 'Server error while deleting funeral' });
     }
 });
 
