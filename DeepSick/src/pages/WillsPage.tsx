@@ -12,9 +12,15 @@ export default function WillsPage() {
     /* --------- 初次加载 --------- */
     useEffect(() => {
         (async () => {
-            try   { setWills(await getWills()); }
-            catch (e) { console.error('获取遗嘱列表失败', e); }
-            finally { setLoading(false); }
+            try {
+                const result = await getWills();
+                setWills(Array.isArray(result) ? result : []);
+            } catch (e) {
+                console.error('获取遗嘱列表失败', e);
+                setWills([]); // 保证 wills 一定是数组
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 

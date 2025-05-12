@@ -3,10 +3,7 @@
 // src/api/index.ts
 import axios from 'axios';
 
-const baseURL = process.env.NODE_ENV === 'production'
-  ? 'http://3.105.228.129:5001/api'
-  : 'http://localhost:5001/api';
-
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 const API = axios.create({ baseURL });
 
 /* ---------- 注入 JWT ---------- */
@@ -23,14 +20,15 @@ API.interceptors.request.use(
 );
 
 /* ---------- Memories ---------- */
-export const fetchMemories = ()        => API.get('/api/memories').then(r => r.data);
-export const createMemory  = (fd:FormData) => API.post('/api/memories', fd).then(r => r.data);
-export const deleteMemory  = (id:string)  => API.delete(`/api/memories/${id}`);
+export const fetchMemories = ()        => API.get('/memories').then(r => r.data);
+export const createMemory  = (fd:FormData) => API.post('/memories', fd).then(r => r.data);
+export const deleteMemory  = (id:string)  => API.delete(`/memories/${id}`);
 
 /* ---------- Wills ---------- */
-export const getWills   = ()                 => API.get('/api/wills').then(r => r.data);
-export const createWill = (fd:FormData)      => API.post('/api/wills', fd).then(r => r.data);
-export const deleteWill = (id:string)        => API.delete(`/api/wills/${id}`);
+export const getWills   = ()                 => API.get('/wills').then(r => r.data);
+export const createWill = (fd: FormData) =>
+  API.post('/wills', fd).then(r => r.data);
+export const deleteWill = (id:string)        => API.delete(`/wills/${id}`);
 
 /**
  * 更新遗嘱
@@ -44,17 +42,17 @@ export const updateWill = (
     isForm = false,
 ) => {
     if (isForm && data instanceof FormData) {
-        return API.patch(`/api/wills/${id}`, data, {
+        return API.patch(`/wills/${id}`, data, {
             // 让 axios 自动带 boundary
             headers: { 'Content-Type': 'multipart/form-data' },
         }).then(r => r.data);
     }
-    return API.patch(`/api/wills/${id}`, data).then(r => r.data);
+    return API.patch(`/wills/${id}`, data).then(r => r.data);
 };
 
 /* ---------- Auth ---------- */
 export const registerUser = (p:{ username:string; password:string; role:string }) =>
-    API.post('/api/auth/register', p).then(r => {
+    API.post('/auth/register', p).then(r => {
         localStorage.setItem('token', r.data.token);
         return r.data;
     });
@@ -62,14 +60,14 @@ export const registerUser = (p:{ username:string; password:string; role:string }
 export const loginUser = (payload: {
     username: string;
     password: string;
-}) => API.post('/api/auth/login', payload).then(res => {
+}) => API.post('/auth/login', payload).then(res => {
     localStorage.setItem('token', res.data.token);
     return res.data;
 });
 
 //dreamlist api
 // 获取所有梦想清单
-export const getDreams = () => API.get('/api/dreams').then(res => res.data);
+export const getDreams = () => API.get('/dreams').then(res => res.data);
 
 /*创建新的梦想清单项目 
  * @param {string} content - 梦想内容
@@ -77,14 +75,14 @@ export const getDreams = () => API.get('/api/dreams').then(res => res.data);
  * @returns {Promise} 返回创建成功的梦想对象的Promise
  */
 export const createDream = (content: string, position?: { x: number, y: number }) =>
-    API.post('/api/dreams', { content, position }).then(res => res.data);
+    API.post('/dreams', { content, position }).then(res => res.data);
 
 // 更新梦想清单项目 id;要更新的字段(可选) 
 export const updateDream = (id: string, updates: { content?: string, position?: { x: number, y: number }, order?: number }) =>
-    API.patch(`/api/dreams/${id}`, updates).then(res => res.data);
+    API.patch(`/dreams/${id}`, updates).then(res => res.data);
 
 // 删除指定的梦想清单项目 要删除的梦想ID 
-export const deleteDream = (id: string) => API.delete(`/api/dreams/${id}`);
+export const deleteDream = (id: string) => API.delete(`/dreams/${id}`);
 
 // 关键：自动处理 401
 API.interceptors.response.use(
