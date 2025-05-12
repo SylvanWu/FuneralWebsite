@@ -188,7 +188,7 @@ const FuneralRoomPage: React.FC = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [isCropping, setIsCropping] = useState(false);
   
-  // 添加背景图片状态
+  // Add background image status
   const [backgroundImg, setBackgroundImg] = useState<HTMLImageElement | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   
@@ -494,7 +494,7 @@ const FuneralRoomPage: React.FC = () => {
   
   // Function to add a new item to the canvas
   const handleAddItem = (item: { id: string; color: string; name: string; image?: string; description?: string }) => {
-    // 调整新项目的位置，使其在画布中间位置
+    // Adjust the position of the new item to be in the center of the canvas
     const newItem: CanvasItem = {
       id: `${item.id}-${Date.now()}`,
       x: canvasSize.width / 2,
