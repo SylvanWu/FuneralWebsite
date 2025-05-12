@@ -27,12 +27,15 @@ import CandlePage from './pages/CandlePage';
 import FlowerPage from './pages/FlowerPage';
 import MessagePage from './pages/MessagePage';
 
-import DreamList from './components/DreamList/DreamList';
+// import DreamList from './components/DreamList/DreamList';
 import DreamShrink from './components/DreamList/DreamShrink';
 
 import ProfilePage from './pages/ProfilePage';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
+
+import DreamEditor from './components/DreamList/DreamEditor';  // 编辑页面组件
+
 
 import './App.css';
 import { SocketProvider } from './context/SocketContext';
@@ -112,24 +115,34 @@ export default function App() {
               <p className="text-gray-600">This page is under construction.</p>
             </div>} />
 
-            {/* Wills 和 DreamList 页面 */}
-            <Route
-              path="/wills"
-              element={
-                <RoleProtected userType="organizer">
-                  <WillsPage />
-                </RoleProtected>
-              }
-            />
-            <Route
-              path="/dreamlist"
-              element={
-                <RoleProtected userType="organizer">
-                  <DreamList />
-                </RoleProtected>
-              }
-            />
-          </Route>
+          {/* Wills 和 DreamList 页面 */}
+          <Route
+            path="/wills"
+            element={
+              <RoleProtected userType="organizer">
+                <WillsPage />
+              </RoleProtected>
+            }
+          />
+          <Route
+            path="/dreamlist"
+            element={
+              <RoleProtected userType="organizer">
+                <DreamShrink />
+              </RoleProtected>
+            }
+          />
+        </Route>
+
+        <Route
+          path="/dreamlist/edit"
+          element={
+            <RoleProtected userType="organizer">
+              <DreamEditor />
+            </RoleProtected>
+          }
+        />
+
 
           {/* Visitor Dashboard */}
           <Route path="/visitor-dashboard" element={<VisitorDashboard />} />
