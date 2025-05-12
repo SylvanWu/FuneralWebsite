@@ -15,12 +15,37 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
 }) => {
     const [isNew, setIsNew] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
     /* 进入动画，只在首次挂载时执行一次 */
     useEffect(() => {
         const timer = setTimeout(() => setIsNew(false), 500);
         return () => clearTimeout(timer);
     }, []);
+
+    /* 获取图片尺寸 */
+    useEffect(() => {
+        if (memory.type === 'image') {
+            const img = new Image();
+            img.onload = () => {
+                // 计算合适的显示尺寸
+                const maxWidth = 800; // 最大宽度
+                const maxHeight = 600; // 最大高度
+                let width = img.width;
+                let height = img.height;
+
+                // 如果图片尺寸超过最大限制，按比例缩放
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+
+                setImageSize({ width, height });
+            };
+            img.src = memory.preview;
+        }
+    }, [memory]);
 
     const formatDate = (date: Date) =>
         date.toLocaleString('en-US', {
@@ -48,11 +73,18 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         switch (memory.type) {
             case 'image':
                 return (
-                    <img
-                        src={memory.preview}
-                        alt="Memory"
-                        className="mt-3 w-full h-auto rounded-lg"
-                    />
+                    <div className="mt-3 flex justify-center">
+                        <img
+                            src={memory.preview}
+                            alt="Memory"
+                            className="rounded-lg"
+                            style={{
+                                width: imageSize.width,
+                                height: imageSize.height,
+                                objectFit: 'contain'
+                            }}
+                        />
+                    </div>
                 );
             case 'video':
                 return (

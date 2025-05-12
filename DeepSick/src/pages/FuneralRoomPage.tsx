@@ -51,7 +51,7 @@ const decorationItems = [
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 // Size constants for cropped image
-const CROP_IMAGE_SIZE = 128; // 128x128px final size
+const CROP_IMAGE_SIZE = 128; 
 
 // Size constant for decoration items
 const DECORATION_ITEM_SIZE = 50; // 50x50px

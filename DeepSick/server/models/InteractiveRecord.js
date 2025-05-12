@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const interactiveRecordSchema = new mongoose.Schema({
+    roomId: {
+        type: String,
+        required: true
+    },
     type: {
         type: String,
         required: true,
@@ -20,6 +24,12 @@ const interactiveRecordSchema = new mongoose.Schema({
         type: Number,
         required: function() {
             return this.type === 'candle';
+        }
+    },
+    flowerType: {
+        type: String,
+        required: function() {
+            return this.type === 'flower';
         }
     },
     timestamp: {

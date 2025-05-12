@@ -1,14 +1,28 @@
 // src/pages/FlowerPage.tsx
-// Dedicated page for "Offer Flowers" interaction with user history
+// Dedicated page for "Lay Flowers" interaction with user history
 
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 import './InteractivePage.css';
 
+// Get server URL from environment variable or use default
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
+
 interface FlowerRecord {
   username: string;
+  flowerType: string;
   timestamp: string;
+}
+
+interface RoomData {
+  roomId: string;
+  password: string;
+  funeralType: string;
+  backgroundImage: string;
+  name: string;
+  deceasedImage?: string;
 }
 
 interface FlowerDisplay {
@@ -19,15 +33,31 @@ interface FlowerDisplay {
 const FLOWER_TYPES = ['🌹', '🌷', '🌺', '🌸', '🌼', '💐'];
 
 const FlowerPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [roomData, setRoomData] = useState<RoomData | null>(null);
+  
   // States for flowers display and records
   const [flowers, setFlowers] = useState<FlowerDisplay[]>(
     Array.from({ length: 48 }, (_, i) => ({ id: i + 1, isVisible: false }))
   );
   const [totalFlowers, setTotalFlowers] = useState<number>(0);
   const [username, setUsername] = useState<string>('');
+  const [selectedFlower, setSelectedFlower] = useState<string>('');
   const [records, setRecords] = useState<FlowerRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  // Get room data from location state
+  useEffect(() => {
+    const state = location.state as RoomData;
+    if (state) {
+      setRoomData(state);
+    } else {
+      // If no room data, redirect to funeral hall
+      navigate('/funeralhall');
+    }
+  }, [location, navigate]);
 
   // Get a random flower emoji
   const getRandomFlower = () => {
@@ -36,9 +66,11 @@ const FlowerPage: React.FC = () => {
 
   // Fetch history records and flower count
   useEffect(() => {
+    if (!roomData) return;
+
     const fetchRecords = async () => {
       try {
-        const response = await axios.get('http://localhost:5001/api/interactive/flower');
+        const response = await axios.get(`${SERVER_URL}/api/interactive/flower/${roomData.roomId}`);
         if (response.data.success) {
           setRecords(response.data.records);
           const total = response.data.totalCount;
@@ -56,17 +88,18 @@ const FlowerPage: React.FC = () => {
       }
     };
     fetchRecords();
-  }, []);
+  }, [roomData]);
 
   const handleOfferFlower = async () => {
-    if (!username.trim() || loading) return;
+    if (!username.trim() || !selectedFlower || loading || !roomData) return;
     
     setLoading(true);
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:5001/api/interactive/flower', {
-        username: username.trim()
+      const response = await axios.post(`${SERVER_URL}/api/interactive/flower/${roomData.roomId}`, {
+        username: username.trim(),
+        flowerType: selectedFlower
       });
       
       if (response.data.success) {
@@ -81,27 +114,41 @@ const FlowerPage: React.FC = () => {
         
         setRecords(prev => [response.data.record, ...prev]);
         setUsername('');
+        setSelectedFlower('');
       }
     } catch (err) {
-      setError('Failed to offer flowers. Please try again.');
+      setError('Failed to offer flower. Please try again.');
       console.error('Error offering flower:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  if (!roomData) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading room data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="interactive-page">
       {/* Hero Section */}
       <section className="hero-section">
-        <img src="/image.png" alt="Memorial Hall" className="hero-image" />
-        <h1 className="hero-name">NAME</h1>
-        <p className="hero-subtitle">MOTTO</p>
+        <img 
+          src={roomData.deceasedImage || roomData.backgroundImage} 
+          alt={roomData.name} 
+          className="hero-image" 
+        />
+        <h1 className="hero-name">{roomData.name}</h1>
+        <p className="hero-subtitle">Room ID: {roomData.roomId}</p>
       </section>
 
       {/* Title Section */}
       <section className="hero-section">
-        <h1 className="hero-name">Offer Flowers</h1>
+        <h1 className="hero-name">Lay Flowers</h1>
         <p className="hero-subtitle">Total Flowers: {totalFlowers}</p>
       </section>
 
@@ -131,12 +178,22 @@ const FlowerPage: React.FC = () => {
             value={username}
             onChange={e => setUsername(e.target.value)}
           />
+          <select
+            className="flower-select"
+            value={selectedFlower}
+            onChange={e => setSelectedFlower(e.target.value)}
+          >
+            <option value="">Select a flower</option>
+            {FLOWER_TYPES.map((flower) => (
+              <option key={flower} value={flower}>{flower}</option>
+            ))}
+          </select>
           <button
             className="action-button"
             onClick={handleOfferFlower}
-            disabled={!username.trim() || loading}
+            disabled={!username.trim() || !selectedFlower || loading}
           >
-            {loading ? 'Offering...' : 'Offer Flowers'}
+            {loading ? 'Laying...' : 'Lay Flowers'}
           </button>
         </div>
         {error && <p className="error-message">{error}</p>}
@@ -146,13 +203,13 @@ const FlowerPage: React.FC = () => {
       <section className="interactive-area">
         <h2>Flower Offering History</h2>
         {records.length === 0 ? (
-          <p className="no-messages">No flowers have been offered yet</p>
+          <p className="no-messages">No flowers have been laid yet</p>
         ) : (
           <ul className="history-list">
             {records.map((r, idx) => (
               <li key={idx} className="message-card">
                 <span className="message-author">{r.username}</span>
-                <span className="flower-info">offered flowers</span>
+                <span className="flower-info">laid {r.flowerType}</span>
                 <span className="message-time">{new Date(r.timestamp).toLocaleString()}</span>
               </li>
             ))}

@@ -4,13 +4,16 @@ import { io, Socket } from 'socket.io-client';
 // Create a context for the socket instance
 const SocketContext = createContext<Socket | null>(null);
 
+// Get server URL from environment variable or use default
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
+
 // Provider component to wrap the app and provide the socket instance
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     // Initialize the socket connection only once
-    socketRef.current = io('http://localhost:5001', {
+    socketRef.current = io(SERVER_URL, {
       reconnectionAttempts: 5,
       reconnectionDelay: 3000,
       timeout: 20000,

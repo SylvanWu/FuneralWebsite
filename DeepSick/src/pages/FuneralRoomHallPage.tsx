@@ -268,13 +268,15 @@ const FuneralRoomHallPage: React.FC = () => {
         // Close modal
         setShowModal(false);
         
-        // Navigate to funeral room page with the room ID and password
-        navigate(`/funeral-room/${selectedRoom.roomId}`, {
+        // Navigate to interactive page with the room data
+        navigate(`/interactive`, {
           state: {
+            roomId: selectedRoom.roomId,
             password,
             funeralType: selectedRoom.funeralType,
             backgroundImage: selectedRoom.backgroundImage,
-            name: selectedRoom.deceasedName
+            name: selectedRoom.deceasedName,
+            deceasedImage: selectedRoom.deceasedImage
           }
         });
       } else {
