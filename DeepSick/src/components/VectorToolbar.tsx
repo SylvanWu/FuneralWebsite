@@ -154,7 +154,27 @@ import snakeImage from '../assets/small picture/snake.png';
 import yellowsheepImage from '../assets/small picture/yellowsheep.png';
 import sheepImage from '../assets/small picture/sheep.png';
 import chicken3Image from '../assets/small picture/chicken2.png';
-
+import pumpkinmanImage from '../assets/small picture/pumpkinman.png';
+import horseImage from '../assets/small picture/horse.png';
+import santaclausImage from '../assets/small picture/santaclaus.png';
+import dog1Image from '../assets/small picture/dog1.png';
+import santaclaus1Image from '../assets/small picture/santaclaus1.png';
+import santaclaus2Image from '../assets/small picture/santaclaus2.png';
+import santaclaus3Image from '../assets/small picture/santaclaus3.png';
+import gift1Image from '../assets/small picture/gift1.png';
+import gift2Image from '../assets/small picture/gift2.png';
+import gift3Image from '../assets/small picture/gift3.png';
+import elk1Image from '../assets/small picture/elk1.png';
+import snowman1Image from '../assets/small picture/snowman1.png';
+import chrismastreeImage from '../assets/small picture/chrismastree.png';
+import bellImage from '../assets/small picture/bell.png';
+import carImage from '../assets/small picture/car.png';
+import taxiImage from '../assets/small picture/taxi.png';
+import tigerImage from '../assets/small picture/tiger.png';
+import rabbitImage from '../assets/small picture/rabbit.png'; 
+import charizardImage from '../assets/small picture/charizard.png'; 
+import sunImage from '../assets/small picture/sun.png'; 
+import earthImage from '../assets/small picture/earth.png'; 
 
 
 interface VectorItem {
@@ -233,6 +253,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'plants',
     name: 'Tree',
     src: tree1Image
+  },
+  { 
+    id: 'chrismastree',
+    category: 'plants',
+    name: 'Christmas Tree',
+    src: chrismastreeImage
   },
   // Buildings category
   { 
@@ -413,6 +439,49 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Ghost',
     src: ghostImage
   },
+  { 
+    id: 'earth',
+    category: 'symbols',
+    name: 'Earth',
+    src: earthImage
+  },
+  { 
+    id: 'sun',
+    category: 'symbols',
+    name: 'Sun',
+    src: sunImage
+  },
+  { 
+    id: 'gift',
+    category: 'symbols',
+    name: 'Gift',
+    src: giftImage
+  },
+  { 
+    id: 'gift1',
+    category: 'symbols',
+    name: 'Gift',
+    src: gift1Image
+  },
+  { 
+    id: 'gift2',
+    category: 'symbols',
+    name: 'Gift',
+    src: gift2Image
+  },
+  { 
+    id: 'gift3',
+    category: 'symbols',
+    name: 'Gift',
+    src: gift3Image
+  },
+  { 
+    id: 'bell',
+    category: 'symbols',
+    name: 'Bell',
+    src: bellImage
+  },
+  
   // Animals category
   { 
     id: 'bianfu',
@@ -463,6 +532,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     src: pinkpigImage
   },
   { 
+    id: 'rabbit',
+    category: 'animals',
+    name: 'Rabbit',
+    src: rabbitImage
+  },
+  { 
     id: 'greypig',
     category: 'animals',
     name: 'Grey Pig',
@@ -481,6 +556,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     src: chicken1Image
   },
   { 
+    id: 'tiger',
+    category: 'animals',
+    name: 'Tiger',
+    src: tigerImage
+  },
+  { 
     id: 'chicken2',
     category: 'animals',
     name: 'Chicken',
@@ -491,6 +572,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'animals',
     name: 'Black Cat',
     src: blackcatImage
+  },
+  { 
+    id: 'charizard',
+    category: 'animals',
+    name: 'Charizard',
+    src: charizardImage
   },
   { 
     id: 'cat',
@@ -521,6 +608,12 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'animals',
     name: 'Bear',
     src: bearImage
+  },
+  { 
+    id: 'elk1',
+    category: 'animals',
+    name: 'Elk',
+    src: elk1Image
   },
   { 
     id: 'turtle',
@@ -582,6 +675,18 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Chicken',
     src: chicken3Image
   },
+  { 
+    id: 'horse',
+    category: 'animals',
+    name: 'Horse',
+    src: horseImage
+  },
+  { 
+    id: 'dog1',
+    category: 'animals',
+    name: 'Dog',
+    src: dog1Image
+  },
   // Objects category
   { 
     id: 'redtelevision',
@@ -626,16 +731,16 @@ const VECTOR_ITEMS: VectorItem[] = [
     src: bombImage
   },
   { 
+    id: 'taxi',
+    category: 'objects',
+    name: 'Taxi',
+    src: taxiImage
+  },
+  { 
     id: 'wreath',
     category: 'objects',
     name: 'Wreath',
     src: wreathImage
-  },
-  { 
-    id: 'gift',
-    category: 'objects',
-    name: 'Gift',
-    src: giftImage
   },
   { 
     id: 'forklift',
@@ -690,6 +795,18 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'objects',
     name: 'Axe',
     src: axeImage
+  },
+  { 
+    id: 'car',
+    category: 'objects',
+    name: 'Car',
+    src: carImage
+  },
+  { 
+    id: 'snowman1',
+    category: 'objects',
+    name: 'Snowman',
+    src: snowman1Image
   },
   // Character category
   { 
@@ -1106,6 +1223,38 @@ const VECTOR_ITEMS: VectorItem[] = [
     name: 'Fairy',
     src: fairyImage
   },
+  { 
+    id: 'pumpkinman',
+    category: 'character',
+    name: 'Pumpkin Man',
+    src: pumpkinmanImage
+  },
+  { 
+    id: 'santaclaus',
+    category: 'character',
+    name: 'Santa Claus',
+    src: santaclausImage
+  },
+  { 
+    id: 'santaclaus1',
+    category: 'character',
+    name: 'Santa Claus',
+    src: santaclaus1Image
+  },
+  { 
+    id: 'santaclaus2',
+    category: 'character',
+    name: 'Santa Claus',
+    src: santaclaus2Image
+  },
+  { 
+    id: 'santaclaus3',
+    category: 'character',
+    name: 'Santa Claus',
+    src: santaclaus3Image
+  },
+
+  
   
   
   
