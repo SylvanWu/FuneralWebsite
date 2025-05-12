@@ -2,13 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import RichTextEditor from './RichTextEditor';
+import { useNavigate } from 'react-router-dom';
 
 interface Dream {
   _id: string;
   content: string;
 }
 
+
 const DreamEditor = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { dreams }: { dreams: Dream[] } = location.state || { dreams: [] };
   const [editableDreams, setEditableDreams] = useState<Dream[]>(dreams);
@@ -37,18 +40,15 @@ const DreamEditor = () => {
     }
   };
 
+  const handleCancel = () => {
+    navigate('/dreamlist'); // 不保存，直接回去
+  };
 
   return (
     <div style={{ padding: '20px' }}>
       <h1>Edit Wishes with Style ✨</h1>
       {editableDreams.map((dream, index) => (
-        // <div key={dream._id}>
-        //   <textarea
-        //     value={dream.content}
-        //     onChange={(e) => handleDreamChange(index, e.target.value)}
-        //     style={{ width: '100%', marginBottom: '10px' }}
-        //   />
-        // </div>
+        // 这里是愿望的预览
         <div key={dream._id} style={{ marginBottom: '30px' }}>
           <RichTextEditor
             content={dream.content}
@@ -58,7 +58,8 @@ const DreamEditor = () => {
 
       ))}
       <button onClick={handleSave}>💾 Save All</button>
-      <button>✕ Back</button>
+      <span>        </span>
+      <button onClick={handleCancel} > ❌ Cancel</button>
     </div>
   );
 };

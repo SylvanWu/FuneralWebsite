@@ -124,7 +124,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) =>
       </div>
 
       {/* Preview area */}
-      <div
+      {/* <div
         style={{
           flex: 1,
           padding: '8px',
@@ -134,7 +134,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) =>
         }}
         dangerouslySetInnerHTML={{ __html: content }}
       />
-    </div>
+    </div> */}
+      <div style={{ flex: 1 }}>
+        <div className="dream-card">
+          <div className="dream-list-content" dangerouslySetInnerHTML={{ __html: content }} />
+        </div>
+      </div>
+    </div> // 👈 这一整块是 return 的完整包裹 div
   );
 };
 
