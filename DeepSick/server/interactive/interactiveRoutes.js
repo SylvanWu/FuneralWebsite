@@ -1,7 +1,51 @@
 import express from 'express';
 import { InteractiveRecord } from '../models/InteractiveRecord.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import Music from '../models/Music.js';
 
 const router = express.Router();
+
+// Set up music upload directory
+const musicDir = path.join(process.cwd(), 'server', 'uploads', 'music');
+if (!fs.existsSync(musicDir)) {
+  fs.mkdirSync(musicDir, { recursive: true });
+}
+
+const musicStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, musicDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const uploadMusic = multer({ storage: musicStorage });
+
+// Music upload API
+router.post('/music/upload', uploadMusic.single('music'), async (req, res) => {
+  try {
+    const { originalname, filename } = req.file;
+    const url = `/uploads/music/${filename}`;
+    // Save music metadata to MongoDB
+    const music = await Music.create({
+      originalname,
+      filename,
+      url,
+      uploadTime: new Date()
+    });
+    res.json({
+      success: true,
+      url,
+      filename,
+      music
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 // 献花记录
 router.post('/flower', async (req, res) => {
