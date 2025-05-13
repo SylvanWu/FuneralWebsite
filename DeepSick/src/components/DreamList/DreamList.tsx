@@ -146,7 +146,8 @@ export function DreamList() {
         {/* 显示愿望清单 */}
         {dreams.map(dream => (
           <div key={dream._id} className="dream-item">
-            <span>{dream.content}</span>
+            {/* <span>{dream.content}</span> */}
+            <span dangerouslySetInnerHTML={{ __html: dream.content }} /> 
             <div className="dream-actions">
 
               {/* <button className="edit-button">Edit</button> */}
