@@ -35,16 +35,16 @@ export default function LoginPage({ setToken }: LoginPageProps) {
       // Call the setToken function passed from App.tsx to update app state
       setToken(response.data.token);
       
-      // Redirect based on user type
+      // Redirect based on user type - default to funeralhall for all users
       switch(response.data.user.userType) {
         case 'organizer':
-          navigate('/organizer-dashboard');
+          navigate('/funeralhall');
           break;
         case 'visitor':
           navigate('/funeralhall');
           break;
         default:
-          navigate('/');
+          navigate('/funeralhall');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
@@ -56,18 +56,8 @@ export default function LoginPage({ setToken }: LoginPageProps) {
     const token = localStorage.getItem('token');
     
     if (token && userStr) {
-      const user = JSON.parse(userStr);
-      
-      // Redirect if already logged in
-      if (user.userType === 'lovedOne') {
-        navigate('/loved-one-dashboard/wills');
-      } else if (user.userType === 'visitor') {
-        navigate('/funeralhall');
-      } else if (user.userType === 'organizer') {
-        navigate('/organizer-dashboard');
-      } else {
-        navigate('/');
-      }
+      // If already logged in, redirect to funeralhall
+      navigate('/funeralhall', { replace: true });
     }
   }, [navigate]);
 

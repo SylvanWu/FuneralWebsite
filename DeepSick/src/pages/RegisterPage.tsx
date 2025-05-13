@@ -16,9 +16,9 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
-      nav('/'); // Prevent access to register page when already logged in
+      nav('/funeralhall'); // Redirect logged in users to funeral hall
     }
-  }, []);
+  }, [nav]);
 
   const isEmail = (str: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
   const isPhone = (str: string) => isValidPhoneNumber(str);
@@ -61,7 +61,7 @@ export default function RegisterPage() {
         ...(email ? { email } : {})
       });
       setSuccess(true);
-      setTimeout(() => nav('/login'), 1500);
+      setTimeout(() => nav('/login'), 1500); // Redirect to login page after successful registration
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
     }
@@ -110,7 +110,7 @@ export default function RegisterPage() {
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
               </svg>
-              <span>Success! Redirecting…</span>
+              <span>Registration successful! Redirecting to login page...</span>
             </div>
           </div>
         )}
