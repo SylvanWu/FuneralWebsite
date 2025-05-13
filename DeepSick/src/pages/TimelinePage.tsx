@@ -110,7 +110,7 @@ export default function TimelinePage() {
             />
 
             {/* Upload area */}
-            <UploadArea onFileUpload={handleFileUpload} />
+            <UploadArea onFileUpload={handleFileUpload} isUploading={isUploading} />
 
             {/* Timeline, remember to pass onDeleteMemory */}
             <Timeline

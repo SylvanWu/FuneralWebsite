@@ -107,7 +107,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
       {/* Tab content */}
       <TabContentSection activeTabId={activeTabId}>
         {/* Interactive cards */}
-        <TabContent id="interact" className="interaction-cards">
+        <TabContent id="interact" activeId="interact" className="interaction-cards">
           <div className="cards-grid">
             <InteractionCard
               icon={<span role="img" aria-label="flower">💐</span>}
@@ -134,7 +134,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
         
         {/* Drawing canvas - integrated SharedCanvas component */}
-        <TabContent id="canvas" className="canvas-container">
+        <TabContent id="canvas" activeId="canvas" className="canvas-container">
           <div className="shared-canvas-wrapper">
             <h3>Collaborative Drawing Board</h3>
             <p className="canvas-description">
@@ -145,7 +145,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
         
         {/* Music player - integrated MusicPlayer component */}
-        <TabContent id="music" className="music-container">
+        <TabContent id="music" activeId="music" className="music-container">
           <div className="music-player-wrapper">
             <h3>Memorial Music</h3>
             <p className="music-description">
@@ -156,12 +156,12 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
         
         {/* Memorial Hall tab content */}
-        <TabContent id="memorial" className="memorial-container">
+        <TabContent id="memorial" activeId="memorial" className="memorial-container">
           <MemorialHall roomData={roomData} />
         </TabContent>
 
         {/* Farewell Will tab content */}
-        <TabContent id="will" className="will-container">
+        <TabContent id="will" activeId="will" className="will-container">
           <div className="will-wrapper">
             <h3>Record Your Farewell Message</h3>
             <p className="will-description">
@@ -174,7 +174,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
 
         {/* Dream List tab content */}
-        <TabContent id="dream" className="dream-container">
+        <TabContent id="dream" activeId="dream" className="dream-container">
           <div className="dream-wrapper">
             <h3>Dream List</h3>
             <p className="dream-description">

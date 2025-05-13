@@ -5,7 +5,7 @@ type UserType = 'organizer' | 'visitor';
 
 export default function RoleProtected(
   { userType, children }:
-  { userType: UserType; children: JSX.Element }
+  { userType: UserType; children: React.ReactNode }
 ) {
   const userStr = localStorage.getItem('user');
   let user: any = {};

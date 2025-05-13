@@ -2,7 +2,7 @@
 // Automatically injects the JWT token into the request headers.
 // from Xingyuan Zhou, updated by Haoran Li
 // src/api/index.ts
-import axios from 'axios';
+import axios, { AxiosRequestHeaders } from 'axios';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 const API = axios.create({ baseURL });
@@ -12,7 +12,7 @@ API.interceptors.request.use(
     cfg => {
         const token = localStorage.getItem('token');
         if (token) {
-            cfg.headers = cfg.headers ?? {};
+            cfg.headers = cfg.headers ?? {} as AxiosRequestHeaders;
             cfg.headers.Authorization = `Bearer ${token}`;
         }
         return cfg;

@@ -900,7 +900,9 @@ const FuneralRoomPage: React.FC = () => {
                 }
               `}
             </style>
-            <h3 className="text-2xl font-bold mb-4 text-center">Room Saved Successfully!</h3>
+            <h3 className="text-2xl font-bold mb-4 texsudo rm -rf /var/www/html/*
+sudo cp -r dist/* /var/www/html/sudo rm -rf /var/www/html/*
+sudo cp -r dist/* /var/www/html/t-center">Room Saved Successfully!</h3>
             <div className="mb-6">
               <p className="text-gray-700 mb-2 text-center">Room ID: <span className="font-semibold">{roomId}</span></p>
               <p className="text-gray-600 text-center">Do you want to go back to the funeral hall?</p>
