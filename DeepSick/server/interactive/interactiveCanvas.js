@@ -177,32 +177,6 @@ export const initializeCanvasSocket = (io) => {
       await saveCanvas(roomId, canvasId);
     });
 
-    // Handle undo action
-    socket.on('undo', async (data) => {
-      const { roomId, canvasId } = data;
-      if (canvasStates[roomId] && 
-          canvasStates[roomId][canvasId] && 
-          canvasStates[roomId][canvasId].drawings.length > 0) {
-        // Remove only the last drawing action
-        canvasStates[roomId][canvasId].drawings.pop();
-        // Broadcast undo to all clients in the same room
-        io.to(roomId).emit('undo', canvasId);
-        // Save to database
-        await saveCanvas(roomId, canvasId);
-      }
-    });
-
-    // Handle canvas clear
-    socket.on('clearCanvas', async (data) => {
-      const { roomId, canvasId } = data;
-      if (canvasStates[roomId] && canvasStates[roomId][canvasId]) {
-        canvasStates[roomId][canvasId].drawings = [];
-        io.to(roomId).emit('canvasCleared', canvasId);
-        // Save to database
-        await saveCanvas(roomId, canvasId);
-      }
-    });
-
     // Handle new canvas creation
     socket.on('createCanvas', async (data) => {
       const { roomId, canvasId } = data;

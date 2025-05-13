@@ -451,32 +451,10 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
     socket?.emit('selectCanvas', { roomId, canvasId });
   };
 
-  // Handle undo functionality
-  const handleUndo = useCallback(() => {
-    if (drawingsRef.current.length > 0) {
-      socket?.emit('undo', { roomId, canvasId: currentCanvasId });
-    }
-  }, [socket, currentCanvasId, roomId]);
-
-  // Add keyboard event listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
-        handleUndo();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleUndo]);
-
-  // Handle canvas clear
-  const handleClearCanvas = () => {
-    if (socket) {
-      socket.emit('clearCanvas', { roomId, canvasId: currentCanvasId });
+  // Handle refresh canvas
+  const handleRefreshCanvas = () => {
+    if (socket && socket.connected) {
+      socket.emit('selectCanvas', { roomId, canvasId: currentCanvasId });
     }
   };
 
@@ -502,6 +480,13 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
               </option>
             ))}
           </select>
+          <button
+            className="shared-tool-button"
+            onClick={handleRefreshCanvas}
+            title="刷新画布"
+          >
+            🔄
+          </button>
         </div>
 
         <div className="shared-tool-group">
@@ -582,20 +567,6 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
         </div>
 
         <div className="shared-tool-group">
-          <button
-            className="shared-tool-button"
-            onClick={handleUndo}
-            title="Undo (Ctrl+Z)"
-          >
-            ↩️
-          </button>
-          <button
-            className="shared-tool-button"
-            onClick={handleClearCanvas}
-            title="Clear Canvas"
-          >
-            🗑️
-          </button>
           <button
             className="shared-tool-button"
             onClick={() => {

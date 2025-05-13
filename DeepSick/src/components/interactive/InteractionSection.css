@@ -89,7 +89,7 @@
 }
 
 /* Container Styles */
-.canvas-container, .music-container, .memorial-container, .will-container, .dream-container {
+.canvas-container, .music-container, .memorial-container, .will-container, .dream-container, .chat-container {
   min-height: 300px;
 }
 
@@ -220,6 +220,45 @@
   justify-content: center;
 }
 
+/* Chat Container styles */
+.chat-container {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-height: 600px;
+}
+
+.chat-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.chat-wrapper h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.chat-description {
+  text-align: center;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.chat-wrapper .chat-box {
+  height: 500px !important;
+  margin-bottom: 1rem;
+}
+
+.chat-wrapper .messages {
+  height: calc(100% - 120px) !important;
+  min-height: 400px !important;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .cards-grid {
@@ -235,5 +274,17 @@
   
   .will-form-container {
     padding: 1rem;
+  }
+  
+  .chat-container {
+    min-height: 500px;
+  }
+  
+  .chat-wrapper .chat-box {
+    height: 400px !important;
+  }
+  
+  .chat-wrapper .messages {
+    min-height: 300px !important;
   }
 } 

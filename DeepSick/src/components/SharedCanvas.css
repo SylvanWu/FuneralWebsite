@@ -38,7 +38,7 @@
   padding: 8px;
   cursor: pointer;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 .shared-tool-button:hover {
@@ -47,6 +47,11 @@
 
 .shared-tool-button.active {
   background-color: #e0e0e0;
+}
+
+/* 刷新按钮动画 */
+.shared-tool-button[title="刷新画布"]:active {
+  transform: rotate(360deg);
 }
 
 .shared-canvas-wrapper {

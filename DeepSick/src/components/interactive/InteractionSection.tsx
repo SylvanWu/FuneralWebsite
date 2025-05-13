@@ -9,6 +9,7 @@ import WillForm from '../WillForm';
 import WillList from '../WillList';
 import { Will } from '../WillForm';
 import DreamShrink from '../DreamList/DreamShrink';
+import { ChatBox } from '../ChatBox';
 import './InteractionSection.css';
 
 // Interface for room data
@@ -90,6 +91,11 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
       id: 'music',
       label: 'Memorial Music',
       icon: <span role="img" aria-label="music">🎵</span>
+    },
+    {
+      id: 'chat',
+      label: 'Chat',
+      icon: <span role="img" aria-label="chat">💬</span>
     },
     {
       id: 'memorial',
@@ -184,6 +190,27 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
               Listen to or add music to honor the memory of the departed
             </p>
             <MusicPlayer className="embedded-player" />
+          </div>
+        </TabContent>
+        
+        {/* Chat section */}
+        <TabContent id="chat" className="chat-container" activeId={activeTabId}>
+          <div className="chat-wrapper">
+            <h3>Live Chat</h3>
+            <p className="chat-description">
+              Chat with others in real-time
+            </p>
+            {(() => {
+              const userStr = localStorage.getItem('user');
+              const user = userStr ? JSON.parse(userStr) : {};
+              return (
+                <ChatBox 
+                  roomId={roomData.roomId}
+                  userId={user._id || 'anonymous'}
+                  username={user.nickname || user.username || 'Guest'}
+                />
+              );
+            })()}
           </div>
         </TabContent>
         
