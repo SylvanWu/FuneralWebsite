@@ -9,7 +9,7 @@ export default function OrganizerDashboard() {
   };
 
   const handleExistingFunerals = () => {
-    navigate('/existing-funerals');
+    navigate('/funeralhall');
   };
 
   return (

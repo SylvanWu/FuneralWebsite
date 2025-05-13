@@ -268,8 +268,8 @@ const FuneralRoomHallPage: React.FC = () => {
         // Close modal
         setShowModal(false);
         
-        // Navigate to interactive page with the room data
-        navigate(`/interactive`, {
+        // 更新为直接导航到带有roomId参数的路由
+        navigate(`/interactive/${selectedRoom.roomId}`, {
           state: {
             roomId: selectedRoom.roomId,
             password,

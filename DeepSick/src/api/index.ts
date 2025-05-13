@@ -21,7 +21,10 @@ API.interceptors.request.use(
 );
 
 /* ---------- Memories ---------- */
-export const fetchMemories = ()        => API.get('/memories').then(r => r.data);
+export const fetchMemories = (roomId?: string) => {
+    const endpoint = roomId ? `/memories?roomId=${roomId}` : '/memories';
+    return API.get(endpoint).then(r => r.data);
+};
 export const createMemory  = (fd:FormData) => API.post('/memories', fd).then(r => r.data);
 export const deleteMemory  = (id:string)  => API.delete(`/memories/${id}`);
 
