@@ -25,8 +25,24 @@ export const fetchMemories = (roomId?: string) => {
     const endpoint = roomId ? `/memories?roomId=${roomId}` : '/memories';
     return API.get(endpoint).then(r => r.data);
 };
-export const createMemory  = (fd:FormData) => API.post('/memories', fd).then(r => r.data);
-export const deleteMemory  = (id:string)  => API.delete(`/memories/${id}`);
+
+export const createMemory = (fd: FormData) => {
+    return API.post('/memories', fd, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+    .then(r => {
+        console.log('Memory creation response:', r.data);
+        return r.data;
+    })
+    .catch(error => {
+        console.error('Memory creation error:', error.response || error);
+        throw error;
+    });
+};
+
+export const deleteMemory = (id: string) => API.delete(`/memories/${id}`);
 
 /* ---------- Wills ---------- */
 export const getWills   = ()                 => API.get('/wills').then(r => r.data);

@@ -16,6 +16,8 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
     const [isNew, setIsNew] = useState(true);
     const [isDeleting, setIsDeleting] = useState(false);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+    const [imageError, setImageError] = useState(false);
+    const [imageSrc, setImageSrc] = useState<string>(memory.preview);
 
     /* Entry animation, runs only once on initial mount */
     useEffect(() => {
@@ -23,11 +25,39 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         return () => clearTimeout(timer);
     }, []);
 
-    /* 获取图片尺寸 */
+    /* 修复路径并处理图片URL */
     useEffect(() => {
         if (memory.type === 'image') {
+            // 修复路径中的反斜杠问题
+            let src = memory.preview;
+            
+            // 1. 将所有反斜杠替换为正斜杠
+            src = src.replace(/\\/g, '/');
+            
+            // 2. 处理相对路径
+            if (src && !src.startsWith('http') && !src.startsWith('blob:') && !src.startsWith('data:')) {
+                // 2.1 构建基础URL
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+                
+                // 2.2 移除多余的server前缀（如果存在）
+                if (src.startsWith('server/')) {
+                    src = src.replace(/^server\//, '');
+                }
+                
+                // 2.3 构建完整路径
+                src = `${baseUrl}/uploads/${src.replace(/^uploads\//, '')}`;
+            }
+            
+            console.log('Memory image processing:', { 
+                original: memory.preview, 
+                processed: src 
+            });
+            
+            setImageSrc(src);
+            
             const img = new Image();
             img.onload = () => {
+                console.log('Image loaded successfully:', src);
                 // 计算合适的显示尺寸
                 const maxWidth = 800; // 最大宽度
                 const maxHeight = 600; // 最大高度
@@ -42,8 +72,44 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 }
 
                 setImageSize({ width, height });
+                setImageError(false);
             };
-            img.src = memory.preview;
+            
+            img.onerror = (err) => {
+                console.error('Failed to load image:', src, err);
+                
+                // 尝试另一种URL格式
+                if (src !== memory.preview) {
+                    console.log('Trying alternative URL format');
+                    // 尝试直接访问uploads文件夹
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+                    const fileName = src.split('/').pop(); // 获取文件名部分
+                    const altSrc = `${baseUrl.replace(/\/api$/, '')}/uploads/${fileName}`;
+                    
+                    console.log('Alternative URL:', altSrc);
+                    setImageSrc(altSrc);
+                    
+                    // 使用替代URL重新加载
+                    const altImg = new Image();
+                    altImg.onload = () => {
+                        console.log('Alternative image URL loaded successfully');
+                        setImageError(false);
+                    };
+                    altImg.onerror = () => {
+                        console.error('Alternative image URL also failed');
+                        // 最后尝试直接用原始URL
+                        const originalFixed = memory.preview.replace(/\\/g, '/');
+                        console.log('Last attempt with original URL (fixed slashes):', originalFixed);
+                        setImageSrc(originalFixed);
+                        setImageError(true);
+                    };
+                    altImg.src = altSrc;
+                } else {
+                    setImageError(true);
+                }
+            };
+            
+            img.src = src;
         }
     }, [memory]);
 
@@ -74,16 +140,37 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             case 'image':
                 return (
                     <div className="mt-3 flex justify-center">
-                        <img
-                            src={memory.preview}
-                            alt="Memory"
-                            className="rounded-lg"
-                            style={{
-                                width: imageSize.width,
-                                height: imageSize.height,
-                                objectFit: 'contain'
-                            }}
-                        />
+                        {imageError ? (
+                            <div className="text-red-500 p-4 bg-red-50 rounded-lg">
+                                <p>Failed to load image</p>
+                                <p className="text-xs overflow-auto max-w-md">{memory.preview}</p>
+                                {imageSrc !== memory.preview && (
+                                    <p className="text-xs overflow-auto max-w-md">Tried: {imageSrc}</p>
+                                )}
+                                <button 
+                                    className="mt-2 px-2 py-1 bg-blue-500 text-white text-xs rounded"
+                                    onClick={() => window.open(imageSrc, '_blank')}
+                                >
+                                    打开图片链接
+                                </button>
+                            </div>
+                        ) : (
+                            <img
+                                src={imageSrc}
+                                alt="Memory"
+                                className="rounded-lg"
+                                style={{
+                                    width: imageSize.width || 'auto',
+                                    height: imageSize.height || 'auto',
+                                    maxWidth: '100%',
+                                    objectFit: 'contain'
+                                }}
+                                onError={(e) => {
+                                    console.error('Image error on render:', e);
+                                    setImageError(true);
+                                }}
+                            />
+                        )}
                     </div>
                 );
             case 'video':
@@ -92,6 +179,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                         src={memory.preview}
                         controls
                         className="mt-3 w-full h-auto rounded-lg"
+                        onError={(e) => console.error('Video error:', e)}
                     />
                 );
             default: // 'text'
@@ -123,6 +211,11 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                         {formatDate(memory.uploadTime)}
                     </p>
                 </div>
+            </div>
+
+            {/* 显示内存ID和类型用于调试 */}
+            <div className="text-xs text-gray-400 mt-1 mb-2">
+                ID: {memory.id} | Type: {memory.type}
             </div>
 
             {/* Main content (image / video / text) */}
