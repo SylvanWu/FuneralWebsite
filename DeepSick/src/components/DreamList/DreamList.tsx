@@ -34,7 +34,7 @@ export function DreamList() {
       try {
         const res = await fetch(`http://localhost:5001/api/dreams`);
         const data = await res.json();
-        setDreams(data);
+        setDreams(data);// 更新状态为最新的梦想列表
       } catch (err) {
         console.error('Failed to fetch dreams list:', err);
       }
@@ -126,14 +126,14 @@ export function DreamList() {
 
   const handleEditAll = async () => {
     try {
-    const res = await fetch(`http://localhost:5001/api/dreams`);
-    const data = await res.json();
-    // Pass all dream contents
-    navigate('/dreamlist/edit', { state: { dreams: data } });
-  } catch (err) {
-    console.error('Failed to fetch latest dreams:', err);
-  }
-};
+      const res = await fetch(`http://localhost:5001/api/dreams`);
+      const data = await res.json();
+      // 传递所有的梦想内容
+      navigate('/dreamlist/edit', { state: { dreams: data } });
+    } catch (err) {
+      console.error('Failed to fetch latest dreams:', err);
+    }
+  };
 
   return (
     <div>
@@ -142,7 +142,8 @@ export function DreamList() {
         {/* Display wish list */}
         {dreams.map(dream => (
           <div key={dream._id} className="dream-item">
-            <span>{dream.content}</span>
+            {/* <span>{dream.content}</span> */}
+            <span dangerouslySetInnerHTML={{ __html: dream.content }} /> 
             <div className="dream-actions">
 
               {/* <button className="edit-button">Edit</button> */}
