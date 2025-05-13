@@ -15,6 +15,7 @@ export interface FuneralRoom {
   roomId: string;
   password: string;
   deceasedName: string;
+  title?: string;
   funeralType: string;
   backgroundImage: string;
   deceasedImage?: string;
@@ -164,6 +165,13 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
     
     // Convert MongoDB data to FuneralRoom interface
     const data = response.data;
+    
+    console.log('[getFuneralRoomById] Raw API response:', {
+      roomId: data.stringId || data._id,
+      deceasedName: data.deceasedName,
+      sceneType: data.sceneType,
+      isOrganizer: data.isOrganizer
+    });
 
     // Map backend enum values to frontend type keys if needed
     const typeMapping: Record<string, string> = {
@@ -178,21 +186,29 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
     // Use the mapped value if available, otherwise use the original
     const funeralType = typeMapping[data.sceneType] || data.sceneType;
 
-    // 记录isOrganizer值用于调试
-    console.log(`[getFuneralRoomById] Room ${roomId} isOrganizer:`, data.isOrganizer);
-
-    return {
+    const result = {
       roomId: data.stringId || data._id,
       password: data.password,
       deceasedName: data.deceasedName,
+      title: data.title,
       funeralType: funeralType,
       backgroundImage: data.backgroundImage || '',
       deceasedImage: data.deceasedImage || '',
       canvasItems: data.canvasItems || [],
-      isOrganizer: data.isOrganizer || false, // 确保接收到的isOrganizer标志被正确处理
+      isOrganizer: data.isOrganizer || false,
       createdAt: new Date(data.createdAt).getTime(),
       updatedAt: new Date(data.updatedAt).getTime(),
     };
+
+    console.log('[getFuneralRoomById] Converted room data:', {
+      roomId: result.roomId,
+      deceasedName: result.deceasedName,
+      title: result.title,
+      funeralType: result.funeralType,
+      isOrganizer: result.isOrganizer
+    });
+
+    return result;
   } catch (error: any) {
     console.error('Error getting funeral room:', error);
     console.error('Error details:', {

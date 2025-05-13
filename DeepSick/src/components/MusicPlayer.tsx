@@ -3,23 +3,40 @@ import './MusicPlayer.css';
 
 interface MusicPlayerProps {
   className?: string;
+  defaultMusic?: string;
 }
 
 type PlayMode = 'sequence' | 'single' | 'random';
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
+const MusicPlayer: React.FC<MusicPlayerProps> = ({ className, defaultMusic }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(0.5);
   const [playMode, setPlayMode] = useState<PlayMode>('sequence');
-  const [playlist, setPlaylist] = useState<File[]>([]);
+  const [playlist, setPlaylist] = useState<Array<{ file: File | null; url: string; name: string }>>([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (defaultMusic) {
+      setPlaylist(prev => {
+        const hasDefaultMusic = prev.some(track => track.url === defaultMusic);
+        if (!hasDefaultMusic) {
+          return [...prev, {
+            file: null,
+            url: defaultMusic,
+            name: 'Remember Me (Coco)'
+          }];
+        }
+        return prev;
+      });
+    }
+  }, [defaultMusic]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -30,7 +47,8 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
 
   useEffect(() => {
     if (playlist.length > 0 && audioRef.current) {
-      audioRef.current.src = URL.createObjectURL(playlist[currentTrackIndex]);
+      const currentTrack = playlist[currentTrackIndex];
+      audioRef.current.src = currentTrack.file ? URL.createObjectURL(currentTrack.file) : currentTrack.url;
       if (isPlaying) {
         audioRef.current.play();
       }
@@ -95,7 +113,12 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const audioFiles = files.filter(file => file.type.startsWith('audio/'));
-    setPlaylist(prev => [...prev, ...audioFiles]);
+    const newTracks = audioFiles.map(file => ({
+      file,
+      url: URL.createObjectURL(file),
+      name: file.name
+    }));
+    setPlaylist(prev => [...prev, ...newTracks]);
   };
 
   const handleNext = () => {
@@ -133,6 +156,9 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
 
   const handleRemoveTrack = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (playlist[index].file === null) {
+      return;
+    }
     setPlaylist(prev => prev.filter((_, i) => i !== index));
     if (index === currentTrackIndex) {
       setCurrentTrackIndex(0);
@@ -215,7 +241,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
         </button>
       </div>
 
-      <div className="progress-bar">
+      <div className="progress-container">
         <span className="time">{formatTime(currentTime)}</span>
         <input
           type="range"
@@ -223,13 +249,13 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
           max={duration}
           value={currentTime}
           onChange={handleSeek}
-          className="progress"
+          className="progress-bar"
         />
         <span className="time">{formatTime(duration)}</span>
       </div>
 
       <div className="player-settings">
-        <div className="volume-control">
+        <div className="volume-container">
           <span>🔈</span>
           <input
             type="range"
@@ -238,7 +264,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
             step="0.1"
             value={volume}
             onChange={handleVolumeChange}
-            className="volume"
+            className="volume-slider"
           />
         </div>
 
@@ -280,25 +306,27 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
         <div className="playlist-section">
           <h4>Playlist</h4>
           <ul className="playlist-list">
-            {playlist.map((file, idx) => (
+            {playlist.map((track, idx) => (
               <li
                 key={idx}
                 className={`playlist-item${idx === currentTrackIndex ? ' active' : ''}`}
                 onClick={() => handleSelectTrack(idx)}
-                draggable
+                draggable={!!track.file}
                 onDragStart={() => handleDragStart(idx)}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, idx)}
-                title={file.name}
+                title={track.name}
               >
                 <span className="track-number">{idx + 1}</span>
-                <span className="track-name">{file.name}</span>
-                <button
-                  className="remove-track"
-                  onClick={(e) => handleRemoveTrack(idx, e)}
-                >
-                  ✕
-                </button>
+                <span className="track-name">{track.name}</span>
+                {track.file && (
+                  <button
+                    className="remove-track"
+                    onClick={(e) => handleRemoveTrack(idx, e)}
+                  >
+                    ✕
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -309,13 +337,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={() => {
-          if (playMode === 'single') {
-            audioRef.current?.play();
-          } else {
-            handleNext();
-          }
-        }}
+        onEnded={handleNext}
       />
     </div>
   );

@@ -11,6 +11,7 @@ import {
   verifyRoomPassword 
 } from '../services/funeralRoomDatabase';
 import { ChatBox } from '../components/ChatBox';
+import MusicPlayer from '../components/MusicPlayer';
 import '../App.css';
 import './InteractivePage.css';
 import WillForm from '../components/WillForm';
@@ -227,17 +228,25 @@ const InteractivePage: React.FC = () => {
       
       if (stateData && stateData.roomId) {
         // 如果有state数据，使用它设置当前房间
-        console.log('[initializeData] Using state data with isOrganizer:', stateData.isOrganizer);
+        console.log('[initializeData] Using state data:', {
+          roomId: stateData.roomId,
+          deceasedName: stateData.deceasedName,
+          isOrganizer: stateData.isOrganizer
+        });
         setCurrentRoom(stateData);
         setIsLoadingCurrentRoom(false);
-        if (stateData.roomId) fetchRoomWills(stateData.roomId); // 获取遗嘱
+        if (stateData.roomId) fetchRoomWills(stateData.roomId);
       } else if (urlRoomId) {
         // 如果URL中有roomId，加载该房间
         try {
           // 尝试从缓存中获取
           const cachedRoom = rooms.find(room => room.roomId === urlRoomId);
           if (cachedRoom) {
-            console.log('[initializeData] Using cached room with isOrganizer:', cachedRoom.isOrganizer);
+            console.log('[initializeData] Using cached room:', {
+              roomId: cachedRoom.roomId,
+              deceasedName: cachedRoom.deceasedName,
+              isOrganizer: cachedRoom.isOrganizer
+            });
             setCurrentRoom(cachedRoom);
             setIsLoadingCurrentRoom(false);
           } else {
@@ -245,7 +254,11 @@ const InteractivePage: React.FC = () => {
             console.log('[initializeData] Fetching room from API:', urlRoomId);
             const roomData = await getFuneralRoomById(urlRoomId);
             if (roomData) {
-              console.log('[initializeData] Room data from API with isOrganizer:', roomData.isOrganizer);
+              console.log('[initializeData] Room data from API:', {
+                roomId: roomData.roomId,
+                deceasedName: roomData.deceasedName,
+                isOrganizer: roomData.isOrganizer
+              });
               setCurrentRoom(roomData);
               setError(null);
             } else {
@@ -254,7 +267,7 @@ const InteractivePage: React.FC = () => {
             }
             setIsLoadingCurrentRoom(false);
           }
-          if (urlRoomId) fetchRoomWills(urlRoomId); // 获取遗嘱
+          if (urlRoomId) fetchRoomWills(urlRoomId);
         } catch (err) {
           console.error(`Error in initializeData for room ${urlRoomId}:`, err);
           setError(`Failed to load room data for ${urlRoomId}. Please try again.`);
@@ -262,13 +275,23 @@ const InteractivePage: React.FC = () => {
           setIsLoadingCurrentRoom(false);
         }
       } else {
-        // 如果没有指定房间，只显示房间列表
         setIsLoadingCurrentRoom(false);
       }
     };
     
     initializeData();
   }, [location, urlRoomId, fetchAllRooms, fetchRoomWills]);
+  
+  // 在渲染前检查 currentRoom 数据
+  useEffect(() => {
+    if (currentRoom) {
+      console.log('[InteractivePage] Current room data:', {
+        roomId: currentRoom.roomId,
+        deceasedName: currentRoom.deceasedName,
+        isOrganizer: currentRoom.isOrganizer
+      });
+    }
+  }, [currentRoom]);
   
   // 处理从RoomList选择房间
   const handleRoomSelect = (room: FuneralRoom) => {
@@ -434,13 +457,16 @@ const InteractivePage: React.FC = () => {
                 src={currentRoom.deceasedImage || currentRoom.backgroundImage}
                 alt={currentRoom.deceasedName}
                 className="hero-image"
+                style={{ width: '400px', height: '400px', objectFit: 'cover', borderRadius: '8px' }}
               />
+              <div className="deceased-info">
+                <h1 className="hero-name">{currentRoom.title || currentRoom.deceasedName}</h1>
+                <p className="hero-subtitle">ID: {currentRoom.roomId}</p>
+              </div>
             </div>
-            <h1 className="hero-name">{currentRoom.deceasedName}</h1>
-            <p className="hero-subtitle">Room ID: {currentRoom.roomId}</p>
           </section>
           
-          {/* 互动功能区域 - 现在包含了画板、音乐播放器和遗嘱列表 */}
+          {/* 互动功能区域 */}
           <InteractionSection 
             roomData={convertToRoomData(currentRoom)} 
             onWillSuccessfullyCreated={handleWillCreated}
@@ -450,6 +476,17 @@ const InteractivePage: React.FC = () => {
             onUpdateWill={handleUpdateWillInRoom}
             isOrganizer={true}
           />
+
+          {/* 音乐播放器 */}
+          <div className="music-player-section">
+            <h2>Memorial Music</h2>
+            <div className="music-player-wrapper">
+              <MusicPlayer 
+                className="embedded-player"
+                defaultMusic="/music/Remember_Me_Coco.mp3"
+              />
+            </div>
+          </div>
         </>
       ) : (
         /* 如果没有当前房间，显示欢迎信息 */
