@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SharedCanvas from '../components/SharedCanvas';
 import MusicPlayer from '../components/MusicPlayer';
+import { ChatBox } from '../components/ChatBox';
 import '../App.css';
 import './InteractivePage.css';
 
@@ -41,6 +42,15 @@ const InteractivePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
+  const [userId] = useState(() => `user_${Math.random().toString(36).substr(2, 9)}`);
+  const [username] = useState(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user.username || `访客_${Math.floor(Math.random() * 1000)}`;
+    } catch {
+      return `访客_${Math.floor(Math.random() * 1000)}`;
+    }
+  });
 
   // Get room data from location state
   useEffect(() => {
@@ -108,7 +118,17 @@ const InteractivePage: React.FC = () => {
       {/* Drawing canvas */}
       <section className="drawing-area">
         <h2>Collaborative Drawing Board</h2>
-        <SharedCanvas roomId={roomData.roomId} />
+        <SharedCanvas roomId={roomData.roomId} userId={userId} />
+      </section>
+
+      {/* Chat section */}
+      <section className="chat-section">
+        <h2>Memorial Chat</h2>
+        <ChatBox 
+          roomId={roomData.roomId} 
+          userId={userId} 
+          username={username} 
+        />
       </section>
 
       {/* Interaction cards */}

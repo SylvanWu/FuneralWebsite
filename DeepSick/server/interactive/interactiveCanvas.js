@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import Canvas from '../models/Canvas.js';
+import ChatMessage from '../models/ChatMessage.js';
 
 // Interface for canvas state
 const canvasStates = {};
@@ -55,8 +56,10 @@ export const initializeCanvasSocket = (io) => {
     console.log('Canvas client connected');
 
     // Handle room joining
-    socket.on('joinRoom', (roomId) => {
+    socket.on('joinRoom', async (data) => {
+      const { roomId, username } = data;
       socket.join(roomId);
+      
       // Send current canvas states for this room
       if (canvasStates[roomId]) {
         socket.emit('canvasStates', canvasStates[roomId]);
@@ -64,6 +67,61 @@ export const initializeCanvasSocket = (io) => {
         canvasStates[roomId] = {};
         socket.emit('canvasStates', {});
       }
+
+      // Load chat history
+      try {
+        const messages = await ChatMessage.find({ roomId })
+          .sort({ timestamp: -1 })
+          .limit(50)
+          .lean();
+        socket.emit('chat-history', messages.reverse());
+      } catch (err) {
+        console.error('Failed to load chat history:', err);
+      }
+
+      // Notify others about new user
+      socket.to(roomId).emit('user-joined', {
+        userId: socket.id,
+        username,
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // Handle chat messages
+    socket.on('chat-message', async (data) => {
+      console.log('收到前端消息', data); // 调试用
+      const { roomId, message, username, userId } = data;
+      try {
+        // Save message to database
+        const chatMessage = new ChatMessage({
+          roomId,
+          userId,
+          username,
+          message,
+          timestamp: new Date()
+        });
+        await chatMessage.save();
+
+        // Broadcast message to room
+        io.to(roomId).emit('chat-message', {
+          userId,
+          username,
+          message,
+          timestamp: chatMessage.timestamp
+        });
+      } catch (err) {
+        console.error('Failed to save chat message:', err);
+        socket.emit('error', 'Failed to send message');
+      }
+    });
+
+    // Handle user leaving
+    socket.on('leaveRoom', (roomId) => {
+      socket.leave(roomId);
+      socket.to(roomId).emit('user-left', {
+        userId: socket.id,
+        timestamp: new Date().toISOString()
+      });
     });
 
     // Handle canvas selection
@@ -166,6 +224,15 @@ export const initializeCanvasSocket = (io) => {
 
     socket.on('disconnect', () => {
       console.log('Canvas client disconnected');
+      // Notify all rooms the user was in
+      socket.rooms.forEach(roomId => {
+        if (roomId !== socket.id) { // socket.id is always in rooms
+          socket.to(roomId).emit('user-left', {
+            userId: socket.id,
+            timestamp: new Date().toISOString()
+          });
+        }
+      });
     });
   });
 };
