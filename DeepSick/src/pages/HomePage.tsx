@@ -8,6 +8,7 @@ const HomePage: React.FC = () => {
   const [videoEnded, setVideoEnded] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [skipVideo, setSkipVideo] = useState(false);
   
   // Check if user is authenticated
   useEffect(() => {
@@ -32,6 +33,17 @@ const HomePage: React.FC = () => {
   // Handle video loaded
   const handleVideoLoaded = () => {
     setIsVideoLoading(false);
+  };
+
+  // Handle skip button click
+  const handleSkip = () => {
+    if (videoRef.current) {
+      // 设置视频时间到最后一秒
+      videoRef.current.currentTime = videoRef.current.duration - 1;
+      // 继续播放最后一秒
+      videoRef.current.play();
+    }
+    setSkipVideo(true);
   };
 
   // Preload video and setup video element
@@ -72,6 +84,15 @@ const HomePage: React.FC = () => {
         </div>
       )}
       
+      <div className="skip-button-container">
+        <button 
+          className="skip-button"
+          onClick={handleSkip}
+        >
+          Skip
+        </button>
+      </div>
+      
       <div className="video-container">
         <video 
           ref={videoRef}
@@ -87,7 +108,7 @@ const HomePage: React.FC = () => {
         </video>
       </div>
       
-      {videoEnded && (
+      {(videoEnded || skipVideo) && (
         <div className="auth-buttons-container">
           <h1 className="app-title">Digital Memorial Hall</h1>
           <p className="app-subtitle">Remember and Honor</p>
