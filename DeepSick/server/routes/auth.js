@@ -45,27 +45,20 @@ const upload = multer({ storage });
  *          4. Return 201 on success, 409 on conflict
  */
 router.post('/register', async (req, res) => {
-    const { username, password, userType } = req.body;
-    
+    const { username, password, userType, email } = req.body;
     try {
-        // 1. Encrypt password
         const hashedPwd = await bcrypt.hash(password, 10);
-
         let user;
         switch(userType) {
             case 'organizer':
-                user = new Organizer({ username, password: hashedPwd });
+                user = new Organizer({ username, password: hashedPwd, email });
                 break;
             case 'visitor':
-                user = new Visitor({ username, password: hashedPwd });
-                break;
-            case 'lovedOne':
-                user = new LovedOne({ username, password: hashedPwd });
+                user = new Visitor({ username, password: hashedPwd, email });
                 break;
             default:
                 return res.status(400).json({ message: 'Invalid user type' });
         }
-        
         await user.save();
         res.status(201).json({ message: 'Registration successful' });
     } catch (error) {
@@ -134,28 +127,41 @@ router.post('/login', async (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', authMiddleware, async (req, res) => {
-    const userId = req.user && req.user.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+router.put('/profile', authMiddleware(), async (req, res) => {
+    const userId = req.user?.userId;
+    const userType = req.user?.userType;
+    if (!userId || !userType) return res.status(401).json({ message: 'Unauthorized' });
 
-    const { nickname, phone, email, address, avatar } = req.body;
+    const { nickname, email, address, avatar } = req.body;
+    const updateData = { nickname, email, address, avatar };
+
     try {
-        const user = await User.findByIdAndUpdate(
+        let UserModel;
+        switch(userType) {
+            case 'organizer':
+                UserModel = Organizer;
+                break;
+            case 'visitor':
+                UserModel = Visitor;
+                break;
+            default:
+                return res.status(400).json({ message: 'Invalid user type in token' });
+        }
+        const updatedUser = await UserModel.findByIdAndUpdate(
             userId,
-            { nickname, phone, email, address, avatar },
-            { new: true }
+            updateData,
+            { new: true, runValidators: true }
         );
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!updatedUser) return res.status(404).json({ message: 'User not found' });
         res.json({
             user: {
-                _id: user._id,
-                username: user.username,
-                nickname: user.nickname,
-                role: user.role,
-                phone: user.phone,
-                email: user.email,
-                address: user.address,
-                avatar: user.avatar
+                _id: updatedUser._id,
+                username: updatedUser.username,
+                nickname: updatedUser.nickname,
+                userType: userType,
+                email: updatedUser.email,
+                address: updatedUser.address,
+                avatar: updatedUser.avatar
             }
         });
     } catch (err) {
