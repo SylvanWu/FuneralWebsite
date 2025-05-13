@@ -5,7 +5,11 @@
 import axios from 'axios';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-const API = axios.create({ baseURL });
+const API = axios.create({ 
+    baseURL,
+    timeout: 30000, // 30秒超时
+    // 移除可能导致CORS问题的自定义头
+});
 
 /* ---------- inject the JWT token ---------- */
 API.interceptors.request.use(
@@ -15,22 +19,73 @@ API.interceptors.request.use(
             cfg.headers = cfg.headers ?? {};
             cfg.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // 图片加载请求添加时间戳参数避免缓存，而不是通过请求头
+        if (cfg.url?.includes('/uploads/')) {
+            const timestamp = new Date().getTime();
+            cfg.url = cfg.url.includes('?') 
+                ? `${cfg.url}&_t=${timestamp}` 
+                : `${cfg.url}?_t=${timestamp}`;
+        }
+        
         return cfg;
     },
     err => Promise.reject(err),
 );
 
+// 添加响应拦截器处理错误
+API.interceptors.response.use(
+    response => response,
+    async error => {
+        const originalRequest = error.config;
+        
+        // 避免重试循环
+        if (!originalRequest || originalRequest._retry) {
+            return Promise.reject(error);
+        }
+
+        // 标记此请求已尝试过重试
+        originalRequest._retry = true;
+        
+        // 图片加载错误不自动重试，让组件层面处理
+        if (originalRequest.url?.includes('/uploads/')) {
+            return Promise.reject(error);
+        }
+        
+        // 如果是网络错误或超时错误，则重试一次
+        if (error.message.includes('Network Error') || 
+            error.code === 'ECONNABORTED' || 
+            (error.response && (error.response.status >= 500 || error.response.status === 429))) {
+            
+            console.log('API错误, 正在重试:', error.message, originalRequest.url);
+            
+            // 等待1秒后重试
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return API(originalRequest);
+        }
+        
+        return Promise.reject(error);
+    }
+);
+
 /* ---------- Memories ---------- */
 export const fetchMemories = (roomId?: string) => {
     const endpoint = roomId ? `/memories?roomId=${roomId}` : '/memories';
-    return API.get(endpoint).then(r => r.data);
+    return API.get(endpoint)
+        .then(r => r.data)
+        .catch(err => {
+            console.error('Fetch memories error:', err);
+            throw err;
+        });
 };
 
 export const createMemory = (fd: FormData) => {
     return API.post('/memories', fd, {
         headers: {
             'Content-Type': 'multipart/form-data'
-        }
+        },
+        // 上传可能需要更长时间
+        timeout: 60000
     })
     .then(r => {
         console.log('Memory creation response:', r.data);

@@ -8,6 +8,9 @@ interface MemoryCardProps {
     canDelete?: boolean;
 }
 
+// 默认图片，用于图片加载失败或URL为空时显示
+const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f0f0f0"/%3E%3Cpath d="M30,40 L70,40 L70,60 L30,60 Z" fill="%23ddd"/%3E%3Ctext x="50" y="50" font-family="Arial" font-size="8" text-anchor="middle" alignment-baseline="middle" fill="%23999"%3EImage%3C/text%3E%3C/svg%3E';
+
 const MemoryCard: React.FC<MemoryCardProps> = ({
     memory,
     onDeleteMemory,
@@ -17,7 +20,8 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
     const [isDeleting, setIsDeleting] = useState(false);
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const [imageError, setImageError] = useState(false);
-    const [imageSrc, setImageSrc] = useState<string>(memory.preview);
+    const [imageSrc, setImageSrc] = useState<string | null>(null);
+    const [attemptCount, setAttemptCount] = useState(0);
 
     /* Entry animation, runs only once on initial mount */
     useEffect(() => {
@@ -28,90 +32,188 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
     /* 修复路径并处理图片URL */
     useEffect(() => {
         if (memory.type === 'image') {
-            // 修复路径中的反斜杠问题
-            let src = memory.preview;
+            // 重置加载状态
+            setImageError(false);
+            setAttemptCount(0);
             
-            // 1. 将所有反斜杠替换为正斜杠
-            src = src.replace(/\\/g, '/');
-            
-            // 2. 处理相对路径
-            if (src && !src.startsWith('http') && !src.startsWith('blob:') && !src.startsWith('data:')) {
-                // 2.1 构建基础URL
-                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-                
-                // 2.2 移除多余的server前缀（如果存在）
-                if (src.startsWith('server/')) {
-                    src = src.replace(/^server\//, '');
-                }
-                
-                // 2.3 构建完整路径
-                src = `${baseUrl}/uploads/${src.replace(/^uploads\//, '')}`;
-            }
-            
-            console.log('Memory image processing:', { 
-                original: memory.preview, 
-                processed: src 
-            });
-            
-            setImageSrc(src);
-            
-            const img = new Image();
-            img.onload = () => {
-                console.log('Image loaded successfully:', src);
-                // 计算合适的显示尺寸
-                const maxWidth = 800; // 最大宽度
-                const maxHeight = 600; // 最大高度
-                let width = img.width;
-                let height = img.height;
-
-                // 如果图片尺寸超过最大限制，按比例缩放
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width *= ratio;
-                    height *= ratio;
-                }
-
-                setImageSize({ width, height });
-                setImageError(false);
-            };
-            
-            img.onerror = (err) => {
-                console.error('Failed to load image:', src, err);
-                
-                // 尝试另一种URL格式
-                if (src !== memory.preview) {
-                    console.log('Trying alternative URL format');
-                    // 尝试直接访问uploads文件夹
-                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-                    const fileName = src.split('/').pop(); // 获取文件名部分
-                    const altSrc = `${baseUrl.replace(/\/api$/, '')}/uploads/${fileName}`;
-                    
-                    console.log('Alternative URL:', altSrc);
-                    setImageSrc(altSrc);
-                    
-                    // 使用替代URL重新加载
-                    const altImg = new Image();
-                    altImg.onload = () => {
-                        console.log('Alternative image URL loaded successfully');
-                        setImageError(false);
-                    };
-                    altImg.onerror = () => {
-                        console.error('Alternative image URL also failed');
-                        // 最后尝试直接用原始URL
-                        const originalFixed = memory.preview.replace(/\\/g, '/');
-                        console.log('Last attempt with original URL (fixed slashes):', originalFixed);
-                        setImageSrc(originalFixed);
-                        setImageError(true);
-                    };
-                    altImg.src = altSrc;
-                } else {
-                    setImageError(true);
-                }
-            };
-            
-            img.src = src;
+            // 处理图片URL
+            processImageUrl(memory.preview);
         }
     }, [memory]);
+
+    // 图片URL处理函数
+    const processImageUrl = (originalUrl: string) => {
+        try {
+            // 如果URL为空或无效，使用默认图片并显示错误
+            if (!originalUrl || originalUrl.trim() === '') {
+                console.error('Empty or invalid image URL');
+                setImageSrc(DEFAULT_IMAGE);
+                setImageError(true);
+                return;
+            }
+
+            // 清理和标准化URL
+            let processedUrl = originalUrl.trim();
+            
+            // 1. 替换反斜杠
+            processedUrl = processedUrl.replace(/\\/g, '/');
+            
+            // 2. 已经是完整URL的情况
+            if (processedUrl.startsWith('blob:') || processedUrl.startsWith('data:')) {
+                console.log('Using direct blob/data URL:', processedUrl);
+                setImageSrc(processedUrl);
+                return;
+            }
+
+            // 3. 相对路径处理
+            if (!processedUrl.startsWith('http')) {
+                // 获取基础URL，但移除/api后缀，因为静态资源不在/api路径下
+                const baseUrlWithApi = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+                const baseUrl = baseUrlWithApi.replace(/\/api$/, '');
+                
+                // 移除server前缀和多余的路径
+                processedUrl = processedUrl
+                    .replace(/^server\/uploads\//, '')
+                    .replace(/^uploads\//, '');
+                
+                // 确保处理后的URL不为空
+                if (!processedUrl || processedUrl === '') {
+                    console.error('Invalid image path after processing');
+                    setImageSrc(DEFAULT_IMAGE);
+                    setImageError(true);
+                    return;
+                }
+                
+                // 构建不同的URL选项尝试加载
+                const options = [
+                    `${baseUrl}/uploads/${processedUrl}`,
+                    `${baseUrlWithApi}/uploads/${processedUrl}`,
+                    `http://localhost:5001/uploads/${processedUrl}`
+                ];
+                
+                loadImageWithFallbacks(options);
+                return;
+            }
+            
+            // 4. 已经是HTTP URL但可能格式不正确
+            // 尝试移除可能的/api路径
+            if (processedUrl.includes('/api/uploads/')) {
+                processedUrl = processedUrl.replace('/api/uploads/', '/uploads/');
+            }
+            
+            setImageSrc(processedUrl);
+            console.log('Using provided HTTP URL:', processedUrl);
+        } catch (err) {
+            console.error('Error processing image URL:', err);
+            setImageSrc(DEFAULT_IMAGE);
+            setImageError(true);
+        }
+    };
+
+    // 尝试多个URL加载图片
+    const loadImageWithFallbacks = (urlOptions: string[]) => {
+        const currentOption = attemptCount < urlOptions.length ? urlOptions[attemptCount] : null;
+        
+        if (!currentOption) {
+            console.error('All URL options failed, using default image');
+            setImageSrc(DEFAULT_IMAGE);
+            setImageError(true);
+            return;
+        }
+        
+        console.log(`Trying URL option ${attemptCount + 1}/${urlOptions.length}:`, currentOption);
+        setImageSrc(currentOption);
+    };
+
+    // 图片加载成功处理
+    const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+        try {
+            const img = event.currentTarget;
+            console.log('Image loaded successfully:', imageSrc);
+            
+            // 计算适当尺寸
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let width = img.naturalWidth;
+            let height = img.naturalHeight;
+
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                width *= ratio;
+                height *= ratio;
+            }
+
+            setImageSize({ width, height });
+            setImageError(false);
+        } catch (err) {
+            console.error('Error in image load handler:', err);
+        }
+    };
+
+    // 图片加载失败处理
+    const handleImageError = () => {
+        // 如果当前已经是默认图片，不要再尝试，避免无限循环
+        if (imageSrc === DEFAULT_IMAGE) return;
+        
+        console.error('Failed to load image:', imageSrc);
+        
+        // 尝试下一个URL选项
+        const nextAttempt = attemptCount + 1;
+        if (nextAttempt < 5) { // 最多尝试5次不同的URL格式
+            setAttemptCount(nextAttempt);
+            
+            // 构建备用URL
+            if (nextAttempt === 1) {
+                // 如果URL包含/api/uploads/，尝试移除/api
+                if (imageSrc && imageSrc.includes('/api/uploads/')) {
+                    const altUrl = imageSrc.replace('/api/uploads/', '/uploads/');
+                    console.log('Trying URL without /api prefix:', altUrl);
+                    setImageSrc(altUrl);
+                    return;
+                }
+                
+                // 尝试不带/api的路径
+                const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '');
+                const fileName = imageSrc && imageSrc.split('/').pop();
+                if (fileName) {
+                    const altUrl = `${baseUrl}/uploads/${fileName}`;
+                    console.log('Trying alternative URL format:', altUrl);
+                    setImageSrc(altUrl);
+                }
+            } else if (nextAttempt === 2) {
+                // 尝试直接使用localhost
+                const fileName = imageSrc && imageSrc.split('/').pop();
+                if (fileName) {
+                    const altUrl = `http://localhost:5001/uploads/${fileName}`;
+                    console.log('Trying localhost URL:', altUrl);
+                    setImageSrc(altUrl);
+                }
+            } else if (nextAttempt === 3) {
+                // 尝试直接使用localhost并加上/api
+                const fileName = imageSrc && imageSrc.split('/').pop();
+                if (fileName) {
+                    const altUrl = `http://localhost:5001/api/uploads/${fileName}`;
+                    console.log('Trying localhost API URL:', altUrl);
+                    setImageSrc(altUrl);
+                }
+            } else {
+                // 最后尝试原始URL
+                console.log('Trying original URL as fallback');
+                const originalFixed = memory.preview && memory.preview.replace(/\\/g, '/');
+                if (originalFixed) {
+                    setImageSrc(originalFixed);
+                } else {
+                    setImageSrc(DEFAULT_IMAGE);
+                    setImageError(true);
+                }
+            }
+        } else {
+            // 所有尝试都失败，使用默认图片
+            console.error('All image loading attempts failed, using default image');
+            setImageSrc(DEFAULT_IMAGE);
+            setImageError(true);
+        }
+    };
 
     const formatDate = (date: Date) =>
         date.toLocaleString('en-US', {
@@ -143,33 +245,45 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                         {imageError ? (
                             <div className="text-red-500 p-4 bg-red-50 rounded-lg">
                                 <p>Failed to load image</p>
-                                <p className="text-xs overflow-auto max-w-md">{memory.preview}</p>
-                                {imageSrc !== memory.preview && (
+                                <p className="text-xs overflow-auto max-w-md">{memory.preview || 'No image URL'}</p>
+                                {imageSrc && imageSrc !== DEFAULT_IMAGE && imageSrc !== memory.preview && (
                                     <p className="text-xs overflow-auto max-w-md">Tried: {imageSrc}</p>
                                 )}
                                 <button 
                                     className="mt-2 px-2 py-1 bg-blue-500 text-white text-xs rounded"
-                                    onClick={() => window.open(imageSrc, '_blank')}
+                                    onClick={() => imageSrc && window.open(imageSrc, '_blank')}
+                                    disabled={!imageSrc || imageSrc === DEFAULT_IMAGE}
                                 >
                                     打开图片链接
                                 </button>
+                                <button 
+                                    className="mt-2 ml-2 px-2 py-1 bg-green-500 text-white text-xs rounded"
+                                    onClick={() => {
+                                        setImageError(false);
+                                        setAttemptCount(0);
+                                        processImageUrl(memory.preview);
+                                    }}
+                                >
+                                    重试加载
+                                </button>
                             </div>
                         ) : (
-                            <img
-                                src={imageSrc}
-                                alt="Memory"
-                                className="rounded-lg"
-                                style={{
-                                    width: imageSize.width || 'auto',
-                                    height: imageSize.height || 'auto',
-                                    maxWidth: '100%',
-                                    objectFit: 'contain'
-                                }}
-                                onError={(e) => {
-                                    console.error('Image error on render:', e);
-                                    setImageError(true);
-                                }}
-                            />
+                            // 只在imageSrc有值时渲染图片，避免空src警告
+                            imageSrc && (
+                                <img
+                                    src={imageSrc}
+                                    alt="Memory"
+                                    className="rounded-lg"
+                                    style={{
+                                        width: imageSize.width || 'auto',
+                                        height: imageSize.height || 'auto',
+                                        maxWidth: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                    onLoad={handleImageLoad}
+                                    onError={handleImageError}
+                                />
+                            )
                         )}
                     </div>
                 );
