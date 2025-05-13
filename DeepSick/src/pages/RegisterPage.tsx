@@ -1,15 +1,9 @@
-
+// ✅ RegisterPage.tsx
 import React, { useEffect, useState } from 'react';
-<<<<<<< HEAD
 // import { registerUser } from '../api'; // Removed unused import
 import { useNavigate, Link } from 'react-router-dom';
 // import { isValidPhoneNumber } from 'libphonenumber-js'; // Removed unused import
 import API from "../api";
-=======
-import { useNavigate, Link } from 'react-router-dom';
-import API from '../api';
-import { isValidPhoneNumber } from 'libphonenumber-js';
->>>>>>> 40ab7f3cf3f69eb6a4a237dc74b0884ac1e1ea79
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -72,12 +66,7 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => nav('/login'), 1500);
     } catch (err: any) {
-      // Handle duplicate username error specifically
-      if (err.response?.status === 409) {
-        setError('Registration failed: Username already exists');
-      } else {
-        setError(err.response?.data?.message || 'Registration failed');
-      }
+      setError(err.response?.data?.message || 'Registration failed');
     }
   };
 
@@ -89,9 +78,10 @@ export default function RegisterPage() {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
+        backgroundAttachment: 'fixed',
       }}
     >
+
       {/* Registration card */}
       <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out"
            style={{ maxWidth: '550px', minWidth: '320px', backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -120,14 +110,8 @@ export default function RegisterPage() {
         {success && (
           <div className="bg-green-50/70 backdrop-blur-sm border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 text-center font-medium">
             <div className="flex items-center justify-center">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
               </svg>
               <span>Success! Redirecting…</span>
             </div>
@@ -212,17 +196,23 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Submit button + login link */}
+          {/* Register button */}
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+              style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)' }}
             >
               Create Account
             </button>
-            <p className="mt-6 text-sm text-center text-gray-600">
+
+            {/* Login link */}
+            <p className="mt-8 text-sm text-center text-gray-600" style={{ paddingTop: '1vh' }}>
               Already have an account?{' '}
-              <Link to="/login" className="text-green-600 hover:text-green-800 font-medium">
+              <Link
+                to="/login"
+                className="text-green-600 hover:text-green-800 font-medium"
+              >
                 Login here
               </Link>
             </p>
