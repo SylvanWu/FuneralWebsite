@@ -38,7 +38,7 @@ export default function LoginPage({ setToken }: LoginPageProps) {
       // Redirect based on user type - default to funeralhall for all users
       switch(response.data.user.userType) {
         case 'organizer':
-          navigate('/funeralhall');
+          navigate('/organizer-dashboard');
           break;
         case 'visitor':
           navigate('/funeralhall');

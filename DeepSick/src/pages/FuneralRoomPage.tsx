@@ -608,6 +608,14 @@ const FuneralRoomPage: React.FC = () => {
         // Save to database
         await saveFuneralRoom(updatedRoom);
         console.log('Manually saved funeral room with all data');
+        
+        // Show confirmation dialog
+        const shouldNavigate = window.confirm(`Room Saved Successfully!\nRoom ID: ${roomId}\n\nDo you want to go back to the funeral hall? Click 'Cancel' to continue editing.`);
+        
+        // Only navigate if user clicks OK
+        if (shouldNavigate) {
+          navigate('/funeralhall');
+        }
       } else {
         // Create a new room if it doesn't exist (fallback)
         const newRoom: FuneralRoom = {
@@ -622,15 +630,15 @@ const FuneralRoomPage: React.FC = () => {
           updatedAt: Date.now(),
         };
         await saveFuneralRoom(newRoom);
+        
+        // Show confirmation dialog
+        const shouldNavigate = window.confirm(`Room Saved Successfully!\nRoom ID: ${roomId}\n\nDo you want to go back to the funeral hall? Click 'Cancel' to continue editing.`);
+        
+        // Only navigate if user clicks OK
+        if (shouldNavigate) {
+          navigate('/funeralhall');
+        }
       }
-      
-      // Show success message
-      setSaveMessage('Funeral room saved successfully!');
-      
-      // Hide message after 3 seconds
-      setTimeout(() => {
-        setSaveMessage('');
-      }, 3000);
     } catch (error) {
       console.error('Error saving funeral room:', error);
       setSaveMessage('Error saving funeral room');
@@ -638,36 +646,6 @@ const FuneralRoomPage: React.FC = () => {
       setIsSaving(false);
     }
   };
-
-  // Add debugging code before "return"
-  useEffect(() => {
-    console.log('Current state:', state);
-    console.log('Available background images:', backgroundImageMap);
-    
-    // Confirm whether all the pictures have been imported correctly
-    Object.entries(backgroundImageMap).forEach(([type, imgSrc]) => {
-      console.log(`Image for ${type}:`, imgSrc);
-    });
-  }, [state.backgroundImage, state.funeralType]);
-  
-  // Add keyboard event handling for Enter key to save cropped image and Escape to cancel
-  useEffect(() => {
-    if (!isCropping || !imageToCrop) return;
-    
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSaveCroppedImage();
-      } else if (e.key === 'Escape') {
-        handleCancelCrop();
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [isCropping, imageToCrop, croppedAreaPixels, handleSaveCroppedImage, handleCancelCrop]);
 
   // Handle vector item drag start
   const handleVectorDragStart = (e: React.DragEvent<HTMLDivElement>, item: VectorItem) => {
@@ -1167,10 +1145,6 @@ const FuneralRoomPage: React.FC = () => {
               >
                 {isSaving ? 'Saving...' : 'Save Room'}
               </button>
-              
-              {saveMessage && (
-                <div className="mt-2 text-green-600">{saveMessage}</div>
-              )}
             </div>
           </div>
           

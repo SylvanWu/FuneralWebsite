@@ -97,7 +97,16 @@ export default function App() {
       <div className="min-h-screen bg-transparent text-gray-800">
         <Routes>
           {/* Root path - Homepage with opening animation */}
-          <Route path="/" element={<HomePage />} />
+          <Route 
+            path="/" 
+            element={
+              token ? (
+                <Navigate to="/create-funeral" replace />
+              ) : (
+                <HomePage />
+              )
+            } 
+          />
           
           {/* Login/Register pages */}
           <Route path="/login" element={<LoginPage setToken={setToken} />} />
