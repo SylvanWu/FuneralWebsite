@@ -10,6 +10,17 @@
   flex-wrap: wrap;
 }
 
+.simplified-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px 40px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: relative;
+}
+
 .nav-left {
   flex: 0.5;
 }
@@ -30,12 +41,10 @@
 }
 
 .right-btns {
-  flex: 0.5;
   display: flex;
   justify-content: flex-end;
   gap: 16px;
   align-items: center;
-  min-width: 0;
 }
 
 .logout-btn {
@@ -128,6 +137,60 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 220px;
+  padding: 24px;
+}
+
+.dropdown-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #eee;
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+
+.dropdown-nickname {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.dropdown-edit-btn {
+  width: 100%;
+  padding: 10px 0;
+  background: #4ade80;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 12px;
+  transition: background 0.2s;
+}
+
+.dropdown-edit-btn:hover {
+  background: #22c55e;
+}
+
+.dropdown-password-btn {
+  width: 100%;
+  padding: 10px 0;
+  background: #f3f4f6;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-password-btn:hover {
+  background: #e5e7eb;
 }
 
 @keyframes fadeIn {
@@ -142,74 +205,26 @@
   margin-bottom: 10px;
 }
 
-.dropdown-avatar {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  border: 2px solid #e5e7eb;
-  object-fit: cover;
-  margin-bottom: 6px;
-}
-
-.dropdown-nickname {
-  font-size: 16px;
-  font-weight: bold;
-  color: #222;
-  margin-bottom: 4px;
-}
-
-.dropdown-edit-btn {
-  width: 80%;
-  padding: 8px 0;
-  background: #4ade80;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 15px;
-  margin-top: 4px;
-  transition: background 0.2s;
-}
-.dropdown-edit-btn:hover {
-  background: #22c55e;
-}
-
 /* 响应式：小屏时按钮和菜单自动换行 */
 @media (max-width: 1200px) {
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 10px 10px 6px 10px;
+  .topbar, .simplified-topbar {
+    padding: 10px 20px;
   }
-  .nav-center {
-    justify-content: center;
-    margin-bottom: 8px;
-    min-width: 0;
+  
+  .avatar-img {
+    width: 32px;
+    height: 32px;
   }
-  .nav-links {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .right-btns {
-    justify-content: flex-start;
-    margin-bottom: 8px;
-  }
-  .nav-links a {
-    font-size: 14px;
-    padding: 5px 10px;
-  }
-  .dreamlist-btn {
-    font-size: 15px;
-    padding: 8px 16px;
-  }
+  
   .logout-btn {
-    font-size: 13px;
+    font-size: 14px;
     padding: 5px 12px;
   }
-  .avatar-img {
-    width: 28px;
-    height: 28px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+    margin: 16px auto;
   }
 }

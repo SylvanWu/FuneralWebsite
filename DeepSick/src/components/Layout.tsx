@@ -1,26 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import './Layout.css'; // CSS file, newly created or existing
 import defaultAvatar from '../assets/avatar.png'; // Adjust the path as needed
 import ChangePasswordModal from '../components/ChangePasswordModal';
 
-export default function Layout({ onLogout }) {
-  const location = useLocation();
+interface LayoutProps {
+  onLogout: () => void;
+}
+
+export default function Layout({ onLogout }: LayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [showPwdModal, setShowPwdModal] = useState(false);
 
   // Read user info, fallback to default avatar
-  const user = JSON.parse(localStorage.getItem('user')) || {};
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
   const avatar = user.avatar || defaultAvatar;
   const displayName = user.nickname || user.username || 'Not Logged In';
   const isLoggedIn = !!localStorage.getItem('token');
-  const userType = user.userType; // visitor, organizer, lovedOne
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     }
@@ -32,122 +34,50 @@ export default function Layout({ onLogout }) {
 
   return (
     <div>
-      <nav className="topbar">
-        <div className="nav-left"></div>
-        <div className="nav-center">
-          <div className="nav-links">
-            {userType === 'organizer' ? (
-              <>
-                {/* Home link removed from navigation */}
-                <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
-                {/* <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link> */}
-                {/* <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link> */}
-                {/* <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link> */}
-                {/* <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link> */}
-                {/* <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link> */}
-                {/* <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
-                <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link> */}
-              </>
-            ) : (
-              <>
-                {/* Home link removed from navigation */}
-                <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
-                {/* <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
-                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
-                <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
-                <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link> */}
-              </>
-            )}
-          </div>
-        </div>
+      <nav className="simplified-topbar">
         <div className="right-btns">
-          <div className="avatar-dropdown" ref={menuRef} style={{ position: 'relative' }}>
-            <img
-              src={avatar}
-              alt="avatar"
-              className="avatar-img"
-              onClick={() => setMenuOpen(v => !v)}
-              style={{ cursor: 'pointer' }}
-            />
-            {menuOpen && (
-              <div
-                style={{
-                  minWidth: 220,
-                  background: '#fff',
-                  borderRadius: 16,
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-                  padding: 24,
-                  position: 'absolute',
-                  top: 50,
-                  right: 0,
-                  zIndex: 1000,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}
-              >
+          {isLoggedIn && (
+            <>
+              <div className="avatar-dropdown" ref={menuRef}>
                 <img
                   src={avatar}
                   alt="avatar"
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: '50%',
-                    border: '2px solid #eee',
-                    objectFit: 'cover',
-                    marginBottom: 12
-                  }}
+                  className="avatar-img"
+                  onClick={() => setMenuOpen(v => !v)}
                 />
-                <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>
-                  {displayName}
-                </div>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/profile');
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '10px 0',
-                    background: '#4ade80',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 8,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    marginBottom: 12,
-                    cursor: 'pointer',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseOver={e => (e.target.style.background = '#22c55e')}
-                  onMouseOut={e => (e.target.style.background = '#4ade80')}
-                >
-                  Edit Information
-                </button>
-                <button
-                  onClick={() => setShowPwdModal(true)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 0',
-                    background: '#f3f4f6',
-                    color: '#222',
-                    border: 'none',
-                    borderRadius: 8,
-                    fontWeight: 500,
-                    fontSize: 15,
-                    marginBottom: 0,
-                    cursor: 'pointer',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseOver={e => (e.target.style.background = '#e5e7eb')}
-                  onMouseOut={e => (e.target.style.background = '#f3f4f6')}
-                >
-                  Change Password
-                </button>
+                {menuOpen && (
+                  <div className="dropdown-menu">
+                    <img
+                      src={avatar}
+                      alt="avatar"
+                      className="dropdown-avatar"
+                    />
+                    <div className="dropdown-nickname">
+                      {displayName}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="dropdown-edit-btn"
+                    >
+                      Edit Information
+                    </button>
+                    <button
+                      onClick={() => setShowPwdModal(true)}
+                      className="dropdown-password-btn"
+                    >
+                      Change Password
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <button className="logout-btn" onClick={onLogout}>Logout</button>
+              <button className="logout-btn" onClick={onLogout}>
+                Logout
+              </button>
+            </>
+          )}
         </div>
       </nav>
       <main className="main-content">

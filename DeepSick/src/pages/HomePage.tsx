@@ -6,6 +6,7 @@ import homeVideo from '../assets/Home.mp4';
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [videoEnded, setVideoEnded] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // Check if user is authenticated
@@ -27,9 +28,50 @@ const HomePage: React.FC = () => {
       videoRef.current.currentTime = videoRef.current.duration;
     }
   };
+
+  // Handle video loaded
+  const handleVideoLoaded = () => {
+    setIsVideoLoading(false);
+  };
+
+  // Preload video and setup video element
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    
+    if (videoElement) {
+      // Add event listeners for video loading
+      videoElement.addEventListener('loadeddata', handleVideoLoaded);
+      
+      // Set low quality for mobile devices to improve performance
+      if (window.innerWidth <= 768) {
+        videoElement.setAttribute('playsinline', '');
+        
+        // Check if the browser supports video preload control
+        if ('connection' in navigator && (navigator as any).connection.saveData) {
+          // For devices on data-saver mode
+          videoElement.preload = 'metadata';
+        } else {
+          videoElement.preload = 'auto';
+        }
+      }
+    }
+    
+    return () => {
+      if (videoElement) {
+        videoElement.removeEventListener('loadeddata', handleVideoLoaded);
+      }
+    };
+  }, []);
   
   return (
     <div className="fullscreen-container">
+      {isVideoLoading && (
+        <div className="video-loading">
+          <div className="loading-spinner"></div>
+          <p>Loading experience...</p>
+        </div>
+      )}
+      
       <div className="video-container">
         <video 
           ref={videoRef}
@@ -38,6 +80,7 @@ const HomePage: React.FC = () => {
           muted 
           playsInline
           src={homeVideo}
+          onLoadedData={handleVideoLoaded}
           onEnded={handleVideoEnded}
         >
           Your browser does not support the video tag.
