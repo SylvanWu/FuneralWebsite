@@ -1,4 +1,4 @@
-.dream-card {
+dream-card {
   position: relative;
   /* Fixed width */
   width: 400px;
@@ -17,7 +17,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(90deg, #a3998c, #a8ac8e);
 }
 
 .dream-card::after {
@@ -27,7 +27,7 @@
   left: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, #3b82f6, #ec4899);
+  background: linear-gradient(180deg, #dbbc82, #d599b7);
 }
 
 .dream-list-title {
@@ -57,7 +57,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #8472f6;
+  background: #a19db8;
   color: white;
   font-size: 1.5rem;
   display: flex;
@@ -70,7 +70,7 @@
 }
 
 .add-button:hover {
-  background: #2563eb;
+  background: #829bd3;
   transform: scale(1.1);
 }
 
@@ -120,10 +120,12 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #fcdde0; /* Light pink */
+  background-color: #fcdde0;
+  /* Light pink */
   border: none;
   font-size: 1.2rem;
-  color: #e11d48; /* Dark pink to match background */
+  color: #e11d48;
+  /* Dark pink to match background */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,7 +135,8 @@
 }
 
 .canceladd-button:hover {
-  background-color: #fda4af; /* Deeper pink on hover */
+  background-color: #fda4af;
+  /* Deeper pink on hover */
   transform: scale(1.1);
 }
 
@@ -159,7 +162,8 @@
 }
 
 .edit-button {
-  background-color: #bfdbfe; /* Light blue */
+  background-color: #bfdbfe;
+  /* Light blue */
   color: #1e40af;
 }
 
@@ -168,7 +172,8 @@
 }
 
 .delete-button {
-  background-color: #fecaca; /* Light red */
+  background-color: #fecaca;
+  /* Light red */
   color: #991b1b;
 }
 
@@ -187,7 +192,7 @@
   top: 3px;
   left: 3px;
   z-index: 10;
-  background-color: #df66ae;
+  background-color: #cea4bd;
   border: none;
   border-radius: 50%;
   width: 40px;
@@ -200,11 +205,11 @@
 }
 
 /* .jirachi-icon {
-  width: 60px;
-  height: 60px;
-  cursor: pointer;
-  margin: 2rem auto;
-  display: block;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  margin: 2rem auto;
+  display: block;
 } */
 
 /* Additional style for shrunk state */
@@ -217,8 +222,10 @@
   height: 80px;
   cursor: pointer;
   transition: transform 0.3s ease;
-  cursor: grab; /* Show grab cursor on hover */
-  -webkit-user-drag: none; /* Safari compatibility */
+  cursor: grab;
+  /* Show grab cursor on hover */
+  -webkit-user-drag: none;
+  /* Safari compatibility */
 }
 
 .jirachi-icon-shrunk:hover {
@@ -226,13 +233,16 @@
 }
 
 .dream-shrink-container.shrunk {
-  padding: 40px; /* Only leave space for the top button */
-  height: 120px; /* Or your desired compact height */
+  padding: 40px;
+  /* Only leave space for the top button */
+  height: 120px;
+  /* Or your desired compact height */
   overflow: hidden;
 }
 
 .dream-card .dream-shrink-container.shrunk {
-  min-height: 120px; /* Prevent content residue display */
+  min-height: 120px;
+  /* Prevent content residue display */
 }
 
 /* Shrunk DreamCard becomes transparent and smaller */
@@ -255,12 +265,14 @@
 /* Edit toggle button */
 .edit-toggle-button {
   position: absolute;
-  right: 20px; /* More left than add-button */
+  right: 20px;
+  /* More left than add-button */
   bottom: -30px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #60a5fa; /* Blue tone */
+  background: #91b1dd;
+  /* Blue tone */
   color: white;
   font-size: 1.25rem;
   display: flex;
@@ -273,6 +285,56 @@
 }
 
 .edit-toggle-button:hover {
-  background: #2563eb;
+  background: #8aacf6;
   transform: scale(1.1);
+}
+
+/* RichTextEditor*/
+.rich-text-editor-container {
+  display: flex;
+  gap: 20px;
+}
+
+.rich-text-toolbar {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rich-text-toolbar button {
+  margin-bottom: 10px;
+}
+
+.color-button {
+  margin-right: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+}
+
+.color-button.red {
+  background-color: red;
+}
+
+.color-button.blue {
+  background-color: blue;
+}
+
+.color-button.green {
+  background-color: green;
+}
+
+.color-button.black {
+  background-color: black;
+}
+
+.rich-text-editor-content {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: white;
 }
