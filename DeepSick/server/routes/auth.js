@@ -38,7 +38,7 @@ const upload = multer({ storage });
 
 // Register new user
 router.post('/register', async (req, res) => {
-    const { username, password, userType } = req.body;
+    const { username, password, userType, email } = req.body;
     
     try {
         // 1. Encrypt password
@@ -47,13 +47,13 @@ router.post('/register', async (req, res) => {
         let user;
         switch(userType) {
             case 'organizer':
-                user = new Organizer({ username, password: hashedPwd });
+                user = new Organizer({ username, password: hashedPwd, email });
                 break;
             case 'visitor':
-                user = new Visitor({ username, password: hashedPwd });
+                user = new Visitor({ username, password: hashedPwd, email });
                 break;
             case 'lovedOne':
-                user = new LovedOne({ username, password: hashedPwd });
+                user = new LovedOne({ username, password: hashedPwd, email });
                 break;
             default:
                 return res.status(400).json({ message: 'Invalid user type' });
@@ -127,33 +127,85 @@ router.post('/login', async (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', authMiddleware, async (req, res) => {
-    const userId = req.user && req.user.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+router.put('/profile', authMiddleware(), async (req, res) => {
+    console.log('=== 收到 /auth/profile PUT 请求 ===');
+    // Get userId and userType from the authenticated user (set by authMiddleware)
+    const userId = req.user?.userId;
+    const userType = req.user?.userType;
+    console.log(`[PUT /auth/profile] userId: ${userId}, userType: ${userType}`); // Log user info
 
-    const { nickname, phone, email, address, avatar } = req.body;
+    if (!userId || !userType) {
+        console.error("[PUT /auth/profile] Unauthorized: Missing userId or userType in token");
+        return res.status(401).json({ message: 'Unauthorized or missing user info in token' });
+    }
+
+    // Destructure only the relevant fields from request body (exclude phone)
+    const { nickname, email, address, avatar } = req.body;
+    const updateData = { nickname, email, address, avatar };
+    console.log("[PUT /auth/profile] Update data from body:", updateData); // Log update data
+
     try {
-        const user = await User.findByIdAndUpdate(
+        let UserModel;
+        console.log("[PUT /auth/profile] Determining user model..."); // Log before switch
+        // Determine the correct model based on userType
+        switch(userType) {
+            case 'organizer':
+                UserModel = Organizer;
+                console.log("[PUT /auth/profile] Using Organizer model");
+                break;
+            case 'visitor':
+                UserModel = Visitor;
+                console.log("[PUT /auth/profile] Using Visitor model");
+                break;
+            case 'lovedOne':
+                UserModel = LovedOne;
+                console.log("[PUT /auth/profile] Using LovedOne model");
+                break;
+            default:
+                console.error(`[PUT /auth/profile] Invalid user type in token: ${userType}`);
+                return res.status(400).json({ message: 'Invalid user type in token' });
+        }
+
+        // Use the specific UserModel to find and update
+        console.log(`[PUT /auth/profile] Attempting findByIdAndUpdate for userId: ${userId}`); // Log before DB call
+        const updatedUser = await UserModel.findByIdAndUpdate(
             userId,
-            { nickname, phone, email, address, avatar },
-            { new: true }
+            updateData, // Use the cleaned updateData object
+            { new: true, runValidators: true } // Return updated doc, run schema validators
         );
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        res.json({
+        console.log("[PUT /auth/profile] findByIdAndUpdate result:", updatedUser); // Log after DB call
+
+        if (!updatedUser) {
+            console.warn(`[PUT /auth/profile] User not found for userId: ${userId}`);
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Construct the response payload correctly
+        const responsePayload = {
             user: {
-                _id: user._id,
-                username: user.username,
-                nickname: user.nickname,
-                role: user.role,
-                phone: user.phone,
-                email: user.email,
-                address: user.address,
-                avatar: user.avatar
+                _id: updatedUser._id,
+                username: updatedUser.username,
+                nickname: updatedUser.nickname,
+                userType: userType,
+                email: updatedUser.email,
+                address: updatedUser.address,
+                avatar: updatedUser.avatar
             }
-        });
+        };
+        console.log("[PUT /auth/profile] Sending success response:", responsePayload); // Log before response
+        res.json(responsePayload);
+
     } catch (err) {
-        console.error('Profile update error:', err);
-        res.status(500).json({ message: 'Update failed' });
+        // Log the full error details
+        console.error('[PUT /auth/profile] Error during profile update:', {
+            name: err.name,
+            message: err.message,
+            stack: err.stack,
+            userId: userId,
+            userType: userType,
+            updateData: updateData
+        });
+        res.status(500).json({ message: 'Update failed', error: err.message });
     }
 });
 

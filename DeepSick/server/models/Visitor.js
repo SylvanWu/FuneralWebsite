@@ -9,6 +9,8 @@ const visitorSchema = new mongoose.Schema({
   email: { type: String, default: '' },
   address: { type: String, default: '' },
   avatar: { type: String, default: '' },
+  // Visitor-specific field
+  visitHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Visit' }],
   // You can add more fields as needed
 });
 

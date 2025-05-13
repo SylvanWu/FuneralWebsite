@@ -39,6 +39,11 @@ app.use(cors({
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.originalUrl}`);
+  next();
+});
+
 app.use('/uploads',
     express.static(UPLOAD_DIR, { acceptRanges: false })
 );
@@ -50,6 +55,7 @@ app.use('/api/wills', willRoutes);
 app.use('/api/dreams', dreamRouter);
 app.use('/api/funerals', funeralRoutes);
 app.use('/api/interactive', interactiveRoutes);
+app.use('/auth', authRoutes);
 
 /* Health check endpoint */
 app.get('/api/health', (req, res) => {

@@ -20,6 +20,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_very_long_and_secure_secret_k
 
 // JWT verification middleware
 const auth = (userType) => async (req, res, next) => {
+    console.log('authMiddleware: start');
     try {
         console.log('=== Auth Middleware Start ===');
         console.log('Headers:', req.headers);
@@ -50,6 +51,7 @@ const auth = (userType) => async (req, res, next) => {
         }
 
         console.log('=== Auth Middleware Passed ===');
+        console.log('authMiddleware: end');
         next();
     } catch (error) {
         console.error('Auth Middleware Error:', {

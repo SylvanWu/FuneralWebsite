@@ -5,7 +5,7 @@ import defaultAvatar from '../assets/avatar.png';
 
 const backend = 'http://localhost:5001'; // Your backend address
 
-function getAvatarUrl(avatar) {
+function getAvatarUrl(avatar: string) {
   if (!avatar || avatar === defaultAvatar) return defaultAvatar;
   if (avatar.startsWith('/uploads')) return backend + avatar;
   return avatar;
@@ -15,20 +15,22 @@ export default function ProfilePage() {
   const navigate = useNavigate();
 
   // Read user info from localStorage
-  const user = JSON.parse(localStorage.getItem('user')) || {};
+  const userString = localStorage.getItem('user');
+  const user = userString ? JSON.parse(userString) : {};
+  console.log("👤 User data from localStorage:", user); // Debug log
+
   const [username, setUsername] = useState(user.username || '');
-  const [phone, setPhone] = useState(user.phone || '');
   const [email, setEmail] = useState(user.email || '');
   const [address, setAddress] = useState(user.address || '');
   const [avatar, setAvatar] = useState(user.avatar || defaultAvatar);
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [nickname, setNickname] = useState(user.nickname || user.username || '');
 
   // Upload avatar to server
-  const handleAvatarChange = async e => {
-    const file = e.target.files[0];
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setAvatarFile(file);
       setAvatar(URL.createObjectURL(file)); // Preview avatar
@@ -55,9 +57,8 @@ export default function ProfilePage() {
         setAvatar(avatarUrl);
       }
       // 2. Update user info
-      const res = await API.put('/api/auth/profile', {
+      const res = await API.put('/auth/profile', {
         nickname,
-        phone,
         email,
         address,
         avatar: avatarUrl,
@@ -80,7 +81,7 @@ export default function ProfilePage() {
           src={getAvatarUrl(avatar)}
           alt="avatar"
           style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid #eee', objectFit: 'cover' }}
-          onError={e => { e.target.src = defaultAvatar; }}
+          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { e.currentTarget.src = defaultAvatar; }}
         />
         <input type="file" accept="image/*" onChange={handleAvatarChange} style={{ marginTop: 8 }} />
         <div style={{ fontSize: 12, color: '#888' }}>Upload Avatar</div>
@@ -92,10 +93,6 @@ export default function ProfilePage() {
       <div style={{ marginBottom: 12 }}>
         <label>Nickname:</label>
         <input value={nickname} onChange={e => setNickname(e.target.value)} style={{ width: '100%' }} />
-      </div>
-      <div style={{ marginBottom: 12 }}>
-        <label>Phone Number:</label>
-        <input value={phone} onChange={e => setPhone(e.target.value)} style={{ width: '100%' }} />
       </div>
       <div style={{ marginBottom: 12 }}>
         <label>Email:</label>

@@ -1,13 +1,13 @@
 // ✅ RegisterPage.tsx
 import React, { useEffect, useState } from 'react';
-import { registerUser } from '../api';
+// import { registerUser } from '../api'; // Removed unused import
 import { useNavigate, Link } from 'react-router-dom';
-import { isValidPhoneNumber } from 'libphonenumber-js';
+// import { isValidPhoneNumber } from 'libphonenumber-js'; // Removed unused import
 import API from "../api";
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
-  const [contact, setContact] = useState('');
+  const [contact, setContact] = useState(''); // Restore contact state for email
   const [password, setPwd] = useState('');
   const [userType, setUserType] = useState<'organizer' | 'visitor'>('visitor');
   const [error, setError] = useState('');
@@ -18,10 +18,11 @@ export default function RegisterPage() {
     if (localStorage.getItem('token')) {
       nav('/'); // Prevent access to register page when already logged in
     }
-  }, []);
+  }, [nav]); // Added nav dependency
 
+  // Restore isEmail function, keep isPhone removed
   const isEmail = (str: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
-  const isPhone = (str: string) => isValidPhoneNumber(str);
+  // const isPhone = (str: string) => isValidPhoneNumber(str);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,12 +32,13 @@ export default function RegisterPage() {
       setError('Username is required');
       return;
     }
+    // Restore and update contact validation for email only
     if (!contact.trim()) {
-      setError('Phone number or email is required');
+      setError('Email is required');
       return;
     }
-    if (!isEmail(contact) && !isValidPhoneNumber(contact)) {
-      setError('Please enter a valid phone number (international format, e.g. +64...) or email');
+    if (!isEmail(contact)) { // Only validate as email
+      setError('Please enter a valid email address');
       return;
     }
     if (password.length < 8) {
@@ -44,21 +46,22 @@ export default function RegisterPage() {
       return;
     }
 
-    let phone = '';
+    // Restore email extraction, keep phone removed
+    // let phone = '';
     let email = '';
     if (isEmail(contact)) {
       email = contact;
-    } else if (isPhone(contact)) {
-      phone = contact;
-    }
+    } // No else if for phone
+
     try {
       // The /api prefix has been removed
+      // Updated API call to include email, keep phone removed
       await API.post('/auth/register', {
         username: name,
         password,
         userType,
-        ...(phone ? { phone } : {}),
-        ...(email ? { email } : {})
+        // ...(phone ? { phone } : {}), // Keep phone removed
+        ...(email ? { email } : {}) // Restore email
       });
       setSuccess(true);
       setTimeout(() => nav('/login'), 1500);
@@ -80,14 +83,14 @@ export default function RegisterPage() {
     >
 
       {/* Registration card */}
-      <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out" 
+      <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out"
            style={{ maxWidth: '550px', minWidth: '320px', backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            backdropFilter: 'blur(16px)',                   
-            WebkitBackdropFilter: 'blur(16px)',            
-            borderRadius: '16px',                            
-            overflow: 'hidden',                              
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: '16px',
+            overflow: 'hidden',
            }}>
-        
+
         {/* Card title */}
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800"
         style={{ paddingBottom: '2vh'}}>
@@ -102,7 +105,7 @@ export default function RegisterPage() {
             {error}
           </div>
         )}
-        
+
         {/* Success message */}
         {success && (
           <div className="bg-green-50/70 backdrop-blur-sm border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 text-center font-medium">
@@ -121,7 +124,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <input
               id="username"
-              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
               value={name}
@@ -131,17 +134,18 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Contact input */}
+          {/* Contact input RESTORED for Email */}
           <div className="space-y-2">
             <input
               id="contact"
-              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
+              type="email" // Set type to email for better semantics and potential browser validation
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
               value={contact}
               onChange={e => setContact(e.target.value)}
               required
-              placeholder="Enter your email or phone number"
+              placeholder="Enter your email" // Updated placeholder
             />
           </div>
 
@@ -150,7 +154,7 @@ export default function RegisterPage() {
             <input
               id="password"
               type="password"
-              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
               value={password}
@@ -167,13 +171,13 @@ export default function RegisterPage() {
                 { label: 'Visitor', value: 'visitor', icon: '👤' },
                 { label: 'Organizer', value: 'organizer', icon: '🏢' },
               ].map(({ label, value, icon }) => (
-                <label 
-                  key={value} 
+                <label
+                  key={value}
                   className={`
                     inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
                     transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
-                    ${userType === value 
-                      ? 'text-indigo-700 shadow-md' 
+                    ${userType === value
+                      ? 'text-indigo-700 shadow-md'
                       : 'text-gray-700'}
                   `}
                 >
