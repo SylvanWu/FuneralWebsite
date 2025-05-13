@@ -30,10 +30,11 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true }); // Ensure directory exists
 
 /* ──────────── Common Middleware ──────────── */
 app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend development address
+    origin: ['http://localhost:5173', 'http://localhost:3000'], // Frontend development addresses
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
-    exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length']
+    exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length'],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -50,18 +51,43 @@ app.use('/api/dreams', dreamRouter);
 app.use('/api/funerals', funeralRoutes);
 app.use('/api/interactive', interactiveRoutes);
 
+/* Health check endpoint */
+app.get('/api/health', (req, res) => {
+    const healthStatus = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        databaseStatus: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+        api: {
+            version: '1.0.0',
+            environment: process.env.NODE_ENV || 'development'
+        }
+    };
+
+    res.status(200).json(healthStatus);
+});
+
 /* Default root route (Health check) */
 app.get('/', (_, res) => res.send('Digital Memorial Hall API'));
+
+/* Error handler middleware */
+app.use((err, req, res, next) => {
+    console.error('API Error:', err);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+        status: err.status || 500
+    });
+});
 
 /* ──────────── Connect to MongoDB and Start Server ──────────── */
 mongoose
     .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/memorial')
     .then(() => {
         console.log('Connected to MongoDB');
-        
+
         // Create HTTP server
         const httpServer = createServer(app);
-        
+
         // Initialize Socket.IO
         const io = new Server(httpServer, {
             cors: {
@@ -108,7 +134,7 @@ console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
 function validateEnv() {
     const required = ['JWT_SECRET', 'PORT', 'MONGO_URI'];
     const missing = required.filter(key => !process.env[key]);
-    
+
     if (missing.length > 0) {
         console.error('Missing required environment variables:', missing);
         process.exit(1);

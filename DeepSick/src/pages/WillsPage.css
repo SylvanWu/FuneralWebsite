@@ -1,6 +1,6 @@
 /* src/pages/WillsPage.css */
 
-/* —— 整页容器背景 —— */
+/* —— Full page container background —— */
 .wills-page {
     background-color: var(--bg-main);
     max-width: 800px;
@@ -8,14 +8,14 @@
     padding: 1rem;
 }
 
-/* 标题 */
+/* Title */
 .wills-page h2 {
     font-size: 1.75rem;
     margin-bottom: 1rem;
     color: var(--text-main);
 }
 
-/* —— 表单部分 —— */
+/* —— Form section —— */
 .will-form {
     background: var(--bg-card);
     padding: 1rem;
@@ -57,14 +57,14 @@
     background: var(--btn-primary-hover);
 }
 
-/* —— 留言列表 —— */
+/* —— Message list —— */
 .will-list {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
 }
 
-/* —— 单条卡片 —— */
+/* —— Single card —— */
 .will-card {
     background: var(--bg-card);
     border: 1px solid #e2e2e2;
@@ -92,7 +92,7 @@
     line-height: 1.4;
 }
 
-/* —— 操作按钮 —— */
+/* —— Action buttons —— */
 .will-card .actions {
     position: absolute;
     top: 1rem;
@@ -113,7 +113,7 @@
     color: var(--btn-primary-hover);
 }
 
-/* —— 加载文字 —— */
+/* —— Loading text —— */
 .loading {
     text-align: center;
     color: #666;

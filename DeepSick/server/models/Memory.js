@@ -1,4 +1,4 @@
-//定义Memory数据模型，用于存储用户上传的记忆内容，包括上传者姓名、上传时间、记忆类型（图片、视频或文本）和记忆内容等信息。
+//Defines the Memory data model for storing user-uploaded memory content, including uploader's name, upload time, memory type (image, video, or text), and memory content.
 import mongoose from 'mongoose';
 
 const memorySchema = new mongoose.Schema({

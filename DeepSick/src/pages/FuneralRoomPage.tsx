@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useReducer } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { Stage, Layer, Rect, Text, Image as KonvaImage } from 'react-konva';
+import { Stage, Layer, Rect, Text, Image as KonvaImage, Transformer, Group, Circle } from 'react-konva';
 import { 
   FuneralRoom, 
   getFuneralRoomById, 
@@ -51,10 +51,14 @@ const decorationItems = [
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 // Size constants for cropped image
-const CROP_IMAGE_SIZE = 128; // 128x128px final size
+const CROP_IMAGE_SIZE = 128; 
 
 // Size constant for decoration items
 const DECORATION_ITEM_SIZE = 50; // 50x50px
+
+// Define the selection threshold for resize handles
+const ANCHOR_STROKE_WIDTH = 1;
+const RESIZE_HANDLE_SIZE = 8;
 
 // Function to create an image from a file
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -159,10 +163,10 @@ const FuneralRoomPage: React.FC = () => {
 
   // State to hold funeral room data
   const [state, dispatch] = useReducer(roomReducer, {
-    funeralType: 'church',
-    backgroundImage: '',
-    password: '',
-    name: '',
+    funeralType: locationState?.funeralType || 'church',
+    backgroundImage: locationState?.backgroundImage || '',
+    password: locationState?.password || '',
+    name: locationState?.name || '',
   });
   
   // Canvas state
@@ -184,7 +188,7 @@ const FuneralRoomPage: React.FC = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [isCropping, setIsCropping] = useState(false);
   
-  // 添加背景图片状态
+  // Add background image status
   const [backgroundImg, setBackgroundImg] = useState<HTMLImageElement | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   
@@ -194,8 +198,44 @@ const FuneralRoomPage: React.FC = () => {
   // Add state for toolbar collapse
   const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
   
+  // Add refs for transform operations
+  const transformerRef = useRef<any>(null);
+  
+  // Function to get background image, with fallback to mapping if needed
+  const getBackgroundImage = useCallback(() => {
+    // Check if we have state.funeralType and it exists in the mapping
+    if (state.funeralType && state.funeralType in backgroundImageMap) {
+      const type = state.funeralType as keyof typeof backgroundImageMap;
+      console.log('Using mapped image for type:', type);
+      return backgroundImageMap[type];
+    }
+    
+    // Fallback to church image
+    console.log('No matching type found, using default church image');
+    return churchImage;
+  }, [state.funeralType]);
+  
   // Load funeral room data from database on mount
   useEffect(() => {
+    // If we already have location state with funeral type, apply it immediately
+    if (locationState) {
+      console.log('Using location state for initial load:', locationState);
+      dispatch({
+        type: 'SET_ALL',
+        payload: {
+          name: locationState.name || '',
+          password: locationState.password || '',
+          backgroundImage: locationState.backgroundImage || '',
+          funeralType: locationState.funeralType || 'church',
+        }
+      });
+      
+      // Set canvas items if they exist in the location state
+      if (locationState.canvasItems && Array.isArray(locationState.canvasItems)) {
+        setCanvasItems(locationState.canvasItems);
+      }
+    }
+    
     const loadFuneralRoom = async () => {
       if (!roomId) return;
       
@@ -271,7 +311,7 @@ const FuneralRoomPage: React.FC = () => {
     bgImage.onerror = () => {
       console.error('Failed to load background image');
     };
-  }, [state.funeralType, isToolbarCollapsed]);
+  }, [state.funeralType, isToolbarCollapsed, getBackgroundImage]);
   
   // Add window resize handler
   useEffect(() => {
@@ -451,28 +491,10 @@ const FuneralRoomPage: React.FC = () => {
     // Save changes
     handleSave();
   };
-
-  // Function to get background image, with fallback to mapping if needed
-  const getBackgroundImage = () => {
-    // Debug: print the background image path
-    console.log('Background Image from state:', state.backgroundImage);
-    console.log('Funeral Type:', state.funeralType);
-    
-    // 直接使用映射中的背景图片，确保我们使用的是已导入的图片对象
-    if (state.funeralType && state.funeralType in backgroundImageMap) {
-      const type = state.funeralType as keyof typeof backgroundImageMap;
-      console.log('Using mapped image for type:', type);
-      return backgroundImageMap[type];
-    }
-    
-    // 如果没有找到对应类型，返回默认图片或空字符串
-    console.log('No matching type found, using default or empty');
-    return churchImage; // 默认使用教堂背景
-  };
   
   // Function to add a new item to the canvas
   const handleAddItem = (item: { id: string; color: string; name: string; image?: string; description?: string }) => {
-    // 调整新项目的位置，使其在画布中间位置
+    // Adjust the position of the new item to be in the center of the canvas
     const newItem: CanvasItem = {
       id: `${item.id}-${Date.now()}`,
       x: canvasSize.width / 2,
@@ -511,7 +533,27 @@ const FuneralRoomPage: React.FC = () => {
     }
   }, [roomId, state.password]);
   
-  // Function to remove a selected item
+  // Update transformer whenever selection changes
+  useEffect(() => {
+    if (transformerRef.current && selectedItemId) {
+      // Find the selected node by id
+      const stage = stageRef.current;
+      if (!stage) return;
+      
+      const selectedNode = stage.findOne(`#${selectedItemId}`);
+      if (selectedNode) {
+        // Attach transformer to the selected node
+        transformerRef.current.nodes([selectedNode]);
+        transformerRef.current.getLayer().batchDraw();
+      }
+    } else if (transformerRef.current) {
+      // Clear transformer if no selection
+      transformerRef.current.nodes([]);
+      transformerRef.current.getLayer().batchDraw();
+    }
+  }, [selectedItemId]);
+  
+  // Function to remove a selected item with delete icon
   const handleRemoveSelectedItem = useCallback(() => {
     if (!selectedItemId) return;
     
@@ -712,6 +754,78 @@ const FuneralRoomPage: React.FC = () => {
     setIsToolbarCollapsed(isCollapsed);
   };
 
+  // Handle item transform complete
+  const handleTransformEnd = (id: string, e: any) => {
+    // Get the node that was transformed
+    const node = e.target;
+    
+    // Update the item with the new position and size
+    const updatedItems = canvasItems.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          x: node.x(),
+          y: node.y(),
+          width: node.width() * node.scaleX(),
+          height: node.height() * node.scaleY()
+        };
+      }
+      return item;
+    });
+    
+    // Update state and save
+    setCanvasItems(updatedItems);
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after transform:', err)
+    );
+    
+    // Reset scale to avoid accumulating
+    if (node) {
+      node.scaleX(1);
+      node.scaleY(1);
+    }
+  };
+
+  // Add item delete button component
+  const DeleteButton = ({ visible, x, y, onClick }: { 
+    visible: boolean, 
+    x: number, 
+    y: number, 
+    onClick: () => void 
+  }) => {
+    if (!visible) return null;
+    
+    return (
+      <Group x={x} y={y}>
+        <Circle 
+          radius={10}
+          fill="red"
+          stroke="white"
+          strokeWidth={1}
+        />
+        <Text 
+          text="×" 
+          fill="white"
+          fontSize={16}
+          align="center"
+          verticalAlign="middle"
+          x={-6}
+          y={-8}
+          fontStyle="bold"
+        />
+        <Rect 
+          width={20} 
+          height={20} 
+          x={-10} 
+          y={-10}
+          opacity={0}
+          onClick={onClick}
+          onTap={onClick}
+        />
+      </Group>
+    );
+  };
+
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -792,9 +906,182 @@ const FuneralRoomPage: React.FC = () => {
         }}
       >
         <div className="container mx-auto py-4 px-4">
-          <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-4">
+          <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-4"
+          style={{width: '100vh', height: '100vh'}}>
             {/* Display deceased person's info and image upload section */}
             <div className="mb-6">
+            <div className="flex flex-col md:flex-row gap-6">
+            {/* Canvas Area */}
+            <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
+              <div className="text-center text-gray-500 py-2">
+                <p>Click on items in the left toolbar to add them to the scene. Drag to position them. Items are automatically saved.</p>
+              </div>
+              <div 
+                className="canvas-container" 
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  padding: '10px',
+                  backgroundColor: '#f0f0f0',
+                  overflow: 'hidden'
+                }}
+              >
+                <div 
+                  style={{ 
+                    width: `${canvasSize.width}px`, 
+                    height: `${canvasSize.height}px`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    margin: '0 auto'
+                  }}
+                >
+                  <Stage
+                    ref={stageRef}
+                    width={canvasSize.width}
+                    height={canvasSize.height}
+                    style={{ 
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    <Layer>
+                      {/* background image - ensure it fills the container */}
+                      {backgroundImg && (
+                        <KonvaImage
+                          image={backgroundImg}
+                          width={canvasSize.width}
+                          height={canvasSize.height}
+                          listening={false}
+                        />
+                      )}
+                      
+                      {/* decorations */}
+                      {canvasItems.map((item) => {
+                        // Get the base item ID (without timestamp)
+                        const baseId = item.id.split('-')[0];
+                        // Check if we have the image loaded
+                        const itemImage = item.image && decorationImages[baseId];
+                        const isSelected = selectedItemId === item.id;
+                        
+                        return (
+                          <React.Fragment key={item.id}>
+                            {itemImage ? (
+                              <>
+                                <KonvaImage
+                                  id={item.id}
+                                  image={itemImage}
+                                  x={item.x}
+                                  y={item.y}
+                                  width={item.width}
+                                  height={item.height}
+                                  draggable
+                                  onDragEnd={(e) => {
+                                    const updatedItems = canvasItems.map((i) => {
+                                      if (i.id === item.id) {
+                                        return {
+                                          ...i,
+                                          x: e.target.x(),
+                                          y: e.target.y(),
+                                        };
+                                      }
+                                      return i;
+                                    });
+                                    setCanvasItems(updatedItems);
+                                    // Auto-save when moving an item
+                                    saveToDatabase(updatedItems);
+                                  }}
+                                  onClick={() => setSelectedItemId(item.id)}
+                                  onTap={() => setSelectedItemId(item.id)}
+                                  onTransformEnd={(e) => handleTransformEnd(item.id, e)}
+                                />
+                                
+                                {/* Delete button */}
+                                <DeleteButton 
+                                  visible={isSelected}
+                                  x={item.x + item.width}
+                                  y={item.y - 10}
+                                  onClick={handleRemoveSelectedItem}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <Rect
+                                  id={item.id}
+                                  x={item.x}
+                                  y={item.y}
+                                  width={item.width}
+                                  height={item.height}
+                                  fill={item.color}
+                                  cornerRadius={5}
+                                  draggable
+                                  onDragEnd={(e) => {
+                                    const updatedItems = canvasItems.map((i) => {
+                                      if (i.id === item.id) {
+                                        return {
+                                          ...i,
+                                          x: e.target.x(),
+                                          y: e.target.y(),
+                                        };
+                                      }
+                                      return i;
+                                    });
+                                    setCanvasItems(updatedItems);
+                                    // Auto-save when moving an item
+                                    saveToDatabase(updatedItems);
+                                  }}
+                                  onClick={() => setSelectedItemId(item.id)}
+                                  onTap={() => setSelectedItemId(item.id)}
+                                  onTransformEnd={(e) => handleTransformEnd(item.id, e)}
+                                />
+                                
+                                {/* Delete button */}
+                                <DeleteButton 
+                                  visible={isSelected}
+                                  x={item.x + item.width}
+                                  y={item.y - 10}
+                                  onClick={handleRemoveSelectedItem}
+                                />
+                              </>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                      
+                      {/* Add transformer for resizing */}
+                      <Transformer
+                        ref={transformerRef}
+                        boundBoxFunc={(oldBox, newBox) => {
+                          // Limit minimum size
+                          if (newBox.width < 20 || newBox.height < 20) {
+                            return oldBox;
+                          }
+                          return newBox;
+                        }}
+                        anchorStroke="#0096FF"
+                        anchorFill="#ffffff"
+                        anchorSize={RESIZE_HANDLE_SIZE}
+                        anchorStrokeWidth={ANCHOR_STROKE_WIDTH}
+                        borderStroke="#0096FF"
+                        borderStrokeWidth={1}
+                        borderDash={[4, 4]}
+                        rotateEnabled={true}
+                        enabledAnchors={[
+                          'top-left', 'top-right', 
+                          'bottom-left', 'bottom-right'
+                        ]}
+                      />
+                      
+                    </Layer>
+                  </Stage>
+                </div>
+              </div>
+            </div>
+          </div>
               <h2 className="text-2xl font-bold mb-4">Deceased Person</h2>
               <div className="flex flex-col md:flex-row items-center mb-4">
                 {/* Left side: Display the deceased image or placeholder */}
@@ -887,155 +1174,7 @@ const FuneralRoomPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Canvas Area */}
-            <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
-              <div className="text-center text-gray-500 py-2">
-                <p>Click on items in the left toolbar to add them to the scene. Drag to position them. Items are automatically saved.</p>
-              </div>
-              <div 
-                className="canvas-container" 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  padding: '10px',
-                  backgroundColor: '#f0f0f0',
-                  overflow: 'hidden'
-                }}
-              >
-                <div 
-                  style={{ 
-                    width: `${canvasSize.width}px`, 
-                    height: `${canvasSize.height}px`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    margin: '0 auto'
-                  }}
-                >
-                  <Stage
-                    ref={stageRef}
-                    width={canvasSize.width}
-                    height={canvasSize.height}
-                    style={{ 
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                  >
-                    <Layer>
-                      {/* background image - ensure it fills the container */}
-                      {backgroundImg && (
-                        <KonvaImage
-                          image={backgroundImg}
-                          width={canvasSize.width}
-                          height={canvasSize.height}
-                          listening={false}
-                        />
-                      )}
-                      
-                      {/* decorations */}
-                      {canvasItems.map((item) => {
-                        // Get the base item ID (without timestamp)
-                        const baseId = item.id.split('-')[0];
-                        // Check if we have the image loaded
-                        const itemImage = item.image && decorationImages[baseId];
-                        const isSelected = selectedItemId === item.id;
-                        
-                        return (
-                          <React.Fragment key={item.id}>
-                            {itemImage ? (
-                              <>
-                                {/* Selection border for images */}
-                                {isSelected && (
-                                  <Rect
-                                    x={item.x - 2}
-                                    y={item.y - 2}
-                                    width={item.width + 4}
-                                    height={item.height + 4}
-                                    stroke="#0096FF"
-                                    strokeWidth={2}
-                                  />
-                                )}
-                                <KonvaImage
-                                  image={itemImage}
-                                  x={item.x}
-                                  y={item.y}
-                                  width={item.width}
-                                  height={item.height}
-                                  draggable
-                                  onDragEnd={(e) => {
-                                    const updatedItems = canvasItems.map((i) => {
-                                      if (i.id === item.id) {
-                                        return {
-                                          ...i,
-                                          x: e.target.x(),
-                                          y: e.target.y(),
-                                        };
-                                      }
-                                      return i;
-                                    });
-                                    setCanvasItems(updatedItems);
-                                    // Auto-save when moving an item
-                                    saveToDatabase(updatedItems);
-                                  }}
-                                  onClick={() => setSelectedItemId(item.id)}
-                                  onTap={() => setSelectedItemId(item.id)}
-                                />
-                              </>
-                            ) : (
-                              <>
-                                {/* Selection border for rectangles */}
-                                {isSelected && (
-                                  <Rect
-                                    x={item.x - 2}
-                                    y={item.y - 2}
-                                    width={item.width + 4}
-                                    height={item.height + 4}
-                                    stroke="#0096FF"
-                                    strokeWidth={2}
-                                  />
-                                )}
-                                <Rect
-                                  x={item.x}
-                                  y={item.y}
-                                  width={item.width}
-                                  height={item.height}
-                                  fill={item.color}
-                                  cornerRadius={5}
-                                  draggable
-                                  onDragEnd={(e) => {
-                                    const updatedItems = canvasItems.map((i) => {
-                                      if (i.id === item.id) {
-                                        return {
-                                          ...i,
-                                          x: e.target.x(),
-                                          y: e.target.y(),
-                                        };
-                                      }
-                                      return i;
-                                    });
-                                    setCanvasItems(updatedItems);
-                                    // Auto-save when moving an item
-                                    saveToDatabase(updatedItems);
-                                  }}
-                                  onClick={() => setSelectedItemId(item.id)}
-                                  onTap={() => setSelectedItemId(item.id)}
-                                />
-                              </>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </Layer>
-                  </Stage>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>

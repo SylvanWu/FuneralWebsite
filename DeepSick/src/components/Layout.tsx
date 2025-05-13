@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import './Layout.css'; // 新建或已有的CSS文件
-import defaultAvatar from '../assets/avatar.png'; // 路径根据实际情况调整
+import './Layout.css'; // CSS file, newly created or existing
+import defaultAvatar from '../assets/avatar.png'; // Adjust the path as needed
 import ChangePasswordModal from '../components/ChangePasswordModal';
 
 export default function Layout({ onLogout }) {
@@ -10,14 +10,14 @@ export default function Layout({ onLogout }) {
   const menuRef = useRef(null);
   const [showPwdModal, setShowPwdModal] = useState(false);
 
-  // 读取用户信息，回退到默认头像
+  // Read user info, fallback to default avatar
   const user = JSON.parse(localStorage.getItem('user')) || {};
   const avatar = user.avatar || defaultAvatar;
-  const displayName = user.nickname || user.username || '未登录';
+  const displayName = user.nickname || user.username || 'Not Logged In';
   const isLoggedIn = !!localStorage.getItem('token');
   const userType = user.userType; // visitor, organizer, lovedOne
 
-  // 点击外部关闭下拉
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -40,7 +40,9 @@ export default function Layout({ onLogout }) {
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
                 <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
-                
+                <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
+                <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
+                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
                 <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
                 <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
                 <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
@@ -51,7 +53,9 @@ export default function Layout({ onLogout }) {
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
                 <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
-                
+                <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
+                <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
+                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
                 <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
                 <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
               </>
@@ -69,7 +73,7 @@ export default function Layout({ onLogout }) {
             />
             {menuOpen && (
               <div
-      style={{
+                style={{
                   minWidth: 220,
                   background: '#fff',
                   borderRadius: 16,
@@ -82,8 +86,8 @@ export default function Layout({ onLogout }) {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center'
-      }}
-    >
+                }}
+              >
                 <img
                   src={avatar}
                   alt="avatar"
@@ -122,7 +126,7 @@ export default function Layout({ onLogout }) {
                 >
                   Edit Information
                 </button>
-          <button
+                <button
                   onClick={() => setShowPwdModal(true)}
                   style={{
                     width: '100%',
@@ -141,12 +145,12 @@ export default function Layout({ onLogout }) {
                   onMouseOut={e => (e.target.style.background = '#f3f4f6')}
                 >
                   Change Password
-          </button>
+                </button>
               </div>
             )}
           </div>
           <button className="logout-btn" onClick={onLogout}>Logout</button>
-      </div>
+        </div>
       </nav>
       <main className="main-content">
         <Outlet />

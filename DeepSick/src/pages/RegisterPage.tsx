@@ -16,7 +16,7 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
-      nav('/'); // 登录状态下禁止访问 register
+      nav('/'); // Prevent access to register page when already logged in
     }
   }, []);
 
@@ -26,7 +26,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    // 前端校验
+    // Frontend validation
     if (!name.trim()) {
       setError('Username is required');
       return;
@@ -52,7 +52,8 @@ export default function RegisterPage() {
       phone = contact;
     }
     try {
-      await API.post('/api/auth/register', {
+      // The /api prefix has been removed
+      await API.post('/auth/register', {
         username: name,
         password,
         userType,
@@ -75,37 +76,34 @@ export default function RegisterPage() {
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
-        
       }}
     >
 
-
-      {/* 注册卡片 */}
+      {/* Registration card */}
       <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out" 
-           style={{ maxWidth: '550px', minWidth: '320px',backgroundColor: 'rgba(255, 255, 255, 0.5)',
+           style={{ maxWidth: '550px', minWidth: '320px', backgroundColor: 'rgba(255, 255, 255, 0.5)',
             backdropFilter: 'blur(16px)',                   
             WebkitBackdropFilter: 'blur(16px)',            
             borderRadius: '16px',                            
             overflow: 'hidden',                              
            }}>
         
-        {/* 卡片标题 */}
+        {/* Card title */}
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800"
         style={{ paddingBottom: '2vh'}}>
-          
           <span className="relative inline-block pb-2 after:content-[''] after:absolute after:w-1/2 after:h-0.5 after:bg-indigo-500 after:bottom-0 after:left-1/4">
             Create Account
           </span>
         </h1>
 
-        {/* 错误提示 */}
+        {/* Error message */}
         {error && (
           <div className="bg-red-50/70 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-center font-medium animate-pulse">
             {error}
           </div>
         )}
         
-        {/* 成功提示 */}
+        {/* Success message */}
         {success && (
           <div className="bg-green-50/70 backdrop-blur-sm border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 text-center font-medium">
             <div className="flex items-center justify-center">
@@ -117,79 +115,75 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* 注册表单 */}
+        {/* Registration form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 用户名输入框 */}
+          {/* Username input */}
           <div className="space-y-2">
-            {/* <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label> */}
-          <input
+            <input
               id="username"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            required
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
               placeholder="Enter your username"
-          />
+            />
           </div>
 
-          {/* 联系方式输入框 */}
+          {/* Contact input */}
           <div className="space-y-2">
-            {/* <label htmlFor="contact" className="block text-sm font-medium text-gray-700">Phone Number / Email</label> */}
-          <input
+            <input
               id="contact"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
-            value={contact}
-            onChange={e => setContact(e.target.value)}
-            required
+              value={contact}
+              onChange={e => setContact(e.target.value)}
+              required
               placeholder="Enter your email or phone number"
-          />
+            />
           </div>
 
-          {/* 密码输入框 */}
+          {/* Password input */}
           <div className="space-y-2">
-            {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label> */}
-          <input
+            <input
               id="password"
-            type="password"
+              type="password"
               className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
                          focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
                          shadow-sm transition-all duration-200 ease-in-out"
-            value={password}
-            onChange={e => setPwd(e.target.value)}
-            required
+              value={password}
+              onChange={e => setPwd(e.target.value)}
+              required
               placeholder="Min 8 characters"
-          />
+            />
           </div>
 
-          {/* 用户类型选择区域 */}
+          {/* User type selection area */}
           <div className="space-y-3 pt-2">
-            {/* <label className="block text-sm font-medium text-gray-700">Select Role</label> */}
             <div className="flex flex-wrap items-center justify-center ">
               {[
                 { label: 'Visitor', value: 'visitor', icon: '👤' },
                 { label: 'Organizer', value: 'organizer', icon: '🏢' },
               ].map(({ label, value, icon }) => (
-              <label 
-                key={value} 
-                className={`
-                  inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
-                  transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
-                  ${userType === value 
-                    ? 'text-indigo-700 shadow-md' 
-                    : 'text-gray-700'}
-                `}
-              >
+                <label 
+                  key={value} 
+                  className={`
+                    inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
+                    transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
+                    ${userType === value 
+                      ? 'text-indigo-700 shadow-md' 
+                      : 'text-gray-700'}
+                  `}
+                >
                   <input
                     type="radio"
                     name="userType"
                     value={value}
                     checked={userType === value}
                     onChange={() => setUserType(value as any)}
-                    className="sr-only" // 隐藏原始单选按钮，使用自定义样式
+                    className="sr-only" // Hide the default radio button and use custom styles
                   />
                   <span className="text-xl">{icon}</span>
                   <span>{label}</span>
@@ -198,27 +192,26 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* 注册按钮 */}
+          {/* Register button */}
           <div className="pt-4">
-          <button
-            type="submit"
-            className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-            style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)'}}
-          >
+            <button
+              type="submit"
+              className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+              style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)' }}
+            >
               Create Account
             </button>
-                  {/* Login按钮 */}
 
-          <p className="mt-8 text-sm text-center text-gray-600"
-        style={{ paddingTop: '1vh'}}>
-          Already have an account?{' '}
-          <Link
-            to="/login"
-            className="text-green-600 hover:text-green-800 font-medium"
-          >
-            Login here
-          </Link>
-        </p>
+            {/* Login link */}
+            <p className="mt-8 text-sm text-center text-gray-600" style={{ paddingTop: '1vh' }}>
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                className="text-green-600 hover:text-green-800 font-medium"
+              >
+                Login here
+              </Link>
+            </p>
           </div>
         </form>
       </div>

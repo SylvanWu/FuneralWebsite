@@ -14,17 +14,17 @@ interface SceneCardProps {
 }
 
 const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onSelect }) => {
-  // 为每种场景类型定义默认颜色
+  // Define default colors for each scene type
   const getBgColorByType = (id: string) => {
     const colors: Record<string, string> = {
-      'church': '#e0f2fe', // 浅蓝色
-      'garden': '#dcfce7', // 浅绿色
-      'forest': '#d1fae5', // 浅青色
-      'seaside': '#dbeafe', // 浅蓝色
-      'starry-night': '#f3e8ff', // 浅紫色
-      'chinese-traditional': '#fee2e2' // 浅红色
+      'church': '#e0f2fe', // light blue
+      'garden': '#dcfce7', // light green
+      'forest': '#d1fae5', // light cyan
+      'seaside': '#dbeafe', // light blue
+      'starry-night': '#f3e8ff', // light purple
+      'chinese-traditional': '#fee2e2' // light red
     };
-    return colors[id] || '#f3f4f6'; // 默认为浅灰色
+    return colors[id] || '#f3f4f6'; // default to light gray
   };
 
   return (
@@ -50,7 +50,7 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onSelect }) =>
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            {/* 简单的图标占位符 */}
+            {/* Simple icon placeholder */}
             <div className="text-center">
               <div className="mx-auto w-20 h-20 mb-2 rounded-full bg-white flex items-center justify-center">
                 {scene.id === 'church' && (
@@ -93,4 +93,4 @@ const SceneCard: React.FC<SceneCardProps> = ({ scene, isSelected, onSelect }) =>
   );
 };
 
-export default SceneCard; 
+export default SceneCard;

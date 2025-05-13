@@ -1,4 +1,4 @@
-// 愿望编辑组件(带预览)
+// Wish editing component (with preview)
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import RichTextEditor from './RichTextEditor';
@@ -145,5 +145,5 @@ const DreamEditor = () => {
 
 };
 
-// 默认导出 DreamEditor 组件
+// Default export of the DreamEditor component
 export default DreamEditor;

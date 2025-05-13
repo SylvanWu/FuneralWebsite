@@ -1,4 +1,5 @@
-//定义User数据模型，包含用户名、密码和角色等信息。注册前自动对密码进行 bcrypt 哈希处理，并提供密码校验方法。
+// Define the User data model, including username, password, role, etc.
+// Automatically hash the password using bcrypt before registration, and provide a method for password verification.
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// 注册前自动对密码做 bcrypt 哈希
+// Automatically hash the password with bcrypt before saving
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
     const salt = await bcrypt.genSalt(10);
@@ -23,7 +24,7 @@ userSchema.pre('save', async function(next) {
     next();
 });
 
-// 实例方法：校验密码
+// Instance method: compare passwords
 userSchema.methods.comparePassword = function(candidate) {
     return bcrypt.compare(candidate, this.password);
 };

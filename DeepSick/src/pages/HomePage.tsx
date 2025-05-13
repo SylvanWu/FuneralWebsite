@@ -1,9 +1,22 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import homeVideo from '../assets/Home.mp4';
 
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Check if user is authenticated
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    const userType = userStr ? JSON.parse(userStr).userType : null;
+    
+    // If visitor is logged in, redirect to funeral hall
+    if (userType === 'visitor') {
+      navigate('/funeralhall');
+    }
+  }, [navigate]);
+  
   return (
     <div className="home-container">
       <div className="welcome-section">
@@ -27,7 +40,8 @@ const HomePage: React.FC = () => {
         
         <div className="navigation-buttons">
           <Link to="/interactive" className="nav-button">Interactive</Link>
-          <Link to="/hall" className="nav-button primary">Enter Memorial Hall</Link>
+          <Link to="/hall" className="nav-button">Memorial Hall</Link>
+          <Link to="/funeralhall" className="nav-button primary">Funeral Rooms</Link>
         </div>
       </div>
     </div>

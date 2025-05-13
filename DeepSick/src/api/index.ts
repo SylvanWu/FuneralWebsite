@@ -1,13 +1,13 @@
-//封装了与后端 API 的交互，包括记忆内容、遗嘱和用户认证相关的操作。自动在请求头中注入 JWT 令牌。
+// Encapsulates interactions with the backend API, including memories, wills, and user authentication.
+// Automatically injects the JWT token into the request headers.
 // from Xingyuan Zhou, updated by Haoran Li
 // src/api/index.ts
 import axios from 'axios';
 
-const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
-});
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API = axios.create({ baseURL });
 
-/* ---------- 注入 JWT ---------- */
+/* ---------- inject the JWT token ---------- */
 API.interceptors.request.use(
     cfg => {
         const token = localStorage.getItem('token');
@@ -21,20 +21,21 @@ API.interceptors.request.use(
 );
 
 /* ---------- Memories ---------- */
-export const fetchMemories = ()        => API.get('/api/memories').then(r => r.data);
-export const createMemory  = (fd:FormData) => API.post('/api/memories', fd).then(r => r.data);
-export const deleteMemory  = (id:string)  => API.delete(`/api/memories/${id}`);
+export const fetchMemories = ()        => API.get('/memories').then(r => r.data);
+export const createMemory  = (fd:FormData) => API.post('/memories', fd).then(r => r.data);
+export const deleteMemory  = (id:string)  => API.delete(`/memories/${id}`);
 
 /* ---------- Wills ---------- */
-export const getWills   = ()                 => API.get('/api/wills').then(r => r.data);
-export const createWill = (fd:FormData)      => API.post('/api/wills', fd).then(r => r.data);
-export const deleteWill = (id:string)        => API.delete(`/api/wills/${id}`);
+export const getWills   = ()                 => API.get('/wills').then(r => r.data);
+export const createWill = (fd: FormData) =>
+  API.post('/wills', fd).then(r => r.data);
+export const deleteWill = (id:string)        => API.delete(`/wills/${id}`);
 
 /**
- * 更新遗嘱
+ * Update a will
  * @param id       will _id
- * @param data     普通 JSON 或 FormData
- * @param isForm   若为 true，则 data 必须是 FormData，会自动走 multipart/form‑data
+ * @param data     Plain JSON or FormData
+ * @param isForm   If true, the data must be FormData and will automatically use multipart/form-data
  */
 export const updateWill = (
     id: string,
@@ -42,17 +43,17 @@ export const updateWill = (
     isForm = false,
 ) => {
     if (isForm && data instanceof FormData) {
-        return API.patch(`/api/wills/${id}`, data, {
+        return API.patch(`/wills/${id}`, data, {
             // 让 axios 自动带 boundary
             headers: { 'Content-Type': 'multipart/form-data' },
         }).then(r => r.data);
     }
-    return API.patch(`/api/wills/${id}`, data).then(r => r.data);
+    return API.patch(`/wills/${id}`, data).then(r => r.data);
 };
 
 /* ---------- Auth ---------- */
 export const registerUser = (p:{ username:string; password:string; role:string }) =>
-    API.post('/api/auth/register', p).then(r => {
+    API.post('/auth/register', p).then(r => {
         localStorage.setItem('token', r.data.token);
         return r.data;
     });
@@ -60,31 +61,31 @@ export const registerUser = (p:{ username:string; password:string; role:string }
 export const loginUser = (payload: {
     username: string;
     password: string;
-}) => API.post('/api/auth/login', payload).then(res => {
+}) => API.post('/auth/login', payload).then(res => {
     localStorage.setItem('token', res.data.token);
     return res.data;
 });
 
 //dreamlist api
-// 获取所有梦想清单
-export const getDreams = () => API.get('/api/dreams').then(res => res.data);
+// Fetch all dream list items
+export const getDreams = () => API.get('/dreams').then(res => res.data);
 
-/*创建新的梦想清单项目 
- * @param {string} content - 梦想内容
- * @param {{x: number, y: number}} [position] - 梦想在页面上的位置坐标(可选)
- * @returns {Promise} 返回创建成功的梦想对象的Promise
+/*Create a new dream list item
+ * * @param {string} content - Dream content  
+ * @param {{x: number, y: number}} [position] - (Optional) Position of the dream item on the page  
+ * @returns {Promise} A Promise that resolves to the created dream item
  */
 export const createDream = (content: string, position?: { x: number, y: number }) =>
-    API.post('/api/dreams', { content, position }).then(res => res.data);
+    API.post('/dreams', { content, position }).then(res => res.data);
 
-// 更新梦想清单项目 id;要更新的字段(可选) 
+// Update a dream list item by ID; fields to update (optional) 
 export const updateDream = (id: string, updates: { content?: string, position?: { x: number, y: number }, order?: number }) =>
-    API.patch(`/api/dreams/${id}`, updates).then(res => res.data);
+    API.patch(`/dreams/${id}`, updates).then(res => res.data);
 
-// 删除指定的梦想清单项目 要删除的梦想ID 
-export const deleteDream = (id: string) => API.delete(`/api/dreams/${id}`);
+// Delete the specified dream list item by ID
+export const deleteDream = (id: string) => API.delete(`/dreams/${id}`);
 
-// 关键：自动处理 401
+// Key point: Automatically handle 401 (unauthorized) errors
 API.interceptors.response.use(
     res => res,
     err => {

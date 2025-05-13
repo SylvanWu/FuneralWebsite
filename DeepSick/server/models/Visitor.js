@@ -9,7 +9,7 @@ const visitorSchema = new mongoose.Schema({
   email: { type: String, default: '' },
   address: { type: String, default: '' },
   avatar: { type: String, default: '' },
-  // 可以根据需要添加更多字段
+  // You can add more fields as needed
 });
 
 const Visitor = mongoose.model('Visitor', visitorSchema);

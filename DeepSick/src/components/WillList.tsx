@@ -1,4 +1,4 @@
-// 遗嘱列表组件，显示用户的遗嘱列表，并提供编辑和删除功能。
+// Will list component, displays the list of user's wills and provides edit and delete functions.
 // src/components/WillList.tsx
 import { useRef, useState } from 'react';
 
@@ -19,12 +19,12 @@ interface Props {
 }
 
 export default function WillList({ wills, onDelete, onUpdate }: Props) {
-    /* ============= 编辑状态 ============= */
+    /* ============= Edit state ============= */
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName]   = useState('');
     const [editMsg, setEditMsg]     = useState('');
 
-    /* ============= 重新录制 ============= */
+    /* ============= Re-recording ============= */
     const [recording, setRecording]         = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
     const recordedChunks                    = useRef<Blob[]>([]);
@@ -33,7 +33,7 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
     const videoRef                          = useRef<HTMLVideoElement>(null);
 
     /**
-     * 初始化摄像头并返回一个已绑定 ondata/onstop 的 MediaRecorder
+     * Initialize the camera and return a MediaRecorder with bound ondata/onstop
      */
     const initCamera = async (): Promise<MediaRecorder> => {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -57,27 +57,26 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
     };
 
     /**
-     * 开始录制：第一次调用时会 await initCamera 拿到 recorder
+     * Start recording: the first time it will await initCamera
      */
     const startRec = async () => {
         recordedChunks.current = [];
         setPreviewBlob(null);
         setPreviewURL('');
 
-        // 如果没有初始化过就先 init，再 start
         const rec = mediaRecorder ?? await initCamera();
         rec.start();
         setMediaRecorder(rec);
         setRecording(true);
     };
 
-    /** 停止录制 */
+    /** Stop recording */
     const stopRec = () => {
         mediaRecorder?.stop();
         setRecording(false);
     };
 
-    /* ============= 进入 / 退出编辑 ============= */
+    /* ============= Enter / Exit edit mode ============= */
     const enterEdit = (w: Will) => {
         setEditingId(w._id);
         setEditName(w.uploaderName);
@@ -91,7 +90,7 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
         setEditingId(null);
         setPreviewURL('');
         setPreviewBlob(null);
-        // 关闭摄像头流
+        // Close camera stream
         (videoRef.current?.srcObject as MediaStream | null)
             ?.getTracks()
             .forEach(t => t.stop());
@@ -107,11 +106,11 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
         cancelEdit();
     };
 
-    /* ============= 渲染 ============= */
-    if (!wills.length) {
+    /* ============= Render ============= */
+    if (!Array.isArray(wills) || !wills.length) {
         return (
             <p className="text-center text-warm-gray mt-6">
-                暂无告别留言。
+                No farewell messages yet.
             </p>
         );
     }
@@ -122,23 +121,23 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                 <div key={w._id} className="will-card bg-white shadow-md rounded-lg p-6">
                     {editingId === w._id ? (
                         <>
-                            {/* 文本输入 */}
+                            {/* Text input */}
                             <input
                                 className="w-full border border-warm-border px-3 py-2 rounded mb-3"
                                 value={editName}
                                 onChange={e => setEditName(e.target.value)}
-                                placeholder="你的姓名"
+                                placeholder="Your name"
                             />
                             <textarea
                                 className="w-full border border-warm-border px-3 py-2 rounded mb-4 h-24"
                                 value={editMsg}
                                 onChange={e => setEditMsg(e.target.value)}
-                                placeholder="告别留言"
+                                placeholder="Farewell message"
                             />
 
-                            {/* 录像与预览 */}
+                            {/* Recording and preview */}
                             <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                {/* 摄像区域 */}
+                                {/* Camera area */}
                                 <div>
                                     <video
                                         ref={videoRef}
@@ -153,7 +152,7 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                                                 className="btn-primary"
                                                 onClick={startRec}
                                             >
-                                                开始录制
+                                                Start Recording
                                             </button>
                                         ) : (
                                             <button
@@ -161,15 +160,15 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                                                 className="btn-ghost"
                                                 onClick={stopRec}
                                             >
-                                                停止录制
+                                                Stop Recording
                                             </button>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* 预览区域 */}
+                                {/* Preview area */}
                                 <div>
-                                    <label className="block mb-1 font-medium">预览</label>
+                                    <label className="block mb-1 font-medium">Preview</label>
                                     {previewURL ? (
                                         <video
                                             src={previewURL}
@@ -178,54 +177,54 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                                         />
                                     ) : (
                                         <div className="w-full h-40 flex items-center justify-center bg-warm-light text-warm-gray rounded">
-                                            暂无录制
+                                            No recording yet
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* 操作按钮 */}
+                            {/* Action buttons */}
                             <div className="space-x-3 text-sm">
                                 <button
                                     type="button"
                                     className="btn-primary"
                                     onClick={() => save(w._id)}
                                 >
-                                    保存
+                                    Save
                                 </button>
                                 <button
                                     type="button"
                                     className="btn-ghost"
                                     onClick={cancelEdit}
                                 >
-                                    取消
+                                    Cancel
                                 </button>
                             </div>
                         </>
                     ) : (
                         <>
-                            {/* 展示态头部 */}
+                            {/* Header in display mode */}
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="text-xl font-semibold">
-                                    {w.uploaderName || '匿名的'}
+                                    {w.uploaderName || 'Anonymous'}
                                 </h3>
                                 <div className="space-x-2 text-sm">
                                     <button
                                         className="btn-edit"
                                         onClick={() => enterEdit(w)}
                                     >
-                                        编辑
+                                        Edit
                                     </button>
                                     <button
                                         className="btn-danger"
                                         onClick={() => onDelete(w._id)}
                                     >
-                                        删除
+                                        Delete
                                     </button>
                                 </div>
                             </div>
 
-                            {/* 已上传视频 */}
+                            {/* Uploaded video */}
                             {w.videoFilename && (
                                 <video
                                     controls
@@ -234,14 +233,14 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                                 />
                             )}
 
-                            {/* 文字留言 */}
+                            {/* Text message */}
                             {w.farewellMessage && (
                                 <p className="mb-2 whitespace-pre-line">
                                     {w.farewellMessage}
                                 </p>
                             )}
 
-                            {/* 时间戳 */}
+                            {/* Timestamp */}
                             {w.createdAt && (
                                 <p className="text-center text-sm text-gray-500">
                                     {new Date(w.createdAt).toLocaleString('zh-CN')}

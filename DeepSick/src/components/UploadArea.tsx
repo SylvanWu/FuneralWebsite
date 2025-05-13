@@ -13,7 +13,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({ onFileUpload, isUploading }) =>
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       onFileUpload(e.target.files[0]);
-      e.target.value = ''; // 清空输入框以便下次选择同一个文件
+      e.target.value = ''; // Clear the input field to allow selecting the same file again next time
     }
   };
 

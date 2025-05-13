@@ -1,91 +1,89 @@
 import express from 'express';
 import Dream from '../models/Dream.js';
-// import authMiddleware from '../middleware/auth.js'; //1.登录验证先注释掉
+// import authMiddleware from '../middleware/auth.js'; // 1. Temporarily comment out login auth
 
 const router = express.Router();
-// router.use(authMiddleware); // 所有路由需要登录验证  2.目前登录验证测试不通 先注释掉
+// router.use(authMiddleware); // All routes require login, but comment out for testing
 
 console.log('Dream routes initialized');
 
-/*----- 获取当前用户所有梦想（按order排序）-----*/
+/*----- Get all dreams (sorted by order) -----*/
 router.get('/', async (req, res) => {
   try {
     // console.log(`Fetching dreams for user ${req.user.id}`);
-    // const dreams = await Dream.find({ owner: req.user.id }).sort({ order: 1 });  // 3.目前不验证owner，方便测试 改成下边一行
+    // const dreams = await Dream.find({ owner: req.user.id }).sort({ order: 1 });  // 3. Temporarily skip owner validation for testing
 
     const dreams = await Dream.find().sort({ order: 1 });
     // console.log(`Successfully fetched ${dreams.length} dreams for user ${req.user.id}`);
     res.json(dreams);
   } catch (err) {
     console.error('Error fetching dreams:', err);
-    res.status(500).json({ message: '获取梦想列表失败' });
+    res.status(500).json({ message: 'Failed to fetch dreams' });
   }
 });
 
-/*----- 创建新梦想 -----*/
+/*----- Create new dream -----*/
 router.post('/', async (req, res) => {
   try {
     // console.log(`Creating new dream for user ${req.user.id}`, req.body);
     console.log('💡 req.user:', req.user);
     const dream = await Dream.create({
-      // owner: req.user.id,  //4.目前不验证owner，方便测试
-      content: req.body.content || '<p>新愿望</p>',
+      // owner: req.user.id,  // 4. Temporarily skip owner validation for testing
+      content: req.body.content || '<p>New Wish</p>',
       position: req.body.position || { x: 0, y: 0 }
     });
     console.log(`Dream created successfully: ${dream._id}`);
     res.status(201).json(dream);
   } catch (err) {
     console.error('Error creating dream:', err);
-    res.status(500).json({ message: '创建梦想失败' });
+    res.status(500).json({ message: 'Failed to create dream' });
   }
 });
 
-/*----- 更新梦想（内容/位置/排序）-----*/
+/*----- Update dream (content/position/order) -----*/
 router.patch('/:id', async (req, res) => {
   try {
-    console.log('收到的 PATCH 请求体:', req.body);
+    console.log('Received PATCH body:', req.body);
     // console.log(`Updating dream ${req.params.id} for user ${req.user.id}`, req.body);
     const updated = await Dream.findOneAndUpdate(
-      // { _id: req.params.id, owner: req.user.id },// 5.目前不验证owner，方便测试 改成下边一行
+      // { _id: req.params.id, owner: req.user.id }, // 5. Temporarily skip owner validation for testing
       { _id: req.params.id },
-
-
       {
         content: req.body.content,
         order: req.body.order,
         position: req.body.position
       },
-      { new: true } // 返回更新后的文档
+      { new: true } // Return updated document
     );
     if (!updated) {
       // console.log(`Dream not found: ${req.params.id} for user ${req.user.id}`);
-      return res.status(404).json({ message: '未找到该梦想' });
+      return res.status(404).json({ message: 'Dream not found' });
     }
     console.log(`Dream updated successfully: ${updated._id}`);
     res.json(updated);
   } catch (err) {
     console.error('Error updating dream:', err);
-    res.status(500).json({ message: '更新失败' });
+    res.status(500).json({ message: 'Update failed' });
   }
 });
 
-/*----- 删除梦想 -----*/
+/*----- Delete dream -----*/
 router.delete('/:id', async (req, res) => {
   try {
     // console.log(`Deleting dream ${req.params.id} for user ${req.user.id}`);
     const deleted = await Dream.findOneAndDelete({
       _id: req.params.id,
-      // owner: req.user.id  // 6.目前不验证owner，方便测试
+      // owner: req.user.id  // 6. Temporarily skip owner validation for testing
     });
     if (!deleted) {
       // console.log(`Dream not found for deletion: ${req.params.id} for user ${req.user.id}`);
-      return res.status(404).json({ message: '未找到该梦想' });
+      return res.status(404).json({ message: 'Dream not found' });
     }
     console.log(`Dream deleted successfully: ${deleted._id}`);
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting dream:', err);
-    res.status(500).json({ message: '删除失败' });
+    res.status(500).json({ message: 'Deletion failed' });
   }
 });
 

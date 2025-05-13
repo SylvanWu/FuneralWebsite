@@ -1,4 +1,4 @@
-//遗嘱页面组件，展示用户的遗嘱列表，并提供创建、编辑和删除遗嘱的功能。
+// Will page component, displays the user's list of wills and provides create, edit, and delete functionality.
 // src/pages/WillsPage.tsx
 import React, { useEffect, useState } from 'react';
 import WillForm, { Will }           from '../components/WillForm';
@@ -9,26 +9,32 @@ export default function WillsPage() {
     const [wills,   setWills]   = useState<Will[]>([]);
     const [loading, setLoading] = useState(true);
 
-    /* --------- 初次加载 --------- */
+    /* --------- Initial load --------- */
     useEffect(() => {
         (async () => {
-            try   { setWills(await getWills()); }
-            catch (e) { console.error('获取遗嘱列表失败', e); }
-            finally { setLoading(false); }
+            try {
+                const result = await getWills();
+                setWills(Array.isArray(result) ? result : []);
+            } catch (e) {
+                console.error('Failed to fetch wills list', e);
+                setWills([]); // Ensure wills is always an array
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
-    /* --------- 新增回调 --------- */
+    /* --------- Callback after creation --------- */
     const handleCreated = (w:Will) => setWills(prev => [w, ...prev]);
 
-    /* --------- 删除 --------- */
+    /* --------- Delete --------- */
     const handleDelete = async (id:string) => {
-        if (!window.confirm('确认删除这条留言？')) return;
+        if (!window.confirm('Are you sure you want to delete this will?')) return;
         await deleteWill(id);
         setWills(prev => prev.filter(w => w._id !== id));
     };
 
-    /* --------- 更新（文字 / 带新视频） --------- */
+    /* --------- Update (text / with new video) --------- */
     const handleUpdate = async (
         id: string,
         fields: Partial<Will>,
@@ -38,7 +44,7 @@ export default function WillsPage() {
             let updated: Will;
 
             if (videoBlob) {
-                /* —— 带新视频 —— */
+                /* —— With new video —— */
                 const fd = new FormData();
                 if (fields.uploaderName   !== undefined) fd.append('uploaderName',   fields.uploaderName);
                 if (fields.farewellMessage!== undefined) fd.append('farewellMessage',fields.farewellMessage);
@@ -46,32 +52,32 @@ export default function WillsPage() {
 
                 updated = await updateWill(id, fd, true);          // <― isForm = true
             } else {
-                /* —— 纯文字 —— */
+                /* —— Text only —— */
                 updated = await updateWill(id, fields);
             }
 
             setWills(prev => prev.map(w => (w._id === id ? updated : w)));
         } catch (err) {
-            console.error('更新失败', err);
-            window.alert('更新失败，请重试');
+            console.error('Update failed', err);
+            window.alert('Update failed. Please try again.');
         }
     };
 
-    /* --------- 渲染 --------- */
+    /* --------- Render --------- */
     return (
         <main className="max-w-4xl mx-auto p-6 bg-amber-50">
             <h2 className="text-3xl font-semibold text-center mb-6">
-                告别留言与遗嘱
+                Farewell Messages and Wills
             </h2>
 
-            {/* 新增表单 */}
+            {/* Create form */}
             <div className="mb-8">
                 <WillForm onCreated={handleCreated} />
             </div>
 
-            {/* 列表 / 加载中 */}
+            {/* List / Loading */}
             {loading
-                ? <p className="text-center py-8 text-gray-600">加载中…</p>
+                ? <p className="text-center py-8 text-gray-600">Loading…</p>
                 : <WillList
                     wills={wills}
                     onDelete={handleDelete}

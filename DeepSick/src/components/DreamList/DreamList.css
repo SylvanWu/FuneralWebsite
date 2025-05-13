@@ -1,8 +1,7 @@
 .dream-card {
   position: relative;
-  /* max-width: 800px; */
+  /* Fixed width */
   width: 400px;
-  /* 固定宽度 */
   /* margin: 2rem auto; */
   padding: 2rem;
   background-color: #ffffff;
@@ -50,7 +49,7 @@
   border: 1px solid #e5e7eb;
 }
 
-/* 添加梦想按钮样式 */
+/* Add dream button */
 .add-button {
   position: absolute;
   right: -30px;
@@ -75,8 +74,7 @@
   transform: scale(1.1);
 }
 
-
-/* 梦想项样式 */
+/* Dream item style */
 .dream-item {
   display: flex;
   justify-content: space-between;
@@ -93,7 +91,7 @@
   transform: translateX(4px);
 }
 
-/* 输入框样式 */
+/* Input box style */
 .dream-input {
   width: 100%;
   padding: 10px;
@@ -108,9 +106,7 @@
   margin-bottom: 0rem;
 }
 
-
-/* cancel when adding a dream  */
-
+/* Cancel button when adding a dream */
 .input-container {
   display: flex;
   align-items: center;
@@ -120,16 +116,14 @@
 
 .canceladd-button {
   margin-top: -18px;
-  /* 往上提一点，可根据需求调大 */
+  /* Slightly pulled up; adjust as needed */
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #fcdde0;
-  /* 淡粉色 */
+  background-color: #fcdde0; /* Light pink */
   border: none;
   font-size: 1.2rem;
-  color: #e11d48;
-  /* 深粉红，和背景搭配 */
+  color: #e11d48; /* Dark pink to match background */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,13 +133,11 @@
 }
 
 .canceladd-button:hover {
-  background-color: #fda4af;
-  /* hover 时更深一点的粉色 */
+  background-color: #fda4af; /* Deeper pink on hover */
   transform: scale(1.1);
 }
 
-
-/* 隐藏操作按钮，悬停时再显示 */
+/* Hide action buttons; show on hover */
 .dream-actions {
   display: none;
   gap: 6px;
@@ -155,7 +147,7 @@
   display: flex;
 }
 
-/* 按钮样式统一美观 */
+/* Uniform button styling */
 .edit-button,
 .delete-button {
   font-size: 0.85rem;
@@ -167,8 +159,7 @@
 }
 
 .edit-button {
-  background-color: #bfdbfe;
-  /* 淡蓝 */
+  background-color: #bfdbfe; /* Light blue */
   color: #1e40af;
 }
 
@@ -177,8 +168,7 @@
 }
 
 .delete-button {
-  background-color: #fecaca;
-  /* 淡红 */
+  background-color: #fecaca; /* Light red */
   color: #991b1b;
 }
 
@@ -217,8 +207,7 @@
   display: block;
 } */
 
-
-/* 新增收缩状态专用样式 */
+/* Additional style for shrunk state */
 .jirachi-icon-shrunk {
   position: absolute;
   top: 0px;
@@ -228,10 +217,8 @@
   height: 80px;
   cursor: pointer;
   transition: transform 0.3s ease;
-  cursor: grab;
-  /* 确保鼠标悬停时有抓手 */
-  -webkit-user-drag: none;
-  /* 兼容Safari */
+  cursor: grab; /* Show grab cursor on hover */
+  -webkit-user-drag: none; /* Safari compatibility */
 }
 
 .jirachi-icon-shrunk:hover {
@@ -239,19 +226,16 @@
 }
 
 .dream-shrink-container.shrunk {
-  padding: 40px;
-  /* 只保留顶部按钮空间 */
-  height: 120px;
-  /* 或者你希望的紧凑高度 */
+  padding: 40px; /* Only leave space for the top button */
+  height: 120px; /* Or your desired compact height */
   overflow: hidden;
 }
 
 .dream-card .dream-shrink-container.shrunk {
-  min-height: 120px;
-  /* 避免显示残留内容 */
+  min-height: 120px; /* Prevent content residue display */
 }
 
-/* 收缩时 DreamCard 样式变透明、尺寸变小 */
+/* Shrunk DreamCard becomes transparent and smaller */
 .dream-card.shrunk {
   background-color: transparent !important;
   box-shadow: none;
@@ -262,23 +246,21 @@
   overflow: hidden;
 }
 
-/* 隐藏顶部/侧边彩条 */
+/* Hide top/side color bars */
 .dream-card.shrunk::before,
 .dream-card.shrunk::after {
   display: none;
 }
 
-/* 编辑按钮 */
+/* Edit toggle button */
 .edit-toggle-button {
   position: absolute;
-  right: 20px;
-  /* 比 add-button 更靠左 */
+  right: 20px; /* More left than add-button */
   bottom: -30px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #60a5fa;
-  /* 蓝色调 */
+  background: #60a5fa; /* Blue tone */
   color: white;
   font-size: 1.25rem;
   display: flex;

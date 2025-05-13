@@ -16,11 +16,12 @@ import RoleProtected from './components/RoleProtected';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import WillsPage from './pages/WillsPage';
-import AdminPage from './pages/AdminPage';
+
 import HomePage from './pages/HomePage';
 import CreateFuneralPage from './pages/CreateFuneralPage';
 import FuneralRoomPage from './pages/FuneralRoomPage';
 import HallPage from './pages/HallPage';
+import FuneralRoomHallPage from './pages/FuneralRoomHallPage';
 
 import InteractivePage from './pages/InteractivePage';
 import CandlePage from './pages/CandlePage';
@@ -55,13 +56,24 @@ const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) =>
   );
 };
 
+// Protected route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 export default function App() {
   const navigate = useNavigate();
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [role, setRole] = useState(() => localStorage.getItem('role'));
   const isLoggedIn = Boolean(token);
 
-  // 监听 localStorage 变化（比如登录/登出）
+  // Listen for localStorage changes (login/logout)
   useEffect(() => {
     const onStorage = () => {
       setToken(localStorage.getItem('token'));
@@ -71,10 +83,11 @@ export default function App() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // 登录/登出后手动更新 state
+  // Manually update state after login/logout
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('user');
     setToken(null);
     setRole(null);
     navigate('/login', { replace: true });
@@ -84,17 +97,36 @@ export default function App() {
     <SocketProvider>
       <div className="min-h-screen bg-transparent text-gray-800">
         <Routes>
-          {/* 登录注册页面 */}
+          {/* Login/Register pages */}
           <Route path="/login" element={<LoginPage setToken={setToken} />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* 其他页面由 Layout 包裹 */}
+          {/* Dashboard routes - outside Layout */}
+          <Route 
+            path="/visitor-dashboard" 
+            element={
+              <ProtectedRoute>
+                <VisitorDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/organizer-dashboard" 
+            element={
+              <ProtectedRoute>
+                <OrganizerDashboard />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Other pages wrapped in Layout */}
           <Route element={<Layout onLogout={handleLogout} />}>
-            {/* 首页 */}
+            {/* Homepage */}
             <Route path="/" element={<HomePage />} />
 
-            {/* 其他公共页面 */}
+            {/* Other public pages */}
             <Route path="/hall" element={<HallPage />} />
+            <Route path="/funeralhall" element={<FuneralRoomHallPage />} />
             <Route path="/interactive" element={<InteractivePage />} />
             <Route path="/candle" element={<CandlePage />} />
             <Route path="/flower" element={<FlowerPage />} />
@@ -103,52 +135,48 @@ export default function App() {
             <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             
-            {/* Room 占位页面 */}
+            {/* Room placeholder page */}
             <Route path="/room" element={<div className="p-8 text-center">
               <h1 className="text-2xl font-bold mb-4">Room</h1>
               <p className="text-gray-600">This page is under construction.</p>
             </div>} />
 
-            {/* Admin 占位页面 */}
+            {/* Admin placeholder page */}
             <Route path="/admin" element={<div className="p-8 text-center">
               <h1 className="text-2xl font-bold mb-4">Admin</h1>
               <p className="text-gray-600">This page is under construction.</p>
             </div>} />
 
-          {/* Wills 和 DreamList 页面 */}
+            {/* Wills and DreamList pages */}
+            <Route
+              path="/wills"
+              element={
+                <RoleProtected userType="organizer">
+                  <WillsPage />
+                </RoleProtected>
+              }
+            />
+            <Route
+              path="/dreamlist"
+              element={
+                <RoleProtected userType="organizer">
+                  <DreamShrink />
+                </RoleProtected>
+              }
+            />
+          </Route>
+
           <Route
-            path="/wills"
+            path="/dreamlist/edit"
             element={
               <RoleProtected userType="organizer">
-                <WillsPage />
+                <DreamEditor />
               </RoleProtected>
             }
           />
-          <Route
-            path="/dreamlist"
-            element={
-              <RoleProtected userType="organizer">
-                <DreamShrink />
-              </RoleProtected>
-            }
-          />
-        </Route>
 
-        <Route
-          path="/dreamlist/edit"
-          element={
-            <RoleProtected userType="organizer">
-              <DreamEditor />
-            </RoleProtected>
-          }
-        />
-
-
-          {/* Visitor Dashboard */}
-          <Route path="/visitor-dashboard" element={<VisitorDashboard />} />
-
-          {/* Organizer Dashboard */}
-          <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </SocketProvider>

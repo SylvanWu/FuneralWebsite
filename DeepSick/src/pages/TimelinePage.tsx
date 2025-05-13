@@ -1,4 +1,4 @@
-//时间线页面组件，展示记忆内容时间线，并提供文件上传功能。
+// Timeline page component: displays memory timeline and provides file upload functionality.
 // src/pages/TimelinePage.tsx
 import React, { useState, useEffect } from 'react';
 import UploadArea from '../components/UploadArea';
@@ -6,7 +6,7 @@ import Timeline, { Memory } from '../components/Timeline';
 import {
     fetchMemories,
     createMemory,
-    deleteMemory                    // NEW ⬅️ 记得 api 里要有这个函数
+    deleteMemory                    // NEW ⬅️ Make sure this function exists in your API file
 } from '../api';
 
 export interface BackendMemory {
@@ -22,14 +22,14 @@ export default function TimelinePage() {
     const [name, setName] = useState('');
     const [isUploading, setUploading] = useState(false);
 
-    /* ---------- 首次加载 ---------- */
+    /* ---------- Initial load ---------- */
     useEffect(() => {
         (async () => {
             try {
                 const res = await fetchMemories();
                 const data = res.data ?? res;
                 const list = (data as BackendMemory[]).map(m => ({
-                    id: m._id,                             // 注意字段映射
+                    id: m._id,                             // Note the field mapping
                     type: m.memoryType,
                     preview: m.memoryContent,
                     uploadTime: new Date(m.uploadTime),
@@ -42,17 +42,17 @@ export default function TimelinePage() {
         })();
     }, []);
 
-    /* ---------- 删除回调（给 Timeline ➜ MemoryCard 用） ---------- */
+    /* ---------- Delete callback (used in Timeline ➜ MemoryCard) ---------- */
     const handleDeleteMemory = async (id: string) => {        // NEW
         try {
             await deleteMemory(id);                               // DELETE /api/memories/:id
-            setMemories(prev => prev.filter(m => m.id !== id));   // 本地移除
+            setMemories(prev => prev.filter(m => m.id !== id));   // Remove locally
         } catch (err) {
             console.error('Delete failed:', err);
         }
     };
 
-    /* ---------- 上传 ---------- */
+    /* ---------- Upload ---------- */
     const handleFileUpload = async (file: File) => {
         if (isUploading) return;
         setUploading(true);
@@ -100,7 +100,7 @@ export default function TimelinePage() {
 
     return (
         <div className="max-w-4xl mx-auto p-6">
-            {/* 姓名输入 */}
+            {/* Name input */}
             <label className="block mb-1 text-sm font-medium">Your Name (optional)</label>
             <input
                 className="w-full mb-6 px-3 py-2 border rounded"
@@ -109,10 +109,10 @@ export default function TimelinePage() {
                 placeholder="Please enter your name"
             />
 
-            {/* 上传区域 */}
+            {/* Upload area */}
             <UploadArea onFileUpload={handleFileUpload} />
 
-            {/* 时间线，记得传 onDeleteMemory */}
+            {/* Timeline, remember to pass onDeleteMemory */}
             <Timeline
                 memories={memories}
                 onDeleteMemory={handleDeleteMemory}          // NEW ⬅️
