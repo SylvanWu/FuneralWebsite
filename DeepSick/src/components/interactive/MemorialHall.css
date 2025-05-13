@@ -1,0 +1,110 @@
+/* MemorialHall Component Styles */
+
+.memorial-hall-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  padding: 1.5rem;
+}
+
+.memorial-hall-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.upload-section {
+  width: 100%;
+}
+
+.upload-title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.upload-note {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.upload-error-message {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: #fff0f0;
+  border-left: 3px solid #ff3333;
+  color: #cc0000;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.name-input-container {
+  width: 100%;
+  max-width: 400px;
+}
+
+.name-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.name-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.timeline-section {
+  padding-top: 1rem;
+}
+
+/* Responsive styles */
+@media (min-width: 768px) {
+  .memorial-hall-header {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .upload-section {
+    flex: 2;
+    padding-right: 1.5rem;
+  }
+  
+  .name-input-container {
+    flex: 1;
+    padding-left: 1.5rem;
+    border-left: 1px solid #eee;
+  }
+}
+
+@media (max-width: 767px) {
+  .memorial-hall-container {
+    padding: 1rem;
+  }
+  
+  .memorial-hall-header {
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+  
+  .upload-title {
+    font-size: 1.1rem;
+  }
+} 

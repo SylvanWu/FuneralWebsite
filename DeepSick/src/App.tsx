@@ -20,7 +20,6 @@ import WillsPage from './pages/WillsPage';
 import HomePage from './pages/HomePage';
 import CreateFuneralPage from './pages/CreateFuneralPage';
 import FuneralRoomPage from './pages/FuneralRoomPage';
-import HallPage from './pages/HallPage';
 import FuneralRoomHallPage from './pages/FuneralRoomHallPage';
 
 import InteractivePage from './pages/InteractivePage';
@@ -125,9 +124,10 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
 
             {/* Other public pages */}
-            <Route path="/hall" element={<HallPage />} />
+            <Route path="/hall" element={<Navigate to="/interactive" replace />} />
             <Route path="/funeralhall" element={<FuneralRoomHallPage />} />
             <Route path="/interactive" element={<InteractivePage />} />
+            <Route path="/interactive/:roomId" element={<InteractivePage />} />
             <Route path="/candle" element={<CandlePage />} />
             <Route path="/flower" element={<FlowerPage />} />
             <Route path="/message" element={<MessagePage />} />

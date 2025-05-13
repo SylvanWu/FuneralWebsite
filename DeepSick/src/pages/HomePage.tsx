@@ -40,7 +40,7 @@ const HomePage: React.FC = () => {
         
         <div className="navigation-buttons">
           <Link to="/interactive" className="nav-button">Interactive</Link>
-          <Link to="/hall" className="nav-button">Memorial Hall</Link>
+          <Link to="/interactive" className="nav-button">Memorial Hall</Link>
           <Link to="/funeralhall" className="nav-button primary">Funeral Rooms</Link>
         </div>
       </div>
