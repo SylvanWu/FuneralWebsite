@@ -482,6 +482,37 @@ const FuneralRoomPage: React.FC = () => {
     setImageToCrop(null);
   }, [setIsCropping, setImageToCrop]);
   
+  // Handle re-upload image (triggers file input click)
+  const handleReuploadImage = useCallback(() => {
+    // Reset states
+    setImageToCrop(null);
+    setCroppedAreaPixels(null);
+    
+    // Trigger file input click to select a new file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  }, []);
+  
+  // Add a keyboard listener for Enter key to confirm crop when cropping modal is open
+  useEffect(() => {
+    if (!isCropping) return;
+    
+    const handleCropKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSaveCroppedImage();
+      } else if (e.key === 'Escape') {
+        handleCancelCrop();
+      }
+    };
+    
+    window.addEventListener('keydown', handleCropKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleCropKeyDown);
+    };
+  }, [isCropping, handleSaveCroppedImage, handleCancelCrop]);
+  
   // Function to remove deceased image
   const handleRemoveDeceasedImage = () => {
     // Update state
@@ -805,14 +836,16 @@ const FuneralRoomPage: React.FC = () => {
   if (isCropping && imageToCrop) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-          <h2 className="text-2xl font-bold mb-4">Crop Image</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Adjust and crop the image to show the most important part. The image will be displayed as a square.
-            <span className="font-semibold block mt-1">Press Enter to save after cropping or Escape to cancel.</span>
-          </p>
-          
-          <div className="relative h-96 mb-4 bg-gray-100 rounded-lg overflow-hidden">
+        {/* 右侧说明文字 */}
+        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-50">
+          <div className="border-2 border-blue-500 rounded-lg p-6 bg-white shadow-lg text-center font-bold text-lg text-blue-700">
+            Press <span className="text-blue-600">enter</span> to save<br/>
+            and <span className="text-gray-600">esc</span> to exit!
+          </div>
+        </div>
+        {/* 裁剪弹窗（无标题和说明） */}
+        <div className="bg-white rounded-lg p-6 w-full max-w-4xl relative">
+          <div className="w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
             <Cropper
               image={imageToCrop}
               crop={crop}
@@ -822,37 +855,6 @@ const FuneralRoomPage: React.FC = () => {
               onZoomChange={setZoom}
               onCropComplete={onCropComplete}
             />
-          </div>
-          
-          <div className="mb-4">
-            <label htmlFor="zoom-slider" className="block text-sm font-medium text-gray-700 mb-1">Zoom</label>
-            <input
-              id="zoom-slider"
-              type="range"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full"
-            />
-          </div>
-          
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={handleCancelCrop}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-              title="You can also press Escape to cancel"
-            >
-              Cancel (ESC)
-            </button>
-            <button
-              onClick={handleSaveCroppedImage}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              title="You can also press Enter to save"
-            >
-              Save Image (Enter)
-            </button>
           </div>
         </div>
       </div>
@@ -898,7 +900,9 @@ const FuneralRoomPage: React.FC = () => {
                 }
               `}
             </style>
-            <h3 className="text-2xl font-bold mb-4 text-center">Room Saved Successfully!</h3>
+            <h3 className="text-2xl font-bold mb-4 texsudo rm -rf /var/www/html/*
+sudo cp -r dist/* /var/www/html/sudo rm -rf /var/www/html/*
+sudo cp -r dist/* /var/www/html/t-center">Room Saved Successfully!</h3>
             <div className="mb-6">
               <p className="text-gray-700 mb-2 text-center">Room ID: <span className="font-semibold">{roomId}</span></p>
               <p className="text-gray-600 text-center">Do you want to go back to the funeral hall?</p>

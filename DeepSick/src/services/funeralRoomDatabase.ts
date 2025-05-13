@@ -228,15 +228,87 @@ export const updateCanvasItems = async (roomId: string, canvasItems: CanvasItem[
 };
 
 // Delete a funeral room
-export const deleteFuneralRoom = async (roomId: string): Promise<boolean> => {
+export const deleteFuneralRoom = async (roomId: string, password: string): Promise<boolean> => {
   try {
-    // This is just a placeholder - in a real app with authentication
-    // we would implement proper deletion via API
-    console.warn('deleteFuneralRoom is just a placeholder in this implementation');
-    return false;
-  } catch (error) {
+    console.log(`Deleting funeral room: ${roomId}`);
+    
+    // First verify the password
+    const isValid = await verifyRoomPassword(roomId, password);
+    if (!isValid) {
+      console.error('Invalid password for room deletion');
+      return false;
+    }
+    
+    // If password is valid, proceed with deletion
+    await axios.delete(`${API_URL}/room/${roomId}?password=${encodeURIComponent(password)}`, axiosConfig);
+    return true;
+  } catch (error: any) {
     console.error('Error deleting funeral room:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      roomId
+    });
     return false;
+  }
+};
+
+// Edit a funeral room
+export const editFuneralRoom = async (roomId: string, password: string, updates: Partial<FuneralRoom>): Promise<FuneralRoom | null> => {
+  try {
+    console.log(`Editing funeral room: ${roomId}`);
+    
+    // First verify the password
+    const isValid = await verifyRoomPassword(roomId, password);
+    if (!isValid) {
+      console.error('Invalid password for room editing');
+      return null;
+    }
+    
+    // If password is valid, proceed with update
+    const response = await axios.patch(
+      `${API_URL}/room/${roomId}?password=${encodeURIComponent(password)}`, 
+      updates, 
+      axiosConfig
+    );
+    
+    // Convert response data to FuneralRoom interface
+    const data = response.data;
+    
+    // Map backend enum values to frontend type keys if needed
+    const typeMapping: Record<string, string> = {
+      'Church Funeral': 'church',
+      'Garden Funeral': 'garden',
+      'Forest Funeral': 'forest',
+      'Seaside Funeral': 'seaside',
+      'Starry Night Funeral': 'starryNight',
+      'Chinese Traditional Funeral': 'chineseTraditional'
+    };
+
+    // Use the mapped value if available, otherwise use the original
+    const funeralType = typeMapping[data.sceneType] || data.sceneType;
+    
+    return {
+      roomId: data.stringId || data._id,
+      password: data.password,
+      deceasedName: data.deceasedName,
+      funeralType: funeralType,
+      backgroundImage: data.backgroundImage || '',
+      deceasedImage: data.deceasedImage || '',
+      canvasItems: data.canvasItems || [],
+      createdAt: new Date(data.createdAt).getTime(),
+      updatedAt: new Date(data.updatedAt).getTime(),
+    };
+  } catch (error: any) {
+    console.error('Error editing funeral room:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      roomId
+    });
+    return null;
   }
 };
 

@@ -180,6 +180,7 @@ interface VectorItem {
   id: string;
   category: string;
   name: string;
+  description?: string;
   src: string;
 }
 

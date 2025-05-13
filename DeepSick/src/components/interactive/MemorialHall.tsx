@@ -23,15 +23,16 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
   const [name, setName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const role = localStorage.getItem('role');
   
   // 获取特定房间的回忆
   useEffect(() => {
     const loadMemories = async () => {
       try {
+        setIsLoading(true);
         const res = await fetchMemories(roomData.roomId);
         const data = (res.data ?? res) as BackendMemory[];
-        console.log('Fetched memories:', data); // 添加日志用于调试
         
         if (!Array.isArray(data)) {
           console.error('Expected array of memories but got:', data);
@@ -49,16 +50,54 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
         );
       } catch (err) {
         console.error(`Failed to fetch memories for room ${roomData.roomId}:`, err);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     loadMemories();
   }, [roomData.roomId]);
 
+  // 处理与修复图片URL
+  const processImageUrl = (url: string): string => {
+    if (!url) return '';
+    
+    // 如果是blob或data URL直接返回
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
+      return url;
+    }
+    
+    // 修复Windows路径分隔符
+    let processedUrl = url.replace(/\\/g, '/');
+    
+    // 处理相对路径
+    if (!processedUrl.startsWith('http')) {
+      // 获取基础URL，但移除/api后缀，因为静态资源不在/api路径下
+      const baseUrlWithApi = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+      const baseUrl = baseUrlWithApi.replace(/\/api$/, '');
+      
+      // 移除server前缀和uploads前缀
+      processedUrl = processedUrl
+        .replace(/^server\/uploads\//, '')
+        .replace(/^uploads\//, '');
+        
+      return `${baseUrl}/uploads/${processedUrl}`;
+    }
+    
+    return processedUrl;
+  };
+
   const handleFileUpload = async (file: File) => {
     if (isUploading) return;
     setIsUploading(true);
     setUploadError(null);
+    
+    // 防止文件过大
+    if (file.size > 10 * 1024 * 1024) { // 10MB 限制
+      setUploadError('文件太大，请上传10MB以下的文件');
+      setIsUploading(false);
+      return;
+    }
     
     try {
       let type: 'image' | 'video' | 'text' = 'image';
@@ -90,102 +129,92 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
       if (type === 'text') {
         fd.append('memoryContent', localPreview);
       }
-
-      console.log('上传内存:', {
+      
+      // 先添加本地预览，以防后端上传失败
+      const tempId = `temp-${Date.now()}`;
+      const tempMemory: Memory = {
+        id: tempId,
         type,
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
+        preview: localPreview,
+        uploadTime: new Date(),
         uploaderName: name || 'Anonymous',
-        roomId: roomData.roomId
-      });
+      };
+      
+      setMemories(prev => [tempMemory, ...prev]);
 
       // 发送到后端
-      const response = await createMemory(fd);
-      console.log('上传响应:', response);
-      
-      // 从后端响应中获取实际内容URL
-      let memoryId = '';
-      let memoryUrl = '';
-      
-      // 处理不同的响应格式
-      if (response && typeof response === 'object') {
-        if (response.data && typeof response.data === 'object') {
-          // 标准响应格式，数据在data字段中
-          const data = response.data;
-          memoryId = data._id || data.id || '';
-          memoryUrl = data.memoryContent || '';
-        } else if (response._id || response.id) {
-          // 直接在response中包含数据
-          memoryId = response._id || response.id || '';
-          memoryUrl = response.memoryContent || '';
-        }
-      }
-      
-      if (!memoryId) {
-        console.error('响应格式无效，未找到记忆ID:', response);
-        throw new Error('服务器返回的数据格式无效');
-      }
-      
-      // 图片路径处理
-      if (type === 'image') {
-        // 尝试从响应中找文件路径
-        let filePath = '';
-        if (response.data && response.data.file) {
-          filePath = response.data.file;
-        } else if (response.file) {
-          filePath = response.file;
-        } else if (typeof response === 'string') {
-          filePath = response;
-        }
+      try {
+        const response = await createMemory(fd);
         
-        if (filePath) {
-          // 修复Windows路径分隔符
-          filePath = filePath.replace(/\\/g, '/');
-          
-          // 构建完整URL
-          if (!memoryUrl) {
-            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-            
-            // 如果路径以server/uploads开头，去除server前缀
-            if (filePath.startsWith('server/uploads/')) {
-              filePath = filePath.replace(/^server\/uploads\//, '');
-              memoryUrl = `${baseUrl}/uploads/${filePath}`;
-            } 
-            // 如果路径以uploads开头
-            else if (filePath.startsWith('uploads/')) {
-              filePath = filePath.replace(/^uploads\//, '');
-              memoryUrl = `${baseUrl}/uploads/${filePath}`;
-            }
-            // 其他情况直接使用文件名部分
-            else {
-              const fileName = filePath.split('/').pop();
-              memoryUrl = `${baseUrl}/uploads/${fileName}`;
-            }
+        // 从后端响应中获取实际内容URL
+        let memoryId = '';
+        let memoryUrl = '';
+        
+        // 处理不同的响应格式
+        if (response && typeof response === 'object') {
+          if (response.data && typeof response.data === 'object') {
+            // 标准响应格式，数据在data字段中
+            const data = response.data;
+            memoryId = data._id || data.id || '';
+            memoryUrl = data.memoryContent || '';
+          } else if (response._id || response.id) {
+            // 直接在response中包含数据
+            memoryId = response._id || response.id || '';
+            memoryUrl = response.memoryContent || '';
           }
         }
+        
+        if (!memoryId) {
+          console.error('响应格式无效，未找到记忆ID:', response);
+          throw new Error('服务器返回的数据格式无效');
+        }
+        
+        // 处理图片URL
+        if (type === 'image' && !memoryUrl) {
+          // 尝试从响应中找文件路径
+          let filePath = '';
+          if (response.data && response.data.file) {
+            filePath = response.data.file;
+          } else if (response.file) {
+            filePath = response.file;
+          } else if (typeof response === 'string') {
+            filePath = response;
+          } else if (response.memoryContent) {
+            memoryUrl = response.memoryContent;
+          }
+          
+          if (filePath && !memoryUrl) {
+            memoryUrl = processImageUrl(filePath);
+          }
+        }
+        
+        // 最后如果还是没有URL，退回到使用本地预览
+        const finalUrl = memoryUrl || localPreview;
+        
+        // 用正式记忆替换临时记忆
+        setMemories(prev => 
+          prev.map(m => m.id === tempId ? {
+            ...m,
+            id: memoryId,
+            preview: finalUrl
+          } : m)
+        );
+        
+        setUploadError(null);
+      } catch (err) {
+        console.error('上传到服务器失败:', err);
+        setUploadError(`上传到服务器失败: ${(err as Error).message || '请检查网络连接'}`);
+        
+        // 不移除本地预览，让用户看到已上传内容，但标记为"本地"
+        setMemories(prev => 
+          prev.map(m => m.id === tempId ? {
+            ...m,
+            uploaderName: `${m.uploaderName} (本地预览)`
+          } : m)
+        );
       }
-      
-      // 最后如果还是没有URL，退回到使用本地预览
-      const finalUrl = memoryUrl || localPreview;
-      
-      console.log('要使用的内存URL:', finalUrl);
-      
-      // 添加到内存中的列表
-      setMemories(prev => [
-        {
-          id: memoryId,
-          type,
-          preview: finalUrl,
-          uploadTime: new Date(),
-          uploaderName: name || 'Anonymous',
-        },
-        ...prev,
-      ]);
-      
-      setUploadError(null);
     } catch (err) {
-      console.error('上传失败:', err);
+      console.error('预处理上传失败:', err);
       setUploadError((err as Error).message || '上传失败，请重试。');
     } finally {
       setIsUploading(false);
@@ -193,6 +222,12 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
   };
 
   const handleDeleteMemory = async (id: string) => {
+    // 跳过删除临时内存
+    if (id.startsWith('temp-')) {
+      setMemories(prev => prev.filter(m => m.id !== id));
+      return;
+    }
+    
     try {
       await deleteMemory(id);
       setMemories(prev => prev.filter(m => m.id !== id));
@@ -234,11 +269,17 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
       
       {/* 时间线区域 */}
       <div className="timeline-section">
-        <Timeline
-          memories={memories}
-          onDeleteMemory={handleDeleteMemory}
-          canDelete={role === 'admin'}
-        />
+        {isLoading ? (
+          <div className="text-center py-10 text-gray-500">
+            <p>Loading memories...</p>
+          </div>
+        ) : (
+          <Timeline
+            memories={memories}
+            onDeleteMemory={handleDeleteMemory}
+            canDelete={role === 'admin'}
+          />
+        )}
       </div>
     </div>
   );

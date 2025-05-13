@@ -12,7 +12,7 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
 
 interface MessageRecord {
   username: string;
-  message: string;
+  content: string;
   timestamp: string;
 }
 
