@@ -19,6 +19,7 @@ export interface FuneralRoom {
   backgroundImage: string;
   deceasedImage?: string;
   canvasItems?: any[]; // For storing items on the canvas
+  isOrganizer?: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -177,6 +178,9 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
     // Use the mapped value if available, otherwise use the original
     const funeralType = typeMapping[data.sceneType] || data.sceneType;
 
+    // 记录isOrganizer值用于调试
+    console.log(`[getFuneralRoomById] Room ${roomId} isOrganizer:`, data.isOrganizer);
+
     return {
       roomId: data.stringId || data._id,
       password: data.password,
@@ -185,6 +189,7 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
       backgroundImage: data.backgroundImage || '',
       deceasedImage: data.deceasedImage || '',
       canvasItems: data.canvasItems || [],
+      isOrganizer: data.isOrganizer || false, // 确保接收到的isOrganizer标志被正确处理
       createdAt: new Date(data.createdAt).getTime(),
       updatedAt: new Date(data.updatedAt).getTime(),
     };
@@ -244,6 +249,9 @@ export const verifyRoomPassword = async (roomId: string, password: string): Prom
       password
     }, axiosConfig);
     
+    // 记录后端返回的isOrganizer值
+    console.log(`[verifyRoomPassword] Room ${roomId} isOrganizer:`, response.data.isOrganizer);
+    
     return response.data.valid;
   } catch (error: any) {
     console.error('Error verifying room password:', error);
@@ -255,7 +263,7 @@ export const verifyRoomPassword = async (roomId: string, password: string): Prom
     });
     return false;
   }
-}; 
+};
 
 // Generate mock funeral rooms for testing
 export const getMockFuneralRooms = (): FuneralRoom[] => {

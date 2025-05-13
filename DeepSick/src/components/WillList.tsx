@@ -14,8 +14,8 @@ export interface Will {
 
 interface Props {
     wills: Will[];
-    onDelete: (id: string) => void;
-    onUpdate: (id: string, fields: Partial<Will>, videoBlob?: Blob) => void;
+    onDelete?: (id: string) => void | Promise<void>;
+    onUpdate?: (id: string, fields: Partial<Will>, videoBlob?: Blob) => void | Promise<void>;
 }
 
 export default function WillList({ wills, onDelete, onUpdate }: Props) {
@@ -98,7 +98,7 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
     };
 
     const save = (id: string) => {
-        onUpdate(
+        onUpdate?.(
             id,
             { uploaderName: editName, farewellMessage: editMsg },
             previewBlob || undefined
@@ -209,18 +209,22 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
                                     {w.uploaderName || 'Anonymous'}
                                 </h3>
                                 <div className="space-x-2 text-sm">
-                                    <button
-                                        className="btn-edit"
-                                        onClick={() => enterEdit(w)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="btn-danger"
-                                        onClick={() => onDelete(w._id)}
-                                    >
-                                        Delete
-                                    </button>
+                                    {onUpdate && (
+                                        <button
+                                            className="btn-edit"
+                                            onClick={() => enterEdit(w)}
+                                        >
+                                            Edit
+                                        </button>
+                                    )}
+                                    {onDelete && (
+                                        <button
+                                            className="btn-danger"
+                                            onClick={() => onDelete(w._id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 

@@ -73,7 +73,7 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password, userType } = req.body;
 
-  try {
+    try {
     let user;
     switch (userType) {
       case 'organizer':
@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
+        const token = jwt.sign(
       { userId: user._id, userType },
       JWT_SECRET,
       { expiresIn: '24h' }

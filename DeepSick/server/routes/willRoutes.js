@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 const router = express.Router();
 
 /* ───── Authentication ───── */
-router.use(authMiddleware('organizer'));
+// router.use(authMiddleware('organizer')); // 
 
 /* ───── Multer: Video Upload ───── */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -33,17 +33,37 @@ const upload = multer({ storage });
 /* ───── POST  /api/wills  Create a Will ───── */
 router.post(
   '/',
+  authMiddleware('organizer'),
   upload.single('video'),
   async (req, res) => {
     try {
-      const { uploaderName, farewellMessage } = req.body;
+      const { uploaderName, farewellMessage, roomId } = req.body;
       const videoFilename = req.file?.filename || '';
+
+      console.log('[POST] /api/wills - Request Body:', {
+        uploaderName,
+        farewellMessage,
+        roomId,
+        hasVideo: !!req.file
+      });
+
+      if (!roomId) {
+        console.log('[POST] /api/wills - ERROR: roomId is missing');
+        return res.status(400).json({ message: 'Room ID is required to create a will.' });
+      }
 
       const newWill = await Will.create({
         owner: req.user.userId,
+        roomId,
         uploaderName,
         farewellMessage,
         videoFilename
+      });
+
+      console.log('[POST] /api/wills - Created Will:', { 
+        _id: newWill._id, 
+        roomId: newWill.roomId,
+        owner: newWill.owner
       });
 
       res.status(201).json(newWill);
@@ -54,16 +74,34 @@ router.post(
   }
 );
 
-/* ───── GET  /api/wills  Get All Wills for Current User ───── */
+/* ───── GET  /api/wills  Get All Wills for a Specific Room ───── */
 router.get(
   '/',
+  authMiddleware(),
   async (req, res) => {
-    console.log('GET /api/wills called, req.user:', req.user);
+    const { roomId } = req.query;
+
+    if (!roomId) {
+      console.log('[GET] /api/wills - ERROR: roomId query parameter is missing');
+      return res.status(400).json({ message: 'Room ID is required to fetch wills.' });
+    }
+
+    console.log('[GET] /api/wills - Searching for roomId:', roomId, 'by user:', req.user?.userId);
     try {
-      const list = await Will.find({ owner: req.user.userId }).sort({ createdAt: -1 });
+      const list = await Will.find({ roomId }).sort({ createdAt: -1 });
+      console.log(`[GET] /api/wills - Found ${list.length} wills for roomId:`, roomId);
+      
+      if (list.length === 0) {
+        // 在没有记录时，检查数据库中是否有任何遗嘱记录
+        const allWills = await Will.find({}).limit(5);
+        console.log('[GET] /api/wills - No wills found for this room. First 5 wills in database:', 
+          allWills.map(w => ({ _id: w._id, roomId: w.roomId, owner: w.owner }))
+        );
+      }
+      
       res.json(list);
     } catch (err) {
-      console.error('Failed to fetch wills', err);
+      console.error('Failed to fetch wills for room:', roomId, err);
       res.status(500).json({ message: 'Failed to fetch wills', error: err });
     }
   }
@@ -84,13 +122,13 @@ router.patch(
       if (req.file) updateFields.videoFilename = req.file.filename;
 
       const updated = await Will.findOneAndUpdate(
-        { _id: req.params.id, owner: req.user.userId },
+        { _id: req.params.id }, // 移除了 owner: req.user.userId
         updateFields,
         { new: true, runValidators: true }
       );
 
       if (!updated) {
-        return res.status(404).json({ message: 'Will not found or no permission' });
+        return res.status(404).json({ message: 'Will not found' }); // 更新了错误信息
       }
       res.json(updated);
     } catch (err) {
@@ -106,11 +144,10 @@ router.delete(
   async (req, res) => {
     try {
       const deleted = await Will.findOneAndDelete({
-        _id: req.params.id,
-        owner: req.user.userId
+        _id: req.params.id // 移除了 owner: req.user.userId
       });
       if (!deleted) {
-        return res.status(404).json({ message: 'Will not found or no permission' });
+        return res.status(404).json({ message: 'Will not found' }); // 更新了错误信息
       }
       res.json({ ok: true });
     } catch (err) {

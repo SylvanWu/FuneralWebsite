@@ -32,7 +32,7 @@ const auth = (userType) => async (req, res, next) => {
         if (!token) {
             console.log('No token found in request');
             return res.status(401).json({ message: 'Unauthorized' });
-        }
+    }
 
         console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
         console.log('JWT_SECRET length:', process.env.JWT_SECRET?.length);

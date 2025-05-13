@@ -10,10 +10,15 @@ export interface Will {
     videoFilename: string;
     createdAt: string;
 }
-interface Props { onCreated?: (w: Will) => void }
+interface Props {
+    onCreated?: (w: Will) => void;
+    roomId: string;
+}
 
 /* ================ Component ================ */
-export default function WillForm({ onCreated }: Props) {
+export default function WillForm({ onCreated, roomId }: Props) {
+    console.log('[WillForm] Initialized. Received roomId via prop:', roomId);
+
     /* ---------- State ---------- */
     const [uploaderName, setUploaderName] = useState('');
     const [farewellMessage, setFarewellMsg] = useState('');
@@ -79,6 +84,13 @@ export default function WillForm({ onCreated }: Props) {
     /* ---------- Submit ---------- */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log('[WillForm] handleSubmit. Current roomId via prop:', roomId);
+        if (!roomId) {
+            alert("Room ID is missing. Cannot submit will.");
+            console.error('[WillForm] handleSubmit ERROR: roomId is missing. Value:', roomId);
+            return;
+        }
+
         const fd = new FormData();
         fd.append('uploaderName', uploaderName || 'Anonymous');
         fd.append('farewellMessage', farewellMessage);
@@ -86,7 +98,7 @@ export default function WillForm({ onCreated }: Props) {
             fd.append('video', new File([recordedBlob], 'farewell.webm', { type: 'video/webm' }));
         }
         try {
-            const newWill: Will = await createWill(fd);
+            const newWill: Will = await createWill(roomId, fd);
             onCreated?.(newWill);
             // reset
             setUploaderName('');

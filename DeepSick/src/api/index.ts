@@ -45,9 +45,11 @@ export const createMemory = (fd: FormData) => {
 export const deleteMemory = (id: string) => API.delete(`/memories/${id}`);
 
 /* ---------- Wills ---------- */
-export const getWills   = ()                 => API.get('/wills').then(r => r.data);
-export const createWill = (fd: FormData) =>
-  API.post('/wills', fd).then(r => r.data);
+export const getWills = (roomId: string) => API.get(`/wills?roomId=${roomId}`).then(r => r.data);
+export const createWill = (roomId: string, fd: FormData) => {
+  fd.append('roomId', roomId); // 将 roomId 添加到 FormData
+  return API.post('/wills', fd).then(r => r.data);
+};
 export const deleteWill = (id:string)        => API.delete(`/wills/${id}`);
 
 /**

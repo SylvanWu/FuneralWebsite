@@ -6,6 +6,8 @@ import MemorialHall from './MemorialHall';
 import SharedCanvas from '../SharedCanvas';
 import MusicPlayer from '../MusicPlayer';
 import WillForm from '../WillForm';
+import WillList from '../WillList';
+import { Will } from '../WillForm';
 import DreamShrink from '../DreamList/DreamShrink';
 import './InteractionSection.css';
 
@@ -41,12 +43,36 @@ const InteractionCard: React.FC<InteractionCardProps> = ({ icon, title, descript
 interface InteractionSectionProps {
   roomData: RoomData;
   className?: string;
+  onWillSuccessfullyCreated?: () => void;
+  wills?: Will[];
+  isLoadingWills?: boolean;
+  onDeleteWill?: (willId: string) => void;
+  onUpdateWill?: (willId: string, fields: Partial<Will>, videoBlob?: Blob) => void;
+  isOrganizer?: boolean;
 }
 
 // Main interaction section component
-const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, className = '' }) => {
+const InteractionSection: React.FC<InteractionSectionProps> = ({ 
+  roomData, 
+  className = '', 
+  onWillSuccessfullyCreated,
+  wills = [],
+  isLoadingWills = false,
+  onDeleteWill,
+  onUpdateWill,
+  isOrganizer = false
+}) => {
   const navigate = useNavigate();
   const [activeTabId, setActiveTabId] = useState<string>('interact');
+
+  // 添加调试日志
+  console.log('[InteractionSection] Props:', {
+    roomId: roomData.roomId,
+    isOrganizer,
+    hasDeleteFunction: !!onDeleteWill,
+    hasUpdateFunction: !!onUpdateWill,
+    willsCount: wills.length
+  });
 
   // Tab items for the interaction types
   const tabs: TabItem[] = [
@@ -88,10 +114,16 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
   };
 
   // Handle successful will creation
-  const handleWillCreated = (will: any) => {
-    console.log('Will created successfully:', will);
-    // 可以添加提示或其他反馈
+  const handleLocalWillCreated = (will: any) => {
+    console.log('[InteractionSection] Local will created successfully:', will);
+    onWillSuccessfullyCreated?.();
   };
+
+  // --- 调试日志移到这里 ---
+  if (activeTabId === 'will') {
+    console.log('[InteractionSection] Rendering "will" tab. roomData.roomId:', roomData?.roomId, 'roomData:', JSON.stringify(roomData));
+  }
+  // --- 调试日志结束 ---
 
   return (
     <div className={`interaction-section ${className}`}>
@@ -107,7 +139,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
       {/* Tab content */}
       <TabContentSection activeTabId={activeTabId}>
         {/* Interactive cards */}
-        <TabContent id="interact" className="interaction-cards">
+        <TabContent id="interact" className="interaction-cards" activeId={activeTabId}>
           <div className="cards-grid">
             <InteractionCard
               icon={<span role="img" aria-label="flower">💐</span>}
@@ -134,7 +166,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
         
         {/* Drawing canvas - integrated SharedCanvas component */}
-        <TabContent id="canvas" className="canvas-container">
+        <TabContent id="canvas" className="canvas-container" activeId={activeTabId}>
           <div className="shared-canvas-wrapper">
             <h3>Collaborative Drawing Board</h3>
             <p className="canvas-description">
@@ -145,7 +177,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
         
         {/* Music player - integrated MusicPlayer component */}
-        <TabContent id="music" className="music-container">
+        <TabContent id="music" className="music-container" activeId={activeTabId}>
           <div className="music-player-wrapper">
             <h3>Memorial Music</h3>
             <p className="music-description">
@@ -156,25 +188,51 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         </TabContent>
         
         {/* Memorial Hall tab content */}
-        <TabContent id="memorial" className="memorial-container">
+        <TabContent id="memorial" className="memorial-container" activeId={activeTabId}>
           <MemorialHall roomData={roomData} />
         </TabContent>
 
         {/* Farewell Will tab content */}
-        <TabContent id="will" className="will-container">
+        <TabContent id="will" className="will-container" activeId={activeTabId}>
           <div className="will-wrapper">
             <h3>Record Your Farewell Message</h3>
             <p className="will-description">
               Create a video farewell message or will to share your memories and wishes
             </p>
             <div className="will-form-container">
-              <WillForm onCreated={handleWillCreated} />
+              <WillForm
+                roomId={roomData.roomId}
+                onCreated={handleLocalWillCreated}
+              />
+            </div>
+            
+            <div className="mt-12 p-6 bg-gray-50 rounded-lg shadow">
+              <h2 className="text-3xl font-bold text-center text-gray-700 mb-8">
+                Farewell Messages for {roomData.name}
+              </h2>
+              
+              {isLoadingWills ? (
+                <div className="text-center py-4">
+                  <div className="loading-spinner-small mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Loading messages...</p>
+                </div>
+              ) : wills.length > 0 ? (
+                <WillList
+                  wills={wills}
+                  onDelete={onDeleteWill}
+                  onUpdate={onUpdateWill}
+                />
+              ) : (
+                <p className="text-center text-gray-500 py-4">
+                  No farewell messages have been left for this room yet.
+                </p>
+              )}
             </div>
           </div>
         </TabContent>
 
         {/* Dream List tab content */}
-        <TabContent id="dream" className="dream-container">
+        <TabContent id="dream" className="dream-container" activeId={activeTabId}>
           <div className="dream-wrapper">
             <h3>Dream List</h3>
             <p className="dream-description">

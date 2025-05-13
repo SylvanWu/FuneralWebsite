@@ -30,4 +30,4 @@ const willSchema = new mongoose.Schema({
     timestamps: true             // Automatically adds createdAt / updatedAt
 });
 
-export default mongoose.model('Will', willSchema);
+export default mongoose.model('Will', willSchema); 

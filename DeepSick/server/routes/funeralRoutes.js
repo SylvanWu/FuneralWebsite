@@ -62,7 +62,22 @@ router.get('/room/:roomId', async(req, res) => {
             return res.status(403).json({ message: 'Invalid password' });
         }
 
-        res.json(funeral);
+        // 添加isOrganizer标志，如果提供了正确的密码则认为是组织者
+        // 默认不是组织者
+        let isOrganizer = false;
+        
+        // 如果有密码且密码匹配，或者房间没有设置密码，则视为组织者
+        if ((funeral.password && funeral.password === password) || !funeral.password) {
+            isOrganizer = true;
+        }
+        
+        // 添加isOrganizer字段到响应中
+        const response = {
+            ...funeral.toObject(),
+            isOrganizer
+        };
+
+        res.json(response);
     } catch (error) {
         console.error('Get funeral room error:', error);
         res.status(500).json({ message: 'Server error while retrieving funeral room' });
@@ -251,7 +266,11 @@ router.post('/room/verify', async(req, res) => {
         // Check if the password matches
         const isValid = funeral.password === password;
 
-        res.json({ valid: isValid });
+        // 如果密码验证成功，则返回isOrganizer标志为true
+        res.json({ 
+            valid: isValid,
+            isOrganizer: isValid // 密码正确的用户被视为组织者
+        });
     } catch (error) {
         console.error('Password verification error:', error);
         res.status(500).json({ message: 'Server error while verifying password', valid: false });
