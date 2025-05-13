@@ -12,23 +12,53 @@
   /* Hero section */
   .hero-section {
     text-align: center;
-    margin-bottom: 3rem;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
   }
-  .hero-section .hero-image {
-    width: 100%;
-    max-height: 400px;
-    object-fit: cover;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  
+  .hero-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
   }
-  .hero-section .hero-name {
-    font-size: 2.5rem;
-    margin: 1rem 0 0.5rem;
-    color: #000;
+  
+  .hero-image {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
   }
-  .hero-section .hero-subtitle {
-    font-size: 1.2rem;
+  
+  .hero-image:hover {
+    transform: scale(1.02);
+  }
+  
+  .deceased-info {
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    width: 400px;
+  }
+  
+  .hero-name {
+    font-size: 2rem;
     color: #333;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+  }
+  
+  .hero-dates {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0.5rem 0;
+    font-style: italic;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+    color: #888;
+    margin: 0.5rem 0 0 0;
   }
   
   /* Cards section */
@@ -424,6 +454,34 @@
     
     .refresh-button {
       width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-image-container {
+      padding: 0 1rem;
+    }
+
+    .hero-image {
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
+    }
+
+    .deceased-info {
+      width: 100%;
+    }
+
+    .hero-name {
+      font-size: 1.5rem;
+    }
+
+    .hero-dates {
+      font-size: 1rem;
+    }
+
+    .hero-subtitle {
+      font-size: 0.9rem;
     }
   }
 
@@ -1008,3 +1066,55 @@
     height: 300px; /* 在移动设备上减小高度 */
   }
 }
+
+.audio-player-section {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    margin: 2rem auto;
+    max-width: 800px;
+    text-align: center;
+  }
+
+  .audio-player-section h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.5rem;
+  }
+
+  .audio-player {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .audio-player audio {
+    width: 100%;
+  }
+
+.music-player-section {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    margin: 2rem auto;
+    max-width: 800px;
+  }
+
+  .music-player-section h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .music-player-wrapper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .embedded-player {
+    width: 100%;
+  }

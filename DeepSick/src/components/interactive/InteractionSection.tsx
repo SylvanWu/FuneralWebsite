@@ -4,7 +4,6 @@ import TabSelector, { TabItem } from '../common/TabSelector';
 import TabContent, { TabContentSection } from '../common/TabContent';
 import MemorialHall from './MemorialHall';
 import SharedCanvas from '../SharedCanvas';
-import MusicPlayer from '../MusicPlayer';
 import WillForm from '../WillForm';
 import WillList from '../WillList';
 import { Will } from '../WillForm';
@@ -86,11 +85,6 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
       id: 'canvas',
       label: 'Drawing Canvas',
       icon: <span role="img" aria-label="canvas">🎨</span>
-    },
-    {
-      id: 'music',
-      label: 'Memorial Music',
-      icon: <span role="img" aria-label="music">🎵</span>
     },
     {
       id: 'chat',
@@ -179,17 +173,6 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
               Draw together with others to create a memorial illustration
             </p>
             <SharedCanvas roomId={roomData.roomId} />
-          </div>
-        </TabContent>
-        
-        {/* Music player - integrated MusicPlayer component */}
-        <TabContent id="music" className="music-container" activeId={activeTabId}>
-          <div className="music-player-wrapper">
-            <h3>Memorial Music</h3>
-            <p className="music-description">
-              Listen to or add music to honor the memory of the departed
-            </p>
-            <MusicPlayer className="embedded-player" />
           </div>
         </TabContent>
         
