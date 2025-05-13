@@ -89,13 +89,16 @@ export default function App() {
     localStorage.removeItem('user');
     setToken(null);
     setRole(null);
-    navigate('/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   return (
     <SocketProvider>
       <div className="min-h-screen bg-transparent text-gray-800">
         <Routes>
+          {/* Root path - Homepage with opening animation */}
+          <Route path="/" element={<HomePage />} />
+          
           {/* Login/Register pages */}
           <Route path="/login" element={<LoginPage setToken={setToken} />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -120,9 +123,6 @@ export default function App() {
 
           {/* Other pages wrapped in Layout */}
           <Route element={<Layout onLogout={handleLogout} />}>
-            {/* Homepage */}
-            <Route path="/" element={<HomePage />} />
-
             {/* Other public pages */}
             <Route path="/hall" element={<Navigate to="/interactive" replace />} />
             <Route path="/funeralhall" element={<FuneralRoomHallPage />} />
