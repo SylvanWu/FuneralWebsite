@@ -620,7 +620,7 @@ const FuneralRoomHallPage: React.FC = () => {
           isOrganizer={isOrganizer}
           onRoomEdit={isOrganizer ? handleRoomEdit : undefined}
           onRoomDelete={isOrganizer ? handleRoomDelete : undefined}
-        />
+              />
       )}
       
       {debugInfo && rooms.length > 0 && (

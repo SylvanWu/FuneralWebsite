@@ -21,6 +21,8 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
     const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const [imageError, setImageError] = useState(false);
     const [imageSrc, setImageSrc] = useState<string | null>(null);
+    const [videoSrc, setVideoSrc] = useState<string | null>(null);
+    const [videoError, setVideoError] = useState(false);
     const [attemptCount, setAttemptCount] = useState(0);
 
     /* Entry animation, runs only once on initial mount */
@@ -29,7 +31,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         return () => clearTimeout(timer);
     }, []);
 
-    /* 修复路径并处理图片URL */
+    /* 修复路径并处理图片和视频URL */
     useEffect(() => {
         if (memory.type === 'image') {
             // 重置加载状态
@@ -37,18 +39,30 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             setAttemptCount(0);
             
             // 处理图片URL
-            processImageUrl(memory.preview);
+            processMediaUrl(memory.preview, 'image');
+        } else if (memory.type === 'video') {
+            // 重置视频加载状态
+            setVideoError(false);
+            setAttemptCount(0);
+            
+            // 处理视频URL
+            processMediaUrl(memory.preview, 'video');
         }
     }, [memory]);
 
-    // 图片URL处理函数
-    const processImageUrl = (originalUrl: string) => {
+    // 媒体URL处理函数 - 统一处理图片和视频URL
+    const processMediaUrl = (originalUrl: string, mediaType: 'image' | 'video') => {
         try {
-            // 如果URL为空或无效，使用默认图片并显示错误
+            // 如果URL为空或无效，显示错误
             if (!originalUrl || originalUrl.trim() === '') {
-                console.error('Empty or invalid image URL');
-                setImageSrc(DEFAULT_IMAGE);
-                setImageError(true);
+                console.error(`Empty or invalid ${mediaType} URL`);
+                if (mediaType === 'image') {
+                    setImageSrc(DEFAULT_IMAGE);
+                    setImageError(true);
+                } else {
+                    setVideoSrc(null);
+                    setVideoError(true);
+                }
                 return;
             }
 
@@ -60,8 +74,12 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             
             // 2. 已经是完整URL的情况
             if (processedUrl.startsWith('blob:') || processedUrl.startsWith('data:')) {
-                console.log('Using direct blob/data URL:', processedUrl);
-                setImageSrc(processedUrl);
+                console.log(`Using direct blob/data URL for ${mediaType}:`, processedUrl);
+                if (mediaType === 'image') {
+                    setImageSrc(processedUrl);
+                } else {
+                    setVideoSrc(processedUrl);
+                }
                 return;
             }
 
@@ -78,9 +96,14 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 
                 // 确保处理后的URL不为空
                 if (!processedUrl || processedUrl === '') {
-                    console.error('Invalid image path after processing');
-                    setImageSrc(DEFAULT_IMAGE);
-                    setImageError(true);
+                    console.error(`Invalid ${mediaType} path after processing`);
+                    if (mediaType === 'image') {
+                        setImageSrc(DEFAULT_IMAGE);
+                        setImageError(true);
+                    } else {
+                        setVideoSrc(null);
+                        setVideoError(true);
+                    }
                     return;
                 }
                 
@@ -91,7 +114,11 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     `http://localhost:5001/uploads/${processedUrl}`
                 ];
                 
-                loadImageWithFallbacks(options);
+                if (mediaType === 'image') {
+                    loadImageWithFallbacks(options);
+                } else {
+                    loadVideoWithFallbacks(options);
+                }
                 return;
             }
             
@@ -101,12 +128,21 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 processedUrl = processedUrl.replace('/api/uploads/', '/uploads/');
             }
             
-            setImageSrc(processedUrl);
-            console.log('Using provided HTTP URL:', processedUrl);
+            if (mediaType === 'image') {
+                setImageSrc(processedUrl);
+            } else {
+                setVideoSrc(processedUrl);
+            }
+            console.log(`Using provided HTTP URL for ${mediaType}:`, processedUrl);
         } catch (err) {
-            console.error('Error processing image URL:', err);
-            setImageSrc(DEFAULT_IMAGE);
-            setImageError(true);
+            console.error(`Error processing ${mediaType} URL:`, err);
+            if (mediaType === 'image') {
+                setImageSrc(DEFAULT_IMAGE);
+                setImageError(true);
+            } else {
+                setVideoSrc(null);
+                setVideoError(true);
+            }
         }
     };
 
@@ -125,6 +161,21 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         setImageSrc(currentOption);
     };
 
+    // 尝试多个URL加载视频
+    const loadVideoWithFallbacks = (urlOptions: string[]) => {
+        const currentOption = attemptCount < urlOptions.length ? urlOptions[attemptCount] : null;
+        
+        if (!currentOption) {
+            console.error('All video URL options failed');
+            setVideoSrc(null);
+            setVideoError(true);
+            return;
+        }
+        
+        console.log(`Trying video URL option ${attemptCount + 1}/${urlOptions.length}:`, currentOption);
+        setVideoSrc(currentOption);
+    };
+
     // 图片加载成功处理
     const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
         try {
@@ -137,13 +188,13 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
             let width = img.naturalWidth;
             let height = img.naturalHeight;
 
-            if (width > maxWidth || height > maxHeight) {
-                const ratio = Math.min(maxWidth / width, maxHeight / height);
-                width *= ratio;
-                height *= ratio;
-            }
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
 
-            setImageSize({ width, height });
+                setImageSize({ width, height });
             setImageError(false);
         } catch (err) {
             console.error('Error in image load handler:', err);
@@ -215,6 +266,68 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         }
     };
 
+    // 视频加载错误处理
+    const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+        console.error('Video error:', e);
+        
+        // 尝试下一个URL选项
+        const nextAttempt = attemptCount + 1;
+        if (nextAttempt < 5) { // 最多尝试5次不同的URL格式
+            setAttemptCount(nextAttempt);
+            
+            // 构建备用URL
+            if (nextAttempt === 1) {
+                // 如果URL包含/api/uploads/，尝试移除/api
+                if (videoSrc && videoSrc.includes('/api/uploads/')) {
+                    const altUrl = videoSrc.replace('/api/uploads/', '/uploads/');
+                    console.log('Trying video URL without /api prefix:', altUrl);
+                    setVideoSrc(altUrl);
+                    return;
+                }
+                
+                // 尝试不带/api的路径
+                const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '');
+                const fileName = videoSrc && videoSrc.split('/').pop();
+                if (fileName) {
+                    const altUrl = `${baseUrl}/uploads/${fileName}`;
+                    console.log('Trying alternative video URL format:', altUrl);
+                    setVideoSrc(altUrl);
+                }
+            } else if (nextAttempt === 2) {
+                // 尝试直接使用localhost
+                const fileName = videoSrc && videoSrc.split('/').pop();
+                if (fileName) {
+                    const altUrl = `http://localhost:5001/uploads/${fileName}`;
+                    console.log('Trying localhost video URL:', altUrl);
+                    setVideoSrc(altUrl);
+                }
+            } else if (nextAttempt === 3) {
+                // 尝试直接使用localhost并加上/api
+                const fileName = videoSrc && videoSrc.split('/').pop();
+                if (fileName) {
+                    const altUrl = `http://localhost:5001/api/uploads/${fileName}`;
+                    console.log('Trying localhost API video URL:', altUrl);
+                    setVideoSrc(altUrl);
+                }
+            } else {
+                // 最后尝试原始URL
+                console.log('Trying original video URL as fallback');
+                const originalFixed = memory.preview && memory.preview.replace(/\\/g, '/');
+                if (originalFixed) {
+                    setVideoSrc(originalFixed);
+                } else {
+                    setVideoSrc(null);
+                    setVideoError(true);
+                }
+            }
+        } else {
+            // 所有尝试都失败
+            console.error('All video loading attempts failed');
+            setVideoSrc(null);
+            setVideoError(true);
+        }
+    };
+
     const formatDate = (date: Date) =>
         date.toLocaleString('en-US', {
             year: 'numeric',
@@ -261,7 +374,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                                     onClick={() => {
                                         setImageError(false);
                                         setAttemptCount(0);
-                                        processImageUrl(memory.preview);
+                                        processMediaUrl(memory.preview, 'image');
                                     }}
                                 >
                                     重试加载
@@ -272,29 +385,60 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                             imageSrc && (
                                 <img
                                     src={imageSrc}
-                                    alt="Memory"
-                                    className="rounded-lg"
-                                    style={{
+                            alt="Memory"
+                            className="rounded-lg"
+                            style={{
                                         width: imageSize.width || 'auto',
                                         height: imageSize.height || 'auto',
                                         maxWidth: '100%',
-                                        objectFit: 'contain'
-                                    }}
+                                objectFit: 'contain'
+                            }}
                                     onLoad={handleImageLoad}
                                     onError={handleImageError}
-                                />
+                        />
                             )
                         )}
                     </div>
                 );
             case 'video':
                 return (
-                    <video
-                        src={memory.preview}
-                        controls
-                        className="mt-3 w-full h-auto rounded-lg"
-                        onError={(e) => console.error('Video error:', e)}
-                    />
+                    <div className="mt-3 flex justify-center">
+                        {videoError ? (
+                            <div className="text-red-500 p-4 bg-red-50 rounded-lg">
+                                <p>无法加载视频</p>
+                                <p className="text-xs overflow-auto max-w-md">{memory.preview || '没有视频URL'}</p>
+                                {videoSrc && videoSrc !== memory.preview && (
+                                    <p className="text-xs overflow-auto max-w-md">尝试过: {videoSrc}</p>
+                                )}
+                                <button 
+                                    className="mt-2 px-2 py-1 bg-blue-500 text-white text-xs rounded"
+                                    onClick={() => videoSrc && window.open(videoSrc, '_blank')}
+                                    disabled={!videoSrc}
+                                >
+                                    打开视频链接
+                                </button>
+                                <button 
+                                    className="mt-2 ml-2 px-2 py-1 bg-green-500 text-white text-xs rounded"
+                                    onClick={() => {
+                                        setVideoError(false);
+                                        setAttemptCount(0);
+                                        processMediaUrl(memory.preview, 'video');
+                                    }}
+                                >
+                                    重试加载
+                                </button>
+                            </div>
+                        ) : (
+                            videoSrc ? (
+                                <video
+                                    src={videoSrc}
+                                    controls
+                                    className="mt-3 w-full h-auto rounded-lg"
+                                    onError={handleVideoError}
+                                />
+                            ) : null
+                        )}
+                    </div>
                 );
             default: // 'text'
                 return (
