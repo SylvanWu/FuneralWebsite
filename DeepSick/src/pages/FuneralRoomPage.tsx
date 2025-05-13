@@ -201,6 +201,9 @@ const FuneralRoomPage: React.FC = () => {
   // Add refs for transform operations
   const transformerRef = useRef<any>(null);
   
+  // Add dialog state
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
   // Function to get background image, with fallback to mapping if needed
   const getBackgroundImage = useCallback(() => {
     // Check if we have state.funeralType and it exists in the mapping
@@ -610,12 +613,7 @@ const FuneralRoomPage: React.FC = () => {
         console.log('Manually saved funeral room with all data');
         
         // Show confirmation dialog
-        const shouldNavigate = window.confirm(`Room Saved Successfully!\nRoom ID: ${roomId}\n\nDo you want to go back to the funeral hall? Click 'Cancel' to continue editing.`);
-        
-        // Only navigate if user clicks OK
-        if (shouldNavigate) {
-          navigate('/funeralhall');
-        }
+        setIsConfirmOpen(true);
       } else {
         // Create a new room if it doesn't exist (fallback)
         const newRoom: FuneralRoom = {
@@ -632,12 +630,7 @@ const FuneralRoomPage: React.FC = () => {
         await saveFuneralRoom(newRoom);
         
         // Show confirmation dialog
-        const shouldNavigate = window.confirm(`Room Saved Successfully!\nRoom ID: ${roomId}\n\nDo you want to go back to the funeral hall? Click 'Cancel' to continue editing.`);
-        
-        // Only navigate if user clicks OK
-        if (shouldNavigate) {
-          navigate('/funeralhall');
-        }
+        setIsConfirmOpen(true);
       }
     } catch (error) {
       console.error('Error saving funeral room:', error);
@@ -868,6 +861,69 @@ const FuneralRoomPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Confirmation Dialog */}
+      {isConfirmOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            backdropFilter: 'blur(2px)'
+          }}
+        >
+          <div 
+            className="bg-white rounded-lg p-8 w-full mx-4 shadow-2xl transform transition-all"
+            style={{ 
+              maxWidth: '400px',
+              animation: 'slideIn 0.3s ease-out',
+              position: 'relative',
+              zIndex: 100000
+            }}
+          >
+            <style>
+              {`
+                @keyframes slideIn {
+                  from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+              `}
+            </style>
+            <h3 className="text-2xl font-bold mb-4 text-center">Room Saved Successfully!</h3>
+            <div className="mb-6">
+              <p className="text-gray-700 mb-2 text-center">Room ID: <span className="font-semibold">{roomId}</span></p>
+              <p className="text-gray-600 text-center">Do you want to go back to the funeral hall?</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setIsConfirmOpen(false)}
+                className="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Continue Editing
+              </button>
+              <button
+                onClick={() => {
+                  setIsConfirmOpen(false);
+                  navigate('/funeralhall');
+                }}
+                className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Go to Hall
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Vector Toolbar */}
       <VectorToolbar 
         onItemDragStart={handleVectorDragStart}
