@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react';
 import DreamList from './DreamList'; // Import wish list component
 import '../DreamList/DreamList.css'; // Import CSS styles
-import pokemon from '../../assets/5IPv.gif';
+import pokemon from '../../assets/wish.gif';
 import { DreamCard } from './DreamCard'; // ✅ Use draggable outer wrapper
+import { useParams } from 'react-router-dom';
 
 const DreamShrink = () => {
-  const [isShrunk, setIsShrunk] = useState(false); // Controls shrink/expand state
+  const { roomId } = useParams(); // 从路由参数获取 roomId
+  const [isShrunk, setIsShrunk] = useState(true); // Controls shrink/expand state
 
   // Used to detect whether it's a click (vs drag)
   const clickStart = useRef({ x: 0, y: 0 });
@@ -46,14 +48,16 @@ const DreamShrink = () => {
         {/* Layer 1: Button or Pikachu icon */}
         <div>
           {isShrunk ? (
-            <img
-              src={pokemon}
-              alt="Pikachu"
-              className="jirachi-icon-shrunk"
-              onMouseDown={handleMouseDown} // New
-              onMouseUp={handleMouseUp}     // New
-              // onClick={toggleShrink}
-            />
+            <div className="shrink-trigger">
+              <img
+                src={pokemon}
+                alt="Pikachu"
+                className="jirachi-icon-shrunk"
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+              />
+              {/* <div className="wish-text">Wish List</div> */}
+            </div>
           ) : (
             <button className="shrink-button" onClick={toggleShrink}>
               -
@@ -63,7 +67,8 @@ const DreamShrink = () => {
 
         {/* Layer 2: Wish list section */}
         <div style={{ display: isShrunk ? 'none' : 'block' }}>
-          <DreamList />
+          {/* <DreamList /> */}
+          {roomId && <DreamList roomId={roomId} />}
         </div>
       </div>
     </DreamCard>

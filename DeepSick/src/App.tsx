@@ -27,15 +27,14 @@ import CandlePage from './pages/CandlePage';
 import FlowerPage from './pages/FlowerPage';
 import MessagePage from './pages/MessagePage';
 
-// import DreamList from './components/DreamList/DreamList';
+import DreamList from './components/DreamList/DreamList';
 import DreamShrink from './components/DreamList/DreamShrink';
 
 import ProfilePage from './pages/ProfilePage';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
 
-import DreamEditor from './components/DreamList/DreamEditor';  // 编辑页面组件
-
+import DreamEditor from './components/DreamList/DreamEditor';  // 编辑页面组件
 
 import './App.css';
 import { SocketProvider } from './context/SocketContext';
@@ -58,11 +57,11 @@ const NavLink = ({ to, children }: { to: string, children: React.ReactNode }) =>
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -89,49 +88,40 @@ export default function App() {
     localStorage.removeItem('user');
     setToken(null);
     setRole(null);
-    navigate('/', { replace: true });
+    navigate('/login', { replace: true });
   };
 
   return (
     <SocketProvider>
       <div className="min-h-screen bg-transparent text-gray-800">
         <Routes>
-          {/* Root path - Homepage with opening animation */}
-          <Route 
-            path="/" 
-            element={
-              token ? (
-                <Navigate to="/create-funeral" replace />
-              ) : (
-                <HomePage />
-              )
-            } 
-          />
-          
           {/* Login/Register pages */}
           <Route path="/login" element={<LoginPage setToken={setToken} />} />
           <Route path="/register" element={<RegisterPage />} />
 
           {/* Dashboard routes - outside Layout */}
-          <Route 
-            path="/visitor-dashboard" 
+          <Route
+            path="/visitor-dashboard"
             element={
               <ProtectedRoute>
                 <VisitorDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/organizer-dashboard" 
+          <Route
+            path="/organizer-dashboard"
             element={
               <ProtectedRoute>
                 <OrganizerDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Other pages wrapped in Layout */}
           <Route element={<Layout onLogout={handleLogout} />}>
+            {/* Homepage */}
+            <Route path="/" element={<HomePage />} />
+
             {/* Other public pages */}
             <Route path="/hall" element={<Navigate to="/interactive" replace />} />
             <Route path="/funeralhall" element={<FuneralRoomHallPage />} />
@@ -143,7 +133,11 @@ export default function App() {
             <Route path="/create-funeral" element={<CreateFuneralPage />} />
             <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            
+            {/* 编辑页面的路由，路径包含 roomId 参数 */}
+            <Route path="/interactive/:roomId/edit" element={<DreamEditor />} />
+            {/* 房间列表页面的路由 */}
+            <Route path="/interactive/:roomId" element={<DreamList />} />
+
             {/* Room placeholder page */}
             <Route path="/room" element={<div className="p-8 text-center">
               <h1 className="text-2xl font-bold mb-4">Room</h1>
@@ -166,7 +160,8 @@ export default function App() {
               }
             />
             <Route
-              path="/dreamlist"
+              // path="/dreamlist"
+              path="/dreamlist/:roomId"
               element={
                 <RoleProtected userType="organizer">
                   <DreamShrink />

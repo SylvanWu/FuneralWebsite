@@ -1,5 +1,5 @@
 // drag with the mouse can move the wish box
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../DreamList/DreamList.css';
 
 export const DreamCard = ({ children, shrunk = false }: { children: React.ReactNode; shrunk?: boolean }) => {
@@ -10,8 +10,33 @@ export const DreamCard = ({ children, shrunk = false }: { children: React.ReactN
   // Flag to indicate whether dragging is in progress
   const isDragging = useRef(false);
 
+  // 新增，用于存储初始位置
+  const [initialPosition, setInitialPosition] = useState({ x: 0, y: 0 });
 
-  // Side effect executed after the component is mounted
+  // 定义百分比位置（可根据需要调整）
+  const horizontalPercent = 70; // 距离右侧5%
+  const verticalPercent = -8;   // 距离底部5%
+
+  useEffect(() => {
+    const handleResize = () => {
+      // 获取卡片元素的尺寸
+      const cardWidth = 400;
+      const cardHeight = 300;
+
+      // 计算基于百分比的位置
+      const x = Math.max(0, window.innerWidth * (1 - horizontalPercent / 100) - cardWidth);
+      const y = Math.max(0, window.innerHeight * (1 - verticalPercent / 100) - cardHeight);
+
+      setInitialPosition({ x, y });
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [horizontalPercent, verticalPercent]);
+
+
   useEffect(() => {
     // Get the referenced DOM element
     const divElement = dragRef.current;
@@ -30,7 +55,7 @@ export const DreamCard = ({ children, shrunk = false }: { children: React.ReactN
         document.removeEventListener('mousemove', handleMouseMove);
       };
     }
-  }, []); //  An empty dependency array means this runs only on mount and unmount
+  }, []); //  An empty dependency array means this runs only on mount and unmount
 
   // handleMouseDown function triggered on mouse down
   const handleMouseDown = (e: MouseEvent) => {
@@ -75,15 +100,19 @@ export const DreamCard = ({ children, shrunk = false }: { children: React.ReactN
       ref={dragRef} // Bind ref to this div
       className={`dream-card ${shrunk ? 'shrunk' : ''}`} // Key: Dynamically apply the shrunk style class
       style={{
-        position: 'absolute', // Use absolute positioning to enable dragging
-        top: 100, // Initial top position
-        left: 100, // Initial left position
-        cursor: 'grab' // Show grab cursor when hovering
+        position: 'absolute',
+        top: initialPosition.y,
+        left: initialPosition.x,
+        cursor: 'grab',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        width: shrunk ? '80px' : '400px', // ✅ 这里控制展开宽度，例如设置为 600px
+        height: shrunk ? '80px' : 'auto', // ✅ 高度自适应内容（可选）
+
       }}
     >
       {children}
     </div>
   )
-
 
 }

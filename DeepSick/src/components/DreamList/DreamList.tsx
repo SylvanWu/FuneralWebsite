@@ -4,6 +4,7 @@ import { DreamCard } from './DreamCard';
 import '../DreamList/DreamList.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
+import { useParams } from 'react-router-dom';
 
 // Interface definition for new dreams
 interface Dream {
@@ -16,38 +17,41 @@ interface Dream {
 }
 
 
-
 // export function DreamList({ onShrink }: DreamListProps) {
-export function DreamList() {
-  // State management for dream list
+// export function DreamList() {
+// export function DreamList({ roomId }: { roomId: string }) {
+export function DreamList(props: { roomId?: string }) {
+  const { roomId } = useParams(); // 从 URL 拿 roomId
   const [dreams, setDreams] = useState<Dream[]>([]);
-  // User input for wish content
   const [newDreamContent, setNewDreamContent] = useState<string>('');
-  // Control input box visibility for adding
   const [showInput, setShowInput] = useState<boolean>(false);
 
   const navigate = useNavigate(); // Initialize navigate
 
-
   useEffect(() => {
-    const fetchAllDreams = async () => {
+    if (!roomId) return;
+
+    const fetchDreams = async () => {
       try {
-        const res = await fetch(`http://localhost:5001/api/dreams`);
+        const res = await fetch(`http://localhost:5001/api/dreams/${roomId}`);
         const data = await res.json();
-        setDreams(data);// 更新状态为最新的梦想列表
+        setDreams(data);
       } catch (err) {
         console.error('Failed to fetch dreams list:', err);
       }
     };
 
-    fetchAllDreams();
-  }, []);
+    fetchDreams();
+  }, [roomId]);
+
+
+
 
   // Function to create a new dream
   //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams` is the version based on env)
   const createDream = async (content: string) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/dreams`, {
+      const response = await fetch(`http://localhost:5001/api/dreams/${roomId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +86,7 @@ export function DreamList() {
     }
     try {
       await createDream(newDreamContent); // First create
-      const res = await fetch(`http://localhost:5001/api/dreams`); // Then fetch latest data
+      const res = await fetch(`http://localhost:5001/api/dreams/${roomId}`); // Then fetch latest data
       const updatedDreams = await res.json();
       setDreams(updatedDreams); // Update state to avoid inconsistency
 
@@ -126,10 +130,10 @@ export function DreamList() {
 
   const handleEditAll = async () => {
     try {
-      const res = await fetch(`http://localhost:5001/api/dreams`);
+      const res = await fetch(`http://localhost:5001/api/dreams/${roomId}`);
       const data = await res.json();
       // 传递所有的梦想内容
-      navigate('/dreamlist/edit', { state: { dreams: data } });
+      navigate(`/interactive/${roomId}/edit`, { state: { dreams: data } });
     } catch (err) {
       console.error('Failed to fetch latest dreams:', err);
     }
@@ -143,7 +147,7 @@ export function DreamList() {
         {dreams.map(dream => (
           <div key={dream._id} className="dream-item">
             {/* <span>{dream.content}</span> */}
-            <span dangerouslySetInnerHTML={{ __html: dream.content }} /> 
+            <span dangerouslySetInnerHTML={{ __html: dream.content }} />
             <div className="dream-actions">
 
               {/* <button className="edit-button">Edit</button> */}
