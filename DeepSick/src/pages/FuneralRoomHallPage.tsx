@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllFuneralRooms, FuneralRoom, verifyRoomPassword, getMockFuneralRooms } from '../services/funeralRoomDatabase';
+import { 
+  getAllFuneralRooms, 
+  FuneralRoom, 
+  verifyRoomPassword, 
+  getMockFuneralRooms,
+  deleteFuneralRoom,
+  editFuneralRoom
+} from '../services/funeralRoomDatabase';
 import './FuneralRoomHallPage.css';
 import axios from 'axios';
+import RoomList from '../components/rooms/RoomList';
 
 // Import background images for room cards
 import churchImage from '../assets/funeral type/church funeral.png';
@@ -20,63 +28,6 @@ const backgroundImageMap: Record<string, string> = {
   'seaside': seasideImage,
   'starryNight': starryNightImage,
   'chineseTraditional': chineseTraditionalImage,
-};
-
-// Room card component props
-interface RoomCardProps {
-  room: FuneralRoom;
-  onClick: (room: FuneralRoom) => void;
-}
-
-// Room card component
-const RoomCard: React.FC<RoomCardProps> = ({ room, onClick }) => {
-  // Get the appropriate background image
-  const backgroundImage = room.deceasedImage || backgroundImageMap[room.funeralType] || churchImage;
-  
-  return (
-    <div className="room-card" onClick={() => onClick(room)}>
-      <div className="room-card-image">
-        <img src={backgroundImage} alt={room.deceasedName} />
-      </div>
-      <div className="room-card-info">
-        <h3 className="room-card-name">{room.deceasedName}</h3>
-        <p className="room-card-id">Room ID: {room.roomId}</p>
-      </div>
-    </div>
-  );
-};
-
-// Search box component props
-interface SearchBoxProps {
-  onSearch: (query: string) => void;
-  placeholder?: string;
-}
-
-// Search box component
-const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, placeholder = "Search by room ID or name..." }) => {
-  const [query, setQuery] = useState('');
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(query);
-  };
-  
-  return (
-    <div className="search-box-container">
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          className="search-input"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={placeholder}
-        />
-        <button type="submit" className="search-button">
-          Search
-        </button>
-      </form>
-    </div>
-  );
 };
 
 // Password modal component props
@@ -142,30 +93,198 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
   );
 };
 
+// Edit room modal component
+interface EditRoomModalProps {
+  show: boolean;
+  room: FuneralRoom | null;
+  onClose: () => void;
+  onSave: (updatedRoom: FuneralRoom) => void;
+}
+
+const EditRoomModal: React.FC<EditRoomModalProps> = ({
+  show,
+  room,
+  onClose,
+  onSave
+}) => {
+  const [deceasedName, setDeceasedName] = useState('');
+  const [funeralType, setFuneralType] = useState('');
+  const [password, setPassword] = useState('');
+  
+  // Initialize form data
+  useEffect(() => {
+    if (room && show) {
+      setDeceasedName(room.deceasedName);
+      setFuneralType(room.funeralType);
+      setPassword(room.password);
+    }
+  }, [room, show]);
+  
+  if (!show || !room) return null;
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updatedRoom = {
+      ...room,
+      deceasedName,
+      funeralType,
+      password
+    };
+    onSave(updatedRoom);
+  };
+  
+  return (
+    <div className="edit-modal-overlay">
+      <div className="edit-modal">
+        <div className="edit-modal-header">
+          <h2>Edit Memorial Room</h2>
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+        <div className="edit-modal-body">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Deceased Name</label>
+              <input
+                type="text"
+                value={deceasedName}
+                onChange={(e) => setDeceasedName(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Memorial Type</label>
+              <select 
+                value={funeralType}
+                onChange={(e) => setFuneralType(e.target.value)}
+                required
+              >
+                <option value="church">Church</option>
+                <option value="garden">Garden</option>
+                <option value="forest">Forest</option>
+                <option value="seaside">Seaside</option>
+                <option value="starryNight">Starry Night</option>
+                <option value="chineseTraditional">Chinese Traditional</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Room Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="form-actions">
+              <button type="button" className="cancel-btn" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="submit-btn">
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Confirm delete modal component
+interface ConfirmDeleteModalProps {
+  show: boolean;
+  roomName: string;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
+  show,
+  roomName,
+  onClose,
+  onConfirm
+}) => {
+  if (!show) return null;
+  
+  return (
+    <div className="confirm-modal-overlay">
+      <div className="confirm-modal">
+        <div className="confirm-modal-header">
+          <h2>Confirm Delete</h2>
+          <button className="close-btn" onClick={onClose}>×</button>
+        </div>
+        <div className="confirm-modal-body">
+          <p>Are you sure you want to delete the memorial room "{roomName}"?</p>
+          <p className="warning">This action cannot be undone!</p>
+        </div>
+        <div className="confirm-modal-footer">
+          <button className="cancel-btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="delete-btn" onClick={onConfirm}>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main funeral room hall page
 const FuneralRoomHallPage: React.FC = () => {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<FuneralRoom[]>([]);
-  const [filteredRooms, setFilteredRooms] = useState<FuneralRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-  const [searchPerformed, setSearchPerformed] = useState(false);
   
-  // Modal state
-  const [showModal, setShowModal] = useState(false);
+  // 用户角色状态
+  const [isOrganizer, setIsOrganizer] = useState(false);
+  
+  // 房间访问模态框状态
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<FuneralRoom | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   
-  // Check authentication
+  // 编辑模态框状态
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [roomToEdit, setRoomToEdit] = useState<FuneralRoom | null>(null);
+  
+  // 删除确认模态框状态
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<FuneralRoom | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  
+  // 操作反馈状态
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    type: 'success' | 'error';
+    visible: boolean;
+  }>({
+    message: '',
+    type: 'success',
+    visible: false
+  });
+  
+  // Check authentication and user role
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
+    const roleStr = localStorage.getItem('role');
     
     if (!token || !userStr) {
       // Redirect to login if not authenticated
       navigate('/login');
+      return;
+    }
+    
+    // Check if user is organizer
+    if (roleStr === 'organizer' || roleStr === 'admin') {
+      setIsOrganizer(true);
     }
   }, [navigate]);
   
@@ -193,15 +312,10 @@ const FuneralRoomHallPage: React.FC = () => {
     const fetchRooms = async () => {
       setIsLoading(true);
       try {
-        // Debug log 
-        console.log('Fetching funeral rooms...');
-        console.log('API URL:', 'http://localhost:5001/api/funerals/rooms');
-        
         const rooms = await getAllFuneralRooms();
         console.log('Rooms data received:', rooms);
         
         setRooms(rooms);
-        setFilteredRooms(rooms); // Initialize filtered rooms with all rooms
         setError(null);
         setDebugInfo(null);
       } catch (err: any) {
@@ -216,48 +330,21 @@ const FuneralRoomHallPage: React.FC = () => {
     fetchRooms();
   }, [serverStatus]);
   
-  // Handle search
-  const handleSearch = (query: string) => {
-    setSearchPerformed(true);
-    
-    if (!query.trim()) {
-      // If search is empty, show all rooms
-      setFilteredRooms(rooms);
-      return;
-    }
-    
-    const normalizedQuery = query.trim().toLowerCase();
-    
-    // Filter rooms by ID or name containing the query
-    const filtered = rooms.filter(room => 
-      room.roomId.toLowerCase().includes(normalizedQuery) || 
-      room.deceasedName.toLowerCase().includes(normalizedQuery)
-    );
-    
-    setFilteredRooms(filtered);
-  };
-  
-  // Reset search
-  const resetSearch = () => {
-    setFilteredRooms(rooms);
-    setSearchPerformed(false);
-  };
-  
-  // Handle room card click
+  // Handle room card click (enter room)
   const handleRoomClick = (room: FuneralRoom) => {
     setSelectedRoom(room);
-    setShowModal(true);
+    setShowPasswordModal(true);
     setPasswordError(null);
   };
   
   // Handle modal close
   const handleCloseModal = () => {
-    setShowModal(false);
+    setShowPasswordModal(false);
     setSelectedRoom(null);
     setPasswordError(null);
   };
   
-  // Handle password submit
+  // Handle password submit for room entry
   const handlePasswordSubmit = async (password: string) => {
     if (!selectedRoom) return;
     
@@ -266,7 +353,7 @@ const FuneralRoomHallPage: React.FC = () => {
       
       if (isValid) {
         // Close modal
-        setShowModal(false);
+        setShowPasswordModal(false);
         
         // 更新为直接导航到带有roomId参数的路由
         navigate(`/interactive/${selectedRoom.roomId}`, {
@@ -280,12 +367,134 @@ const FuneralRoomHallPage: React.FC = () => {
           }
         });
       } else {
-        setPasswordError('Invalid password. Please try again.');
+        setPasswordError('密码错误，请重试。');
       }
     } catch (err) {
       console.error('Failed to verify password:', err);
-      setPasswordError('An error occurred. Please try again.');
+      setPasswordError('发生错误，请重试。');
     }
+  };
+  
+  // Handle room edit
+  const handleRoomEdit = async (room: FuneralRoom, password: string) => {
+    try {
+      // Verify password
+      const isValid = await verifyRoomPassword(room.roomId, password);
+      
+      if (isValid) {
+        // Open edit modal
+        setRoomToEdit(room);
+        setShowEditModal(true);
+      } else {
+        // Show error feedback
+        showFeedback('Invalid password, cannot edit room', 'error');
+      }
+    } catch (err) {
+      console.error('Failed to verify password for editing:', err);
+      showFeedback('Error verifying password', 'error');
+    }
+  };
+  
+  // Save edited room
+  const handleSaveEdit = async (updatedRoom: FuneralRoom) => {
+    try {
+      // Call API to update room
+      const result = await editFuneralRoom(
+        updatedRoom.roomId, 
+        updatedRoom.password,
+        {
+          deceasedName: updatedRoom.deceasedName,
+          funeralType: updatedRoom.funeralType,
+          password: updatedRoom.password
+        }
+      );
+      
+      if (result) {
+        // Update local data
+        setRooms(prevRooms => 
+          prevRooms.map(room => 
+            room.roomId === updatedRoom.roomId ? updatedRoom : room
+          )
+        );
+        
+        // Close modal
+        setShowEditModal(false);
+        setRoomToEdit(null);
+        
+        // Show success feedback
+        showFeedback('Room updated successfully', 'success');
+      } else {
+        showFeedback('Failed to update room', 'error');
+      }
+    } catch (err) {
+      console.error('Failed to update room:', err);
+      showFeedback('Error updating room', 'error');
+    }
+  };
+  
+  // Handle room deletion
+  const handleRoomDelete = async (room: FuneralRoom, password: string) => {
+    try {
+      // Verify password
+      const isValid = await verifyRoomPassword(room.roomId, password);
+      
+      if (isValid) {
+        // Store password and room, show confirmation modal
+        setRoomToDelete(room);
+        setDeletePassword(password);
+        setShowDeleteConfirm(true);
+      } else {
+        // Show error feedback
+        showFeedback('Invalid password, cannot delete room', 'error');
+      }
+    } catch (err) {
+      console.error('Failed to verify password for deletion:', err);
+      showFeedback('Error verifying password', 'error');
+    }
+  };
+  
+  // Confirm room deletion
+  const handleConfirmDelete = async () => {
+    if (!roomToDelete || !deletePassword) return;
+    
+    try {
+      // Call API to delete room
+      const success = await deleteFuneralRoom(roomToDelete.roomId, deletePassword);
+      
+      if (success) {
+        // Remove room from local data
+        setRooms(prevRooms => 
+          prevRooms.filter(room => room.roomId !== roomToDelete.roomId)
+        );
+        
+        // Close modal
+        setShowDeleteConfirm(false);
+        setRoomToDelete(null);
+        setDeletePassword('');
+        
+        // Show success feedback
+        showFeedback('Room successfully deleted', 'success');
+      } else {
+        showFeedback('Failed to delete room', 'error');
+      }
+    } catch (err) {
+      console.error('Failed to delete room:', err);
+      showFeedback('Error deleting room', 'error');
+    }
+  };
+  
+  // Show operation feedback
+  const showFeedback = (message: string, type: 'success' | 'error') => {
+    setFeedback({
+      message,
+      type,
+      visible: true
+    });
+    
+    // 3 seconds auto hide
+    setTimeout(() => {
+      setFeedback(prev => ({...prev, visible: false}));
+    }, 3000);
   };
   
   // Force reload data
@@ -307,8 +516,6 @@ const FuneralRoomHallPage: React.FC = () => {
       // If server is online, fetch rooms
       const rooms = await getAllFuneralRooms();
       setRooms(rooms);
-      setFilteredRooms(rooms);
-      setSearchPerformed(false);
     } catch (err: any) {
       console.error('Failed to fetch funeral rooms on retry:', err);
       setError(`Failed to load funeral rooms: ${err?.message || 'Unknown error'}`);
@@ -324,37 +531,23 @@ const FuneralRoomHallPage: React.FC = () => {
     const mockRooms = getMockFuneralRooms();
     
     setRooms(mockRooms);
-    setFilteredRooms(mockRooms);
     setIsLoading(false);
     setError(null);
     setServerStatus('online'); // Pretend we're connected
     setDebugInfo('Using mock data for testing. For testing purposes, use password: "password1" for room1, "password2" for room2, etc.');
-    setSearchPerformed(false);
   };
   
   return (
     <div className="funeral-hall-container">
       <div className="funeral-hall-header">
-        <h1>Funeral Room Hall</h1>
+        <h1>Memorial Hall</h1>
         <p>Click on a room to enter and pay respects</p>
       </div>
       
-      {/* Search Box - show only when rooms are loaded */}
-      {!isLoading && !error && serverStatus === 'online' && rooms.length > 0 && (
-        <div className="search-section">
-          <SearchBox onSearch={handleSearch} placeholder="Search by room ID or name..." />
-          {searchPerformed && (
-            <div className="search-results-info">
-              <span>
-                {filteredRooms.length === 0 
-                  ? 'No rooms found matching your search' 
-                  : `Found ${filteredRooms.length} room${filteredRooms.length !== 1 ? 's' : ''} matching your search`}
-              </span>
-              <button className="reset-search-btn" onClick={resetSearch}>
-                Show All Rooms
-              </button>
-            </div>
-          )}
+      {/* Feedback message */}
+      {feedback.visible && (
+        <div className={`feedback-message ${feedback.type}`}>
+          {feedback.message}
         </div>
       )}
       
@@ -365,7 +558,7 @@ const FuneralRoomHallPage: React.FC = () => {
         </div>
       ) : serverStatus === 'offline' ? (
         <div className="error-container">
-          <p className="error-message">The server appears to be offline or unreachable.</p>
+          <p className="error-message">Server appears to be offline or unreachable.</p>
           <div className="debug-info">
             <p>Debug information:</p>
             <pre>{debugInfo}</pre>
@@ -391,7 +584,7 @@ const FuneralRoomHallPage: React.FC = () => {
       ) : isLoading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading funeral rooms...</p>
+          <p>Loading memorial rooms...</p>
         </div>
       ) : error ? (
         <div className="error-container">
@@ -421,42 +614,13 @@ const FuneralRoomHallPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="room-grid">
-          {filteredRooms.length === 0 ? (
-            searchPerformed ? (
-              <div className="no-rooms-message">
-                <p>No rooms match your search criteria.</p>
-                <button 
-                  onClick={resetSearch}
-                  className="retry-button"
-                >
-                  Show All Rooms
-                </button>
-              </div>
-            ) : (
-              <div className="no-rooms-message">
-                <p>No funeral rooms available.</p>
-                <div className="mock-button-container">
-                  <p>Click below to load sample funeral rooms for testing:</p>
-                  <button 
-                    onClick={createMockData}
-                    className="mock-button large"
-                  >
-                    Load Mock Data
-                  </button>
-                </div>
-              </div>
-            )
-          ) : (
-            filteredRooms.map((room) => (
-              <RoomCard 
-                key={room.roomId} 
-                room={room} 
-                onClick={handleRoomClick}
-              />
-            ))
-          )}
-        </div>
+        <RoomList 
+          rooms={rooms}
+          onRoomSelect={handleRoomClick}
+          isOrganizer={isOrganizer}
+          onRoomEdit={isOrganizer ? handleRoomEdit : undefined}
+          onRoomDelete={isOrganizer ? handleRoomDelete : undefined}
+        />
       )}
       
       {debugInfo && rooms.length > 0 && (
@@ -465,12 +629,29 @@ const FuneralRoomHallPage: React.FC = () => {
         </div>
       )}
       
+      {/* Room entry password modal */}
       <PasswordModal
-        show={showModal}
+        show={showPasswordModal}
         roomId={selectedRoom?.roomId || ''}
         onClose={handleCloseModal}
         onSubmit={handlePasswordSubmit}
         error={passwordError || undefined}
+      />
+      
+      {/* Edit room modal */}
+      <EditRoomModal
+        show={showEditModal}
+        room={roomToEdit}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleSaveEdit}
+      />
+      
+      {/* Confirm delete modal */}
+      <ConfirmDeleteModal
+        show={showDeleteConfirm}
+        roomName={roomToDelete?.deceasedName || ''}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

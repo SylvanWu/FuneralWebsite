@@ -258,6 +258,104 @@ router.post('/room/verify', async(req, res) => {
     }
 });
 
+// Delete a funeral room by roomId (DELETE /api/funerals/room/:roomId)
+router.delete('/room/:roomId', async(req, res) => {
+    try {
+        const { roomId } = req.params;
+        const { password } = req.query;
+
+        // Find funeral room by MongoDB _id or stringId
+        let funeral;
+        if (mongoose.Types.ObjectId.isValid(roomId)) {
+            funeral = await Funeral.findById(roomId);
+        } else {
+            funeral = await Funeral.findOne({ stringId: roomId });
+        }
+
+        if (!funeral) {
+            return res.status(404).json({ message: 'Funeral room not found' });
+        }
+
+        // Check password if it exists
+        if (funeral.password && funeral.password !== password) {
+            return res.status(403).json({ message: 'Invalid password' });
+        }
+
+        // Using deleteOne to remove the funeral
+        await Funeral.deleteOne({ _id: funeral._id });
+        
+        res.json({ message: 'Funeral room deleted successfully' });
+    } catch (error) {
+        console.error('Delete funeral room error:', error);
+        res.status(500).json({ message: 'Server error while deleting funeral room' });
+    }
+});
+
+// Update a funeral room by roomId (PATCH /api/funerals/room/:roomId)
+router.patch('/room/:roomId', async(req, res) => {
+    try {
+        const { roomId } = req.params;
+        const { password } = req.query;
+        const updates = req.body;
+
+        // Find funeral room by MongoDB _id or stringId
+        let funeral;
+        if (mongoose.Types.ObjectId.isValid(roomId)) {
+            funeral = await Funeral.findById(roomId);
+        } else {
+            funeral = await Funeral.findOne({ stringId: roomId });
+        }
+
+        if (!funeral) {
+            return res.status(404).json({ message: 'Funeral room not found' });
+        }
+
+        // Check password if it exists
+        if (funeral.password && funeral.password !== password) {
+            return res.status(403).json({ message: 'Invalid password' });
+        }
+
+        // Map from frontend keys to enum values if needed
+        const sceneTypeMapping = {
+            'church': 'Church Funeral',
+            'garden': 'Garden Funeral',
+            'forest': 'Forest Funeral',
+            'seaside': 'Seaside Funeral',
+            'starryNight': 'Starry Night Funeral',
+            'chineseTraditional': 'Chinese Traditional Funeral'
+        };
+
+        // Update fields if provided
+        if (updates.deceasedName) funeral.deceasedName = updates.deceasedName;
+        
+        // Handle funeral type mapping
+        if (updates.funeralType) {
+            funeral.sceneType = sceneTypeMapping[updates.funeralType] || updates.funeralType;
+        }
+        
+        if (updates.backgroundImage !== undefined) funeral.backgroundImage = updates.backgroundImage;
+        if (updates.deceasedImage !== undefined) funeral.deceasedImage = updates.deceasedImage;
+        if (updates.password !== undefined) funeral.password = updates.password;
+
+        await funeral.save();
+
+        res.json({
+            _id: funeral._id,
+            stringId: funeral.stringId,
+            deceasedName: funeral.deceasedName,
+            sceneType: funeral.sceneType,
+            backgroundImage: funeral.backgroundImage,
+            deceasedImage: funeral.deceasedImage,
+            password: funeral.password,
+            createdAt: funeral.createdAt,
+            updatedAt: funeral.updatedAt
+        });
+    } catch (error) {
+        console.error('Update funeral room error:', error);
+        res.status(500).json({ message: 'Server error while updating funeral room' });
+    }
+});
+
 // --- AUTHENTICATED FUNERAL ROUTES ---
 
 // Create a new funeral (POST /api/funerals)
