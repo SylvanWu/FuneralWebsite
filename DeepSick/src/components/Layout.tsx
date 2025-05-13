@@ -39,25 +39,25 @@ export default function Layout({ onLogout }) {
             {userType === 'organizer' ? (
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-                <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
+                {/* <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link> */}
                 <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
-                <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
-                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
-                <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
-                <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
-                <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link>
-                <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
-                <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link>
+                {/* <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link> */}
+                {/* <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link> */}
+                {/* <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link> */}
+                {/* <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link> */}
+                {/* <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>Admin</Link> */}
+                {/* <Link to="/wills" className={location.pathname === '/wills' ? 'active' : ''}>Wills</Link>
+                <Link to="/dreamlist" className={location.pathname === '/dreamlist' ? 'active' : ''}>DreamList</Link> */}
               </>
             ) : (
               <>
                 <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-                <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link>
+                {/* <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link> */}
                 <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
-                <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
+                {/* <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
                 <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
                 <Link to="/interactive" className={location.pathname === '/interactive' ? 'active' : ''}>Interactive</Link>
-                <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link>
+                <Link to="/room" className={location.pathname === '/room' ? 'active' : ''}>Room</Link> */}
               </>
             )}
           </div>

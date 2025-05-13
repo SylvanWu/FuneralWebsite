@@ -5,6 +5,8 @@ import TabContent, { TabContentSection } from '../common/TabContent';
 import MemorialHall from './MemorialHall';
 import SharedCanvas from '../SharedCanvas';
 import MusicPlayer from '../MusicPlayer';
+import WillForm from '../WillForm';
+import DreamShrink from '../DreamList/DreamShrink';
 import './InteractionSection.css';
 
 // Interface for room data
@@ -67,12 +69,28 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
       id: 'memorial',
       label: 'Memorial Hall',
       icon: <span role="img" aria-label="memorial">📸</span>
+    },
+    {
+      id: 'will',
+      label: 'Farewell Will',
+      icon: <span role="img" aria-label="will">📜</span>
+    },
+    {
+      id: 'dream',
+      label: 'Dream List',
+      icon: <span role="img" aria-label="dream">✨</span>
     }
   ];
 
   // Handle tab change
   const handleTabChange = (tabId: string) => {
     setActiveTabId(tabId);
+  };
+
+  // Handle successful will creation
+  const handleWillCreated = (will: any) => {
+    console.log('Will created successfully:', will);
+    // 可以添加提示或其他反馈
   };
 
   return (
@@ -141,9 +159,35 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({ roomData, class
         <TabContent id="memorial" className="memorial-container">
           <MemorialHall roomData={roomData} />
         </TabContent>
+
+        {/* Farewell Will tab content */}
+        <TabContent id="will" className="will-container">
+          <div className="will-wrapper">
+            <h3>Record Your Farewell Message</h3>
+            <p className="will-description">
+              Create a video farewell message or will to share your memories and wishes
+            </p>
+            <div className="will-form-container">
+              <WillForm onCreated={handleWillCreated} />
+            </div>
+          </div>
+        </TabContent>
+
+        {/* Dream List tab content */}
+        <TabContent id="dream" className="dream-container">
+          <div className="dream-wrapper">
+            <h3>Dream List</h3>
+            <p className="dream-description">
+              Add wishes and thoughts to create a memorial dream list
+            </p>
+            <div className="dream-list-container">
+              <DreamShrink />
+            </div>
+          </div>
+        </TabContent>
       </TabContentSection>
     </div>
   );
 };
 
-export default InteractionSection; 
+export default InteractionSection;
