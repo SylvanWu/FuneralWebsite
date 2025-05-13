@@ -1,126 +1,171 @@
-# Digital Memorial Hall
+# DeepSick Digital Memorial Hall
 
-The Digital Memorial Hall is a full-stack project that allows users to upload and view images, videos, and text memories to commemorate the deceased.
+A comprehensive digital memorial platform that allows users to create, customize, and participate in virtual memorial spaces for honoring and remembering the deceased.
+
+## Overview
+
+The Digital Memorial Hall is a full-stack application designed to provide a dignified, interactive online environment for memorial services. It combines traditional memorial elements with modern digital interactions, allowing friends and family members to come together virtually to honor and remember their loved ones.
 
 ## Tech Stack
 
-- Frontend: React, TypeScript, TailwindCSS
-- Backend: Express.js, MongoDB, Mongoose
-- File Handling: Multer
+### Frontend
+- **Framework**: React 18, TypeScript
+- **Styling**: CSS, CSS Modules
+- **State Management**: React Context API
+- **Routing**: React Router v6
+- **Real-time Communication**: Socket.IO Client
 
-## Features
+### Backend
+- **Server**: Express.js, Node.js
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens)
+- **File Handling**: Multer for memory uploads
+- **Real-time Server**: Socket.IO
 
-- Upload images, videos, or text as memories
-- All memories displayed in reverse chronological order on a timeline
-- Each memory includes uploader name, upload time, and content
-- Delete memories with a confirmation prompt
-- Hover over memories to see the delete button
+## Key Features
+
+### Memorial Room Creation
+- Custom memorial room generation with unique room IDs
+- Password protection for private memorial spaces
+- Customizable backgrounds and memorial themes
+- Support for deceased information and memorial details
+
+### Interactive Elements
+- **Flower Offering**: Virtual flower placement to pay respects
+- **Candle Lighting**: Light virtual candles in memory of the deceased
+- **Message Board**: Leave condolences or memories for the family
+- **Memorial Timeline**: Chronological display of all visitor interactions
+
+### Media Features
+- **Memorial Photo Hall**: Upload and display photo memories
+- **Drawing Canvas**: Collaborative drawing board for memorial art
+- **Music Player**: Background music for the memorial atmosphere
+- **Video Tributes**: Upload and play video memories
+
+### Additional Features
+- **Farewell Will**: Record video farewell messages
+- **Dream List**: Create and share unfulfilled wishes or goals of the departed
+- **Interactive Layout**: Tab-based organization of memorial features
+- **Responsive Design**: Works on desktop and mobile devices
+
+## Component Structure
+
+### Key Components
+- `InteractionSection`: Central component managing all interactive features
+- `MemorialHall`: Photo and video memory display component
+- `SharedCanvas`: Collaborative drawing component
+- `MusicPlayer`: Background music management
+- `WillForm`: Video farewell message recording
+- `DreamShrink`: Dream list component for unfulfilled wishes
 
 ## Installation and Setup
 
 ### Prerequisites
-
 - Node.js (v16+)
 - MongoDB (local or remote)
+- npm or yarn package manager
 
 ### Installation Steps
 
 1. Clone the project
-
 ```bash
-git clone <repository-url>
-cd digital-memorial-hall
+git clone https://github.com/your-username/DeepSick.git
+cd DeepSick
 ```
 
 2. Install dependencies
-
 ```bash
 npm install
-npm install socket.io-client
+# or
+yarn install
 ```
 
 3. Configure environment variables
-
-Create a file named `.env` and add the following content:
-
+Create a `.env` file in the root directory with:
 ```
-MONGO_URI=mongodb://localhost:27017/memorial
-PORT=5000
+MONGO_URI=mongodb://localhost:27017/memorialhall
+PORT=5001
+VITE_API_URL=http://localhost:5001/api
 ```
 
-4. Start the application
-
+4. Start the development servers
 ```bash
-# Start the frontend development server
+# Start frontend development server
 npm run dev
+# or
+yarn dev
 
 # In another terminal, start the backend server
-npm run dev:server
+npm run server
+# or
+yarn server
 ```
 
-The application will run on http://localhost:5173 (frontend) and http://localhost:5000 (backend API).
+The application will run on http://localhost:5173 (frontend) and http://localhost:5001 (backend API).
 
 ## API Endpoints
 
-- `GET /memories` - Get all memories in reverse chronological order
-- `POST /memories` - Create a new memory
-- `DELETE /memories/:id` - Delete a specific memory by ID
+### Room Management
+- `GET /api/rooms` - Retrieve all available memorial rooms
+- `GET /api/rooms/:roomId` - Get details for a specific room
+- `POST /api/rooms` - Create a new memorial room
+- `PUT /api/rooms/:roomId` - Update room details
+- `DELETE /api/rooms/:roomId` - Delete a memorial room
 
-## Contribution
+### Memory Management
+- `GET /api/memories/:roomId` - Get all memories for a specific room
+- `POST /api/memories` - Create a new memory (with file upload)
+- `DELETE /api/memories/:id` - Delete a specific memory
 
-Pull requests and Issues are welcome to improve this project.
+### User Interaction
+- `POST /api/interactions/flowers` - Place a virtual flower
+- `POST /api/interactions/candles` - Light a virtual candle
+- `POST /api/interactions/messages` - Leave a message
+- `GET /api/interactions/:roomId` - Get all interactions for a room
 
-# React + TypeScript + Vite
+### Will and Dreams
+- `POST /api/wills` - Create a farewell will video
+- `GET /api/wills/:roomId` - Get wills for a specific room
+- `POST /api/dreams` - Add a dream list item
+- `GET /api/dreams/:roomId` - Get dream list for a room
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## User Guide
 
-Currently, two official plugins are available:
+### Creating a Memorial Room
+1. Navigate to the home page and select "Create Memorial Room"
+2. Enter the deceased's information and choose memorial settings
+3. Set a password for the room if desired
+4. Share the generated room ID with friends and family
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Participating in a Memorial
+1. Enter the room ID provided by the memorial organizer
+2. Input the password if required
+3. Navigate through the tabs to access different memorial features
+4. Leave messages, flowers, candles, or other tributes as desired
 
-## Expanding the ESLint configuration
+## Deployment
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The application can be deployed using services like:
+- **Frontend**: Vercel, Netlify, or GitHub Pages
+- **Backend**: Heroku, DigitalOcean, AWS, or Google Cloud Platform
+- **Database**: MongoDB Atlas for cloud database hosting
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Future Enhancements
+- Live video memorial service integration
+- Enhanced security features
+- Multi-language support
+- Mobile application version
+- AI-enhanced memorial experience
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Contributing
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- Thanks to all contributors and testers
+- Special thanks to the open-source community for their invaluable tools and libraries

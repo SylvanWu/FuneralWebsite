@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import homeVideo from '../assets/Home.mp4';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const [videoEnded, setVideoEnded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   // Check if user is authenticated
   useEffect(() => {
@@ -16,34 +18,42 @@ const HomePage: React.FC = () => {
       navigate('/funeralhall');
     }
   }, [navigate]);
+
+  // Handle video ended event
+  const handleVideoEnded = () => {
+    setVideoEnded(true);
+    // Ensure video stays on last frame
+    if (videoRef.current) {
+      videoRef.current.currentTime = videoRef.current.duration;
+    }
+  };
   
   return (
-    <div className="home-container">
-      <div className="welcome-section">
-        <h1 className="title">Digital Memorial Hall</h1>
-        <h2 className="subtitle">Remember and Honor</h2>
-        
-        {/* Video animation in the center */}
-        <div className="animation-container">
-          <video 
-            className="home-video" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            src={homeVideo}
-            style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
-          >
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        
-        <div className="navigation-buttons">
-          <Link to="/interactive" className="nav-button">Interactive</Link>
-          <Link to="/interactive" className="nav-button">Memorial Hall</Link>
-          <Link to="/funeralhall" className="nav-button primary">Funeral Rooms</Link>
-        </div>
+    <div className="fullscreen-container">
+      <div className="video-container">
+        <video 
+          ref={videoRef}
+          className="fullscreen-video" 
+          autoPlay 
+          muted 
+          playsInline
+          src={homeVideo}
+          onEnded={handleVideoEnded}
+        >
+          Your browser does not support the video tag.
+        </video>
       </div>
+      
+      {videoEnded && (
+        <div className="auth-buttons-container">
+          <h1 className="app-title">Digital Memorial Hall</h1>
+          <p className="app-subtitle">Remember and Honor</p>
+          <div className="auth-buttons">
+            <Link to="/login" className="auth-button login-button">Login</Link>
+            <Link to="/register" className="auth-button register-button">Register</Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

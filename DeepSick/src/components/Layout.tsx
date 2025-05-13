@@ -38,8 +38,7 @@ export default function Layout({ onLogout }) {
           <div className="nav-links">
             {userType === 'organizer' ? (
               <>
-                <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-                {/* <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link> */}
+                {/* Home link removed from navigation */}
                 <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
                 {/* <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link> */}
                 {/* <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link> */}
@@ -51,8 +50,7 @@ export default function Layout({ onLogout }) {
               </>
             ) : (
               <>
-                <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-                {/* <Link to="/hall" className={location.pathname === '/hall' ? 'active' : ''}>Memorial Hall</Link> */}
+                {/* Home link removed from navigation */}
                 <Link to="/funeralhall" className={location.pathname === '/funeralhall' ? 'active' : ''}>Funeral Hall</Link>
                 {/* <Link to="/funeralroom" className={location.pathname === '/funeralroom' ? 'active' : ''}>Funeral Room</Link>
                 <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'active' : ''}>Dashboard</Link>
