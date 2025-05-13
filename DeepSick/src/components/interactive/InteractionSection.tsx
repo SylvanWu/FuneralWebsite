@@ -139,11 +139,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
       {/* Tab content */}
       <TabContentSection activeTabId={activeTabId}>
         {/* Interactive cards */}
-<<<<<<< HEAD
         <TabContent id="interact" className="interaction-cards" activeId={activeTabId}>
-=======
-        <TabContent id="interact" activeId="interact" className="interaction-cards">
->>>>>>> 9eb1b3a1eb54ee8328a03ffd51026020c01a79e3
           <div className="cards-grid">
             <InteractionCard
               icon={<span role="img" aria-label="flower">💐</span>}
@@ -170,11 +166,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
         </TabContent>
         
         {/* Drawing canvas - integrated SharedCanvas component */}
-<<<<<<< HEAD
         <TabContent id="canvas" className="canvas-container" activeId={activeTabId}>
-=======
-        <TabContent id="canvas" activeId="canvas" className="canvas-container">
->>>>>>> 9eb1b3a1eb54ee8328a03ffd51026020c01a79e3
           <div className="shared-canvas-wrapper">
             <h3>Collaborative Drawing Board</h3>
             <p className="canvas-description">
@@ -185,11 +177,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
         </TabContent>
         
         {/* Music player - integrated MusicPlayer component */}
-<<<<<<< HEAD
         <TabContent id="music" className="music-container" activeId={activeTabId}>
-=======
-        <TabContent id="music" activeId="music" className="music-container">
->>>>>>> 9eb1b3a1eb54ee8328a03ffd51026020c01a79e3
           <div className="music-player-wrapper">
             <h3>Memorial Music</h3>
             <p className="music-description">
@@ -200,20 +188,12 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
         </TabContent>
         
         {/* Memorial Hall tab content */}
-<<<<<<< HEAD
         <TabContent id="memorial" className="memorial-container" activeId={activeTabId}>
-=======
-        <TabContent id="memorial" activeId="memorial" className="memorial-container">
->>>>>>> 9eb1b3a1eb54ee8328a03ffd51026020c01a79e3
           <MemorialHall roomData={roomData} />
         </TabContent>
 
         {/* Farewell Will tab content */}
-<<<<<<< HEAD
         <TabContent id="will" className="will-container" activeId={activeTabId}>
-=======
-        <TabContent id="will" activeId="will" className="will-container">
->>>>>>> 9eb1b3a1eb54ee8328a03ffd51026020c01a79e3
           <div className="will-wrapper">
             <h3>Record Your Farewell Message</h3>
             <p className="will-description">
@@ -252,11 +232,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
         </TabContent>
 
         {/* Dream List tab content */}
-<<<<<<< HEAD
         <TabContent id="dream" className="dream-container" activeId={activeTabId}>
-=======
-        <TabContent id="dream" activeId="dream" className="dream-container">
->>>>>>> 9eb1b3a1eb54ee8328a03ffd51026020c01a79e3
           <div className="dream-wrapper">
             <h3>Dream List</h3>
             <p className="dream-description">
