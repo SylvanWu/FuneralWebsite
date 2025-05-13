@@ -20,7 +20,6 @@ import woman3Image from '../assets/small picture/woman3.png';
 import woman4Image from '../assets/small picture/woman4.png';
 import woman5Image from '../assets/small picture/woman5.png';
 import woman6Image from '../assets/small picture/woman6.png';
-import man7Image from '../assets/small picture/man7.png';
 import man8Image from '../assets/small picture/man8.png';
 import girl1Image from '../assets/small picture/girl1.png';
 import girl2Image from '../assets/small picture/girl2.png';
@@ -880,12 +879,6 @@ const VECTOR_ITEMS: VectorItem[] = [
     category: 'character',
     name: 'Woman',
     src: woman6Image
-  },
-  { 
-    id: 'man7',
-    category: 'character',
-    name: 'Man',
-    src: man7Image
   },
   { 
     id: 'man8',

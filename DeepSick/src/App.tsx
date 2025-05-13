@@ -16,7 +16,7 @@ import RoleProtected from './components/RoleProtected';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import WillsPage from './pages/WillsPage';
-import AdminPage from './pages/AdminPage';
+
 import HomePage from './pages/HomePage';
 import CreateFuneralPage from './pages/CreateFuneralPage';
 import FuneralRoomPage from './pages/FuneralRoomPage';
