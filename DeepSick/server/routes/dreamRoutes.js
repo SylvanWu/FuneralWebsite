@@ -1,20 +1,13 @@
 import express from 'express';
 import Dream from '../models/Dream.js';
-// import authMiddleware from '../middleware/auth.js'; // 1. Temporarily comment out login auth
 
 const router = express.Router();
-// router.use(authMiddleware); // All routes require login, but comment out for testing
 
-console.log('Dream routes initialized');
-
-/*----- Get all dreams (sorted by order) -----*/
-router.get('/', async (req, res) => {
+/*----- 获取某个房间的梦想列表 -----*/
+router.get('/:roomId', async (req, res) => {
+  const { roomId } = req.params;
   try {
-    // console.log(`Fetching dreams for user ${req.user.id}`);
-    // const dreams = await Dream.find({ owner: req.user.id }).sort({ order: 1 });  // 3. Temporarily skip owner validation for testing
-
-    const dreams = await Dream.find().sort({ order: 1 });
-    // console.log(`Successfully fetched ${dreams.length} dreams for user ${req.user.id}`);
+    const dreams = await Dream.find({ roomId }).sort({ order: 1 });
     res.json(dreams);
   } catch (err) {
     console.error('Error fetching dreams:', err);
@@ -22,17 +15,17 @@ router.get('/', async (req, res) => {
   }
 });
 
-/*----- Create new dream -----*/
-router.post('/', async (req, res) => {
+/*----- 在某房间创建新梦想 -----*/
+router.post('/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const { content, position } = req.body;
+
   try {
-    // console.log(`Creating new dream for user ${req.user.id}`, req.body);
-    console.log('💡 req.user:', req.user);
     const dream = await Dream.create({
-      // owner: req.user.id,  // 4. Temporarily skip owner validation for testing
-      content: req.body.content || '<p>New Wish</p>',
-      position: req.body.position || { x: 0, y: 0 }
+      content: content || '<p>New Wish</p>',
+      position: position || { x: 0, y: 0 },
+      roomId
     });
-    console.log(`Dream created successfully: ${dream._id}`);
     res.status(201).json(dream);
   } catch (err) {
     console.error('Error creating dream:', err);
@@ -40,26 +33,18 @@ router.post('/', async (req, res) => {
   }
 });
 
-/*----- Update dream (content/position/order) -----*/
-router.patch('/:id', async (req, res) => {
+/*----- 修改某个梦想 -----*/
+router.patch('/:dreamId', async (req, res) => {
+  const { dreamId } = req.params;
+  const { content, order, position } = req.body;
+
   try {
-    console.log('Received PATCH body:', req.body);
-    // console.log(`Updating dream ${req.params.id} for user ${req.user.id}`, req.body);
-    const updated = await Dream.findOneAndUpdate(
-      // { _id: req.params.id, owner: req.user.id }, // 5. Temporarily skip owner validation for testing
-      { _id: req.params.id },
-      {
-        content: req.body.content,
-        order: req.body.order,
-        position: req.body.position
-      },
-      { new: true } // Return updated document
+    const updated = await Dream.findByIdAndUpdate(
+      dreamId,
+      { content, order, position },
+      { new: true }
     );
-    if (!updated) {
-      // console.log(`Dream not found: ${req.params.id} for user ${req.user.id}`);
-      return res.status(404).json({ message: 'Dream not found' });
-    }
-    console.log(`Dream updated successfully: ${updated._id}`);
+    if (!updated) return res.status(404).json({ message: 'Dream not found' });
     res.json(updated);
   } catch (err) {
     console.error('Error updating dream:', err);
@@ -67,19 +52,13 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-/*----- Delete dream -----*/
-router.delete('/:id', async (req, res) => {
+/*----- 删除梦想 -----*/
+router.delete('/:dreamId', async (req, res) => {
+  const { dreamId } = req.params;
+
   try {
-    // console.log(`Deleting dream ${req.params.id} for user ${req.user.id}`);
-    const deleted = await Dream.findOneAndDelete({
-      _id: req.params.id,
-      // owner: req.user.id  // 6. Temporarily skip owner validation for testing
-    });
-    if (!deleted) {
-      // console.log(`Dream not found for deletion: ${req.params.id} for user ${req.user.id}`);
-      return res.status(404).json({ message: 'Dream not found' });
-    }
-    console.log(`Dream deleted successfully: ${deleted._id}`);
+    const deleted = await Dream.findByIdAndDelete(dreamId);
+    if (!deleted) return res.status(404).json({ message: 'Dream not found' });
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting dream:', err);

@@ -5,7 +5,6 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import { Extension } from '@tiptap/core';
 
-
 declare module '@tiptap/core' {
   interface Commands<ReturnType = any> {
     fontSize: {
@@ -48,23 +47,15 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) => {
-  console.log("📥 初始传入 content 是：", content); // ✅ 这里加
-  // Initialize the editor with necessary extensions
+  console.log("The initial input content is：", content);
   const editor = useEditor({
-    extensions: [StarterKit, TextStyle, Color, FontSize],  // Added FontSize extension here
+    extensions: [StarterKit, TextStyle, Color, FontSize],  // Added FontSize extension here
     content,
     onUpdate({ editor }) {
-      // onChange(editor.getHTML()); // Send updated content to parent
       const html = editor.getHTML();
-      console.log("📝 用户编辑后新的 HTML：", html); // ✅ 这里加
       onChange(html);
     },
   });
-
-  // Font size change handler
-  const setFontSize = (size: string) => {
-    editor?.commands.setFontSize(size); // Use the custom setFontSize command
-  };
 
   // Color change handler
   const setColor = (color: string) => {
@@ -76,64 +67,57 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) =>
     editor?.commands.toggleBold();
   };
 
-  // Font family change handler
-  const setFontFamily = (fontFamily: string) => {
-    editor?.commands.setMark('textStyle', { fontFamily });
-  };
-
   // Ensure the editor content is updated if `content` prop changes
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      console.log("🔄 外部 content 改变了，重新写入编辑器：", content); // ✅ 这里加
-      console.log("当前编辑器内容：", editor.getHTML());  // 打印编辑器当前内容
+      console.log("The external content has changed. Rewrite it to the editor", content);
+      console.log("Current editor content:", editor.getHTML());
       editor.commands.setContent(content);
     }
   }, [content, editor]);
 
   return (
-    <div style={{ display: 'flex', gap: '20px' }}>
+    <div className="rich-text-editor-container">
       {/* Toolbars with buttons */}
-      <div style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
-        <button onClick={toggleBold} style={{ marginBottom: '10px' }}>
+      <div className="rich-text-toolbar">
+        <button onClick={toggleBold}>
           <strong>BOLD</strong>
         </button>
 
         <div>
           <span>COLOR: </span>
-          <button onClick={() => setColor('red')}>Red</button>
-          <span>   </span>
-          <button onClick={() => setColor('blue')}>Blue</button>
-          <span>   </span>
-          <button onClick={() => setColor('green')}>Green</button>
+          <button
+            onClick={() => setColor('red')}
+            className="color-button red"
+          >
+            Red
+          </button>
+          <button
+            onClick={() => setColor('blue')}
+            className="color-button blue"
+          >
+            Blue
+          </button>
+          <button
+            onClick={() => setColor('green')}
+            className="color-button green"
+          >
+            Green
+          </button>
+          <button
+            onClick={() => setColor('black')}
+            className="color-button black"
+          >
+            Black
+          </button>
         </div>
       </div>
 
       {/* Editor content area */}
-      <div style={{ flex: 1, border: '1px solid #ccc', padding: '8px' }}>
+      <div className="rich-text-editor-content">
         <EditorContent editor={editor} />
       </div>
-
-      {/* Preview area */}
-      {/* <div
-        style={{
-          flex: 1,
-          padding: '8px',
-          border: '1px solid #ccc',
-          background: '#f9f9f9',
-          whiteSpace: 'pre-wrap',
-        }}
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
-    </div> */}
-      {/* 右边的预览区域 */}
-      {/* <div style={{ flex: 1 }}>
-        <div className="dream-card">
-          <div className="dream-list-content" dangerouslySetInnerHTML={{ __html: content }} />
-
-        </div>
-
-      </div> */}
-    </div> // 👈 这一整块是 return 的完整包裹 div
+    </div>
   );
 };
 

@@ -1,4 +1,4 @@
-// Define the schema structure for the dream list
+/// Define the schema structure for the dream list
 import mongoose from 'mongoose';
 
 const dreamSchema = new mongoose.Schema({
@@ -6,17 +6,24 @@ const dreamSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    // required: true   // Currently not enforced for easier testing
+    // required: true   // Currently not enforced for easier testing
   },
-  content: {
-    type: String,  // Stores rich text HTML; consider limiting length in future
+
+  roomId: { // 🆕 每个愿望归属于一个房间
+    type: String,
     required: true
   },
-  order: {        // Field for drag-and-drop sorting
+
+  content: {
+    type: String, // Stores rich text HTML; consider limiting length in future
+    required: true
+  },
+
+  order: { // Field for drag-and-drop sorting
     type: Number,
     default: () => Date.now() // Use current timestamp as default
   },
-  position: {     // Floating position
+  position: { // Floating position
     x: { type: Number, default: 0 },
     y: { type: Number, default: 0 }
   }

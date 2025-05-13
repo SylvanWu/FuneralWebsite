@@ -3,27 +3,26 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import RichTextEditor from './RichTextEditor';
 import { useNavigate } from 'react-router-dom';
-// import DOMPurify from 'dompurify';  // 导入 DOMPurify（可选，用于清理 HTML）
+import { useParams } from 'react-router-dom';
 
 interface Dream {
   _id: string;
   content: string;
 }
 
-
 const DreamEditor = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { dreams }: { dreams: Dream[] } = location.state || { dreams: [] };
-
+  const { roomId } = useParams();
+  console.log('当前的 roomId:', roomId);  // 检查 roomId 是否正确
   useEffect(() => {
     console.log('📥 当前传递给子组件的 dreams 数据：', dreams);
-  }, [dreams]);  // 仅当 dreams 发生变化时触发
+  }, [dreams]);  // 仅当 dreams 发生变化时触发
 
   // ✅ 在这里打印看看 dreams 的内容
   console.log('💡 初始 dreams 数据:', dreams);
   const [editableDreams, setEditableDreams] = useState<Dream[]>(dreams);
-
 
   const handleDreamChange = (index: number, newContent: string) => {
     const updatedDreams = [...editableDreams];
@@ -33,7 +32,7 @@ const DreamEditor = () => {
 
   const handleSave = async () => {
     try {
-      console.log("保存的内容：", editableDreams);  // 打印要保存的数据
+      console.log("保存的内容：", editableDreams);  // 打印要保存的数据
       await Promise.all(
         editableDreams.map((dream) =>
           fetch(`http://localhost:5001/api/dreams/${dream._id}`, {
@@ -44,7 +43,13 @@ const DreamEditor = () => {
         )
       );
       alert('All dreams saved!');
-      navigate('/dreamlist');  // 保存完成后跳转到 dreamlist 页面
+      // navigate('/dreamlist');
+      // 保存完成后跳转到 dreamlist 页面
+      if (roomId) {
+        navigate(`/interactive/${roomId}`); // 跳转到指定的 roomId 页面
+      } else {
+        alert('Room ID is undefined! Please check the URL.');
+      }
     } catch (error) {
       console.error('Error saving dreams:', error);
       alert('Failed to save dreams, please try again.');
@@ -54,51 +59,19 @@ const DreamEditor = () => {
 
 
 
-
   const handleCancel = () => {
-    navigate('/dreamlist'); // 不保存，直接回去
+    if (roomId) {
+      navigate(`/interactive/${roomId}`); // 取消时，返回房间页面
+    }
   };
 
-
   return (
-    // <div style={{ padding: '20px' }}>
-    //   <h1>Edit Wishes with Style ✨</h1>
-    //   {editableDreams.map((dream, index) => {
-    //     console.log(`🎯 Dream #${index} content:`, dream.content); // 👈 调试日志
-    //     return (
-    //       <div key={dream._id} style={{ marginBottom: '30px' }}>
-    //         <RichTextEditor
-    //           content={dream.content}
-    //           onChange={(newContent) => handleDreamChange(index, newContent)}
-    //         />
-    //         {/* 预览效果 */}
-    //         <div
-    //           style={{
-    //             marginTop: '10px',
-    //             padding: '10px',
-    //             border: '1px dashed #aaa',
-    //             background: '#f5f5f5',
-    //           }}
-    //         >
-    //           <h4>预览效果：</h4>
-    //           <div dangerouslySetInnerHTML={{ __html: dream.content }} />
+    <div style={{ paddingLeft: '400px', paddingTop: '20px' }}> {/* 👈 加 paddingLeft 右移 */}
+      <h1>Edit Dreams with Style ✨</h1>
 
-    //         </div>
-
-    //       </div>
-
-    //     );
-    //   })}
-    //   <button onClick={handleSave}>💾 Save All</button>
-    //   <span>        </span>
-    //   <button onClick={handleCancel}> ❌ Cancel</button>
-    // </div>
-    <div style={{ padding: '20px' }}>
-      <h1>Edit Wishes with Style ✨</h1>
-
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '30px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '30px', paddingTop: '100px' }}>
         {/* 左边：编辑器区域 */}
-        <div style={{ flex: '0 0 700px' }}>  {/* 设置左边宽度为 350px */}
+        <div style={{ flex: '0 0 700px' }}>  {/* 设置左边宽度为 350px */}
           {editableDreams.map((dream, index) => (
             <div key={dream._id} style={{ marginBottom: '30px' }}>
               <RichTextEditor
@@ -113,11 +86,12 @@ const DreamEditor = () => {
         <div
           className="dream-card"
           style={{
-            width: '400px',  // 👈 设置固定宽度
+            width: '400px',
             marginTop: '0px',
             backgroundColor: '#f5f5f5',
             padding: '10px',
             border: '1px solid #ccc',
+            flexShrink: 0, // ✅ 防止被压缩
           }}
         >
           <h2>Wish List</h2>
@@ -125,7 +99,7 @@ const DreamEditor = () => {
             {editableDreams.map((dream) => (
               <div
                 key={dream._id}
-                className="dream-item"  // 添加 dream-item 类
+                className="dream-item"
                 style={{ marginBottom: '10px' }}
                 dangerouslySetInnerHTML={{ __html: dream.content }}
               />
