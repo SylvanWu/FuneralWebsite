@@ -1,9 +1,8 @@
-// ✅ RegisterPage.tsx
+
 import React, { useEffect, useState } from 'react';
-import { registerUser } from '../api';
 import { useNavigate, Link } from 'react-router-dom';
+import API from '../api';
 import { isValidPhoneNumber } from 'libphonenumber-js';
-import API from "../api";
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -35,8 +34,10 @@ export default function RegisterPage() {
       setError('Phone number or email is required');
       return;
     }
-    if (!isEmail(contact) && !isValidPhoneNumber(contact)) {
-      setError('Please enter a valid phone number (international format, e.g. +64...) or email');
+    if (!isEmail(contact) && !isPhone(contact)) {
+      setError(
+        'Please enter a valid phone number (international format, e.g. +64...) or email'
+      );
       return;
     }
     if (password.length < 8) {
@@ -51,8 +52,9 @@ export default function RegisterPage() {
     } else if (isPhone(contact)) {
       phone = contact;
     }
+
     try {
-      // The /api prefix has been removed
+      // Send registration request
       await API.post('/auth/register', {
         username: name,
         password,
@@ -63,7 +65,12 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => nav('/login'), 1500);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
+      // Handle duplicate username error specifically
+      if (err.response?.status === 409) {
+        setError('Registration failed: Username already exists');
+      } else {
+        setError(err.response?.data?.message || 'Registration failed');
+      }
     }
   };
 
@@ -75,22 +82,19 @@ export default function RegisterPage() {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundAttachment: 'fixed'
       }}
     >
-
       {/* Registration card */}
-      <div className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out" 
-           style={{ maxWidth: '550px', minWidth: '320px', backgroundColor: 'rgba(255, 255, 255, 0.5)',
-            backdropFilter: 'blur(16px)',                   
-            WebkitBackdropFilter: 'blur(16px)',            
-            borderRadius: '16px',                            
-            overflow: 'hidden',                              
-           }}>
-        
-        {/* Card title */}
-        <h1 className="text-3xl font-bold text-center mb-8 text-gray-800"
-        style={{ paddingBottom: '2vh'}}>
+      <div
+        className="w-full md:w-1/2 bg-white/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-10 transition-all duration-300 ease-in-out"
+        style={{ maxWidth: '550px', minWidth: '320px' }}
+      >
+        {/* Title */}
+        <h1
+          className="text-3xl font-bold text-center mb-8 text-gray-800"
+          style={{ paddingBottom: '2vh' }}
+        >
           <span className="relative inline-block pb-2 after:content-[''] after:absolute after:w-1/2 after:h-0.5 after:bg-indigo-500 after:bottom-0 after:left-1/4">
             Create Account
           </span>
@@ -102,13 +106,19 @@ export default function RegisterPage() {
             {error}
           </div>
         )}
-        
+
         {/* Success message */}
         {success && (
           <div className="bg-green-50/70 backdrop-blur-sm border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 text-center font-medium">
             <div className="flex items-center justify-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <span>Success! Redirecting…</span>
             </div>
@@ -121,9 +131,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <input
               id="username"
-              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
-                         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
-                         shadow-sm transition-all duration-200 ease-in-out"
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
               value={name}
               onChange={e => setName(e.target.value)}
               required
@@ -135,9 +143,7 @@ export default function RegisterPage() {
           <div className="space-y-2">
             <input
               id="contact"
-              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
-                         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
-                         shadow-sm transition-all duration-200 ease-in-out"
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
               value={contact}
               onChange={e => setContact(e.target.value)}
               required
@@ -150,9 +156,7 @@ export default function RegisterPage() {
             <input
               id="password"
               type="password"
-              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl 
-                         focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300
-                         shadow-sm transition-all duration-200 ease-in-out"
+              className="w-full px-4 py-3 border border-gray-300 bg-white/90 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
               value={password}
               onChange={e => setPwd(e.target.value)}
               required
@@ -160,55 +164,40 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* User type selection area */}
-          <div className="space-y-3 pt-2">
-            <div className="flex flex-wrap items-center justify-center ">
-              {[
-                { label: 'Visitor', value: 'visitor', icon: '👤' },
-                { label: 'Organizer', value: 'organizer', icon: '🏢' },
-              ].map(({ label, value, icon }) => (
-                <label 
-                  key={value} 
-                  className={`
-                    inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg bg-transparent
-                    transition-all duration-200 ease-in-out hover:bg-indigo-50 hover:shadow-md
-                    ${userType === value 
-                      ? 'text-indigo-700 shadow-md' 
-                      : 'text-gray-700'}
-                  `}
-                >
-                  <input
-                    type="radio"
-                    name="userType"
-                    value={value}
-                    checked={userType === value}
-                    onChange={() => setUserType(value as any)}
-                    className="sr-only" // Hide the default radio button and use custom styles
-                  />
-                  <span className="text-xl">{icon}</span>
-                  <span>{label}</span>
-                </label>
-              ))}
-            </div>
+          {/* User type selection */}
+          <div className="flex flex-wrap items-center justify-center space-x-4 pt-2">
+            {[{ label: 'Visitor', value: 'visitor', icon: '👤' }, { label: 'Organizer', value: 'organizer', icon: '🏢' }].map(({ label, value, icon }) => (
+              <label
+                key={value}
+                className={`inline-flex items-center gap-2 cursor-pointer px-4 py-2.5 rounded-lg ${
+                  userType === value ? 'text-indigo-700 shadow-md' : 'text-gray-700'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="userType"
+                  value={value}
+                  checked={userType === value}
+                  onChange={() => setUserType(value as any)}
+                  className="sr-only"
+                />
+                <span className="text-xl">{icon}</span>
+                <span>{label}</span>
+              </label>
+            ))}
           </div>
 
-          {/* Register button */}
+          {/* Submit button + login link */}
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-              style={{ backgroundColor: 'rgba(54, 53, 53, 0.5)' }}
+              className="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Create Account
             </button>
-
-            {/* Login link */}
-            <p className="mt-8 text-sm text-center text-gray-600" style={{ paddingTop: '1vh' }}>
+            <p className="mt-6 text-sm text-center text-gray-600">
               Already have an account?{' '}
-              <Link
-                to="/login"
-                className="text-green-600 hover:text-green-800 font-medium"
-              >
+              <Link to="/login" className="text-green-600 hover:text-green-800 font-medium">
                 Login here
               </Link>
             </p>
@@ -218,3 +207,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+
