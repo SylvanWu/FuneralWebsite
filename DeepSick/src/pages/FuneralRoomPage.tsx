@@ -28,7 +28,7 @@ import redTreeImage from '../assets/small picture/red tree.png';
 import bianfuImage from '../assets/small picture/bianfu.png';
 
 // Background image mapping for fallback or replacement
-const backgroundImageMap = {
+const backgroundImageMap: Record<string, string> = {
   'church': churchImage,
   'garden': gardenImage,
   'forest': forestImage,
@@ -123,6 +123,63 @@ interface CanvasItem {
   name: string;
   image?: string; // Path to the image
 }
+
+// Function to update background image size and position to maintain 16:9 aspect ratio
+const updateBackgroundImageFit = (img: HTMLImageElement, stageWidth: number, stageHeight: number) => {
+  const stageRatio = stageWidth / stageHeight;
+  const imageRatio = img.width / img.height;
+  
+  let width, height, x = 0, y = 0;
+  
+  // Ensure the image covers the entire canvas area (object-fit: cover behavior)
+  // Always make the image at least as large as the container in both dimensions
+  if (imageRatio > stageRatio) {
+    // Image is wider than stage (relative to aspect ratio)
+    // Match height and allow width to be larger (cropped horizontally)
+    height = stageHeight;
+    width = height * imageRatio;
+    // Center horizontally
+    x = (stageWidth - width) / 2;
+  } else {
+    // Image is taller than stage (relative to aspect ratio)
+    // Match width and allow height to be larger (cropped vertically)
+    width = stageWidth;
+    height = width / imageRatio;
+    // Center vertically
+    y = (stageHeight - height) / 2;
+  }
+  
+  return { width, height, x, y };
+};
+
+// Add a custom style for the canvas container
+const canvasContainerStyle = {
+  display: 'flex', 
+  justifyContent: 'center', 
+  alignItems: 'center',
+  padding: '10px',
+  backgroundColor: '#f0f0f0',
+  overflow: 'hidden',
+  borderRadius: '8px',
+};
+
+const canvasStyle = {
+  width: '100%',
+  aspectRatio: '16/9',
+  position: 'relative' as const,
+  overflow: 'hidden',
+  borderRadius: '8px',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+};
+
+const stageStyle = {
+  position: 'absolute' as const,
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  display: 'block',
+};
 
 const FuneralRoomPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -279,73 +336,69 @@ const FuneralRoomPage: React.FC = () => {
     loadFuneralRoom();
   }, [roomId, locationState]);
   
+  // Function to handle window resize
+  const handleResize = useCallback(() => {
+    const container = document.querySelector('.canvas-container');
+    if (container) {
+      // Get the width of the container
+      const containerWidth = container.clientWidth - 20; // Subtract padding
+      
+      // Calculate height based on 16:9 aspect ratio (height = width * 9/16)
+      const containerHeight = Math.floor(containerWidth * 9 / 16);
+      
+      setCanvasSize({ 
+        width: containerWidth, 
+        height: containerHeight
+      });
+      
+      console.log(`Canvas size updated: ${containerWidth}x${containerHeight} (16:9 ratio)`);
+    }
+  }, []);
+  
+  // Add window resize handler and initial size calculation
+  useEffect(() => {
+    // Initial size calculation
+    handleResize();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
+  
   // Load background image on mount
   useEffect(() => {
-    const bgImage = new Image();
-    bgImage.src = getBackgroundImage();
-    bgImage.onload = () => {
-      setBackgroundImg(bgImage);
-      
-      // Calculate canvas size enforcing 16:9 aspect ratio
-      const aspectRatio = 16/9;
-      const sidebarWidth = isToolbarCollapsed ? 48 : 220;
-      const horizontalPadding = 40;
-      
-      // Start with available width
-      const availableWidth = window.innerWidth - sidebarWidth - (horizontalPadding * 2);
-      const availableHeight = window.innerHeight - 220;
-      
-      // Calculate dimensions based on 16:9 ratio
-      let canvasWidth = availableWidth;
-      let canvasHeight = canvasWidth / aspectRatio;
-      
-      // If height exceeds available height, scale down
-      if (canvasHeight > availableHeight) {
-        canvasHeight = availableHeight;
-        canvasWidth = canvasHeight * aspectRatio;
-      }
-      
-      // Set canvas size
-      setCanvasSize({
-        width: Math.floor(canvasWidth),
-        height: Math.floor(canvasHeight)
-      });
-    };
-    bgImage.onerror = () => {
-      console.error('Failed to load background image');
-    };
-  }, [state.funeralType, isToolbarCollapsed, getBackgroundImage]);
-  
-  // Add window resize handler
-  useEffect(() => {
-    const handleResize = () => {
-      if (backgroundImg) {
-        // Maintain 16:9 aspect ratio on resize
-        const aspectRatio = 16/9;
-        const sidebarWidth = isToolbarCollapsed ? 48 : 220;
-        const horizontalPadding = 40;
+    const loadBackgroundImage = async () => {
+      try {
+        let imageSrc = '';
         
-        const availableWidth = window.innerWidth - sidebarWidth - (horizontalPadding * 2);
-        const availableHeight = window.innerHeight - 220;
-        
-        let canvasWidth = availableWidth;
-        let canvasHeight = canvasWidth / aspectRatio;
-        
-        if (canvasHeight > availableHeight) {
-          canvasHeight = availableHeight;
-          canvasWidth = canvasHeight * aspectRatio;
+        // Use custom background if available
+        if (state.backgroundImage) {
+          imageSrc = state.backgroundImage;
+        } 
+        // Otherwise use a preset background based on funeral type
+        else if (state.funeralType) {
+          imageSrc = backgroundImageMap[state.funeralType as keyof typeof backgroundImageMap] || '';
         }
         
-        setCanvasSize({
-          width: Math.floor(canvasWidth),
-          height: Math.floor(canvasHeight)
-        });
+        if (!imageSrc) return;
+        
+        // Create a new image and wait for it to load
+        const img = await createImage(imageSrc);
+        
+        // Set the loaded image to state
+        setBackgroundImg(img);
+        
+        // Trigger a resize to update canvas dimensions
+        setTimeout(handleResize, 0);
+      } catch (error) {
+        console.error('Error loading background image:', error);
       }
     };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [backgroundImg, isToolbarCollapsed]);
+    
+    loadBackgroundImage();
+  }, [state.backgroundImage, state.funeralType, handleResize]);
   
   // Load images when component mounts
   useEffect(() => {
@@ -836,14 +889,14 @@ const FuneralRoomPage: React.FC = () => {
   if (isCropping && imageToCrop) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-        {/* 右侧说明文字 */}
+        {/* The explanatory text on the right */}
         <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-50">
           <div className="border-2 border-blue-500 rounded-lg p-6 bg-white shadow-lg text-center font-bold text-lg text-blue-700">
             Press <span className="text-blue-600">enter</span> to save<br/>
             and <span className="text-gray-600">esc</span> to exit!
           </div>
         </div>
-        {/* 裁剪弹窗（无标题和说明） */}
+        {/* Crop pop-up window (without title and description) */}
         <div className="bg-white rounded-lg p-6 w-full max-w-4xl relative">
           <div className="w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
             <Cropper
@@ -900,9 +953,7 @@ const FuneralRoomPage: React.FC = () => {
                 }
               `}
             </style>
-            <h3 className="text-2xl font-bold mb-4 texsudo rm -rf /var/www/html/*
-sudo cp -r dist/* /var/www/html/sudo rm -rf /var/www/html/*
-sudo cp -r dist/* /var/www/html/t-center">Room Saved Successfully!</h3>
+            <h3 className="text-2xl font-bold mb-4 text-center">Room Saved Successfully!</h3>
             <div className="mb-6">
               <p className="text-gray-700 mb-2 text-center">Room ID: <span className="font-semibold">{roomId}</span></p>
               <p className="text-gray-600 text-center">Do you want to go back to the funeral hall?</p>
@@ -944,59 +995,125 @@ sudo cp -r dist/* /var/www/html/t-center">Room Saved Successfully!</h3>
         }}
       >
         <div className="container mx-auto py-4 px-4">
-          <div className="bg-white bg-opacity-80 rounded-lg p-4 mb-4"
-          style={{width: '100vh', height: '100vh'}}>
-            {/* Display deceased person's info and image upload section */}
+          <div className="bg-white bg-opacity-80 rounded-lg p-6 mb-4">
+            {/* 1. Room Information at the top */}
             <div className="mb-6">
-            <div className="flex flex-col md:flex-row gap-6">
-            {/* Canvas Area */}
-            <div className="flex-1 bg-gray-200 rounded-lg shadow-lg overflow-hidden">
+              <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
+              <p className="text-gray-700 text-center mb-4">
+                Type: {state.funeralType} | Password: {state.password}
+              </p>
+            </div>
+            
+            {/* 2. Deceased Person Image Upload Section in the middle */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-4">the one who journeyed on</h2>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                {/* Left side: Display the deceased image or placeholder */}
+                <div className="mb-4 md:mb-0 md:mr-8">
+                  {state.deceasedImage ? (
+                    <div className="relative">
+                      <img 
+                        src={state.deceasedImage} 
+                        alt={state.name}
+                        className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
+                        style={{ 
+                          width: `${CROP_IMAGE_SIZE}px`, 
+                          height: `${CROP_IMAGE_SIZE}px`,
+                          objectFit: 'cover'
+                        }}
+                      />
+                      <button
+                        onClick={handleRemoveDeceasedImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                        title="Remove image"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
+                      style={{ 
+                        width: `${CROP_IMAGE_SIZE}px`, 
+                        height: `${CROP_IMAGE_SIZE}px` 
+                      }}
+                    >
+                      No image
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right side: Upload controls */}
+                <div className="flex-1">
+                  <div className="mb-2">
+                    <h3 className="text-lg font-semibold">{state.name}</h3>
+                  </div>
+                  
+                  {/* Upload image section */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleDeceasedImageUpload}
+                      ref={fileInputRef}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      {state.deceasedImage ? 'Change Image' : 'Upload Image'}
+                    </button>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Maximum size: 500MB
+                    </p>
+                    
+                    {/* Error message for file size */}
+                    {uploadError && (
+                      <p className="text-red-500 text-sm mt-1">{uploadError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 3. Canvas (Drawing Board) at the bottom with 16:9 aspect ratio */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-4">Let the farewell bloom</h2>
               <div className="text-center text-gray-500 py-2">
                 <p>Click on items in the left toolbar to add them to the scene. Drag to position them. Items are automatically saved.</p>
               </div>
               <div 
                 className="canvas-container" 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center',
-                  padding: '10px',
-                  backgroundColor: '#f0f0f0',
-                  overflow: 'hidden'
-                }}
+                style={canvasContainerStyle}
               >
-                <div 
-                  style={{ 
-                    width: `${canvasSize.width}px`, 
-                    height: `${canvasSize.height}px`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    margin: '0 auto'
-                  }}
-                >
+                <div style={canvasStyle}>
                   <Stage
                     ref={stageRef}
                     width={canvasSize.width}
                     height={canvasSize.height}
-                    style={{ 
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)'
-                    }}
+                    style={stageStyle}
                   >
                     <Layer>
-                      {/* background image - ensure it fills the container */}
-                      {backgroundImg && (
-                        <KonvaImage
-                          image={backgroundImg}
-                          width={canvasSize.width}
-                          height={canvasSize.height}
-                          listening={false}
-                        />
-                      )}
+                      {/* background image - ensure it completely fills the 16:9 container */}
+                      {backgroundImg && (() => {
+                        const { width, height, x, y } = updateBackgroundImageFit(
+                          backgroundImg, 
+                          canvasSize.width, 
+                          canvasSize.height
+                        );
+                        
+                        return (
+                          <KonvaImage
+                            image={backgroundImg}
+                            x={x}
+                            y={y}
+                            width={width}
+                            height={height}
+                            listening={false}
+                          />
+                        );
+                      })()}
                       
                       {/* decorations */}
                       {canvasItems.map((item) => {
@@ -1113,102 +1230,23 @@ sudo cp -r dist/* /var/www/html/t-center">Room Saved Successfully!</h3>
                           'bottom-left', 'bottom-right'
                         ]}
                       />
-                      
                     </Layer>
                   </Stage>
                 </div>
               </div>
             </div>
-          </div>
-              <h2 className="text-2xl font-bold mb-4">Deceased Person</h2>
-              <div className="flex flex-col md:flex-row items-center mb-4">
-                {/* Left side: Display the deceased image or placeholder */}
-                <div className="mb-4 md:mb-0 md:mr-8">
-                  {state.deceasedImage ? (
-                    <div className="relative">
-                      <img 
-                        src={state.deceasedImage} 
-                        alt={state.name}
-                        className="w-32 h-32 object-cover rounded-lg border-2 border-gray-300"
-                        style={{ 
-                          width: `${CROP_IMAGE_SIZE}px`, 
-                          height: `${CROP_IMAGE_SIZE}px`,
-                          objectFit: 'cover'
-                        }}
-                      />
-                      <button
-                        onClick={handleRemoveDeceasedImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                        title="Remove image"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <div 
-                      className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
-                      style={{ 
-                        width: `${CROP_IMAGE_SIZE}px`, 
-                        height: `${CROP_IMAGE_SIZE}px` 
-                      }}
-                    >
-                      No image
-                    </div>
-                  )}
-                </div>
-                
-                {/* Right side: Upload controls */}
-                <div className="flex-1">
-                  <div className="mb-2">
-                    <h3 className="text-lg font-semibold">{state.name}</h3>
-                  </div>
-                  
-                  {/* Upload image section */}
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleDeceasedImageUpload}
-                      ref={fileInputRef}
-                      className="hidden"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    >
-                      {state.deceasedImage ? 'Change Image' : 'Upload Image'}
-                    </button>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Maximum size: 500MB
-                    </p>
-                    
-                    {/* Error message for file size */}
-                    {uploadError && (
-                      <p className="text-red-500 text-sm mt-1">{uploadError}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <h1 className="text-3xl font-bold mb-2 text-center">Funeral Room: {roomId}</h1>
-            <p className="text-gray-700 text-center mb-4">
-              Type: {state.funeralType} | Password: {state.password}
-            </p>
             
             {/* Save Button */}
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center">
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full disabled:opacity-50"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
               >
                 {isSaving ? 'Saving...' : 'Save Room'}
               </button>
             </div>
           </div>
-          
-
         </div>
       </div>
     </div>
