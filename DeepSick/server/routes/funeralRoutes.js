@@ -17,7 +17,7 @@ const validateObjectId = (req, res, next) => {
 
 // Get all public funeral rooms (GET /api/funerals/rooms)
 // This route must come before other routes to avoid being overridden by params
-router.get('/rooms', async(req, res) => {
+router.get('/rooms', async (req, res) => {
     try {
         console.log('GET /api/funerals/rooms called');
 
@@ -35,7 +35,7 @@ router.get('/rooms', async(req, res) => {
 });
 
 // Get a funeral room by roomId (GET /api/funerals/room/:roomId)
-router.get('/room/:roomId', async(req, res) => {
+router.get('/room/:roomId', async (req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -62,16 +62,14 @@ router.get('/room/:roomId', async(req, res) => {
             return res.status(403).json({ message: 'Invalid password' });
         }
 
-        // 添加isOrganizer标志，如果提供了正确的密码则认为是组织者
-        // 默认不是组织者
         let isOrganizer = false;
-        
-        // 如果有密码且密码匹配，或者房间没有设置密码，则视为组织者
+
+        // If there is a password and it matches, or if no password is set for the room, it will be regarded as an organizer
         if ((funeral.password && funeral.password === password) || !funeral.password) {
             isOrganizer = true;
         }
-        
-        // 添加isOrganizer字段到响应中
+
+        // Add the isOrganizer field to the response
         const response = {
             ...funeral.toObject(),
             isOrganizer
@@ -85,7 +83,7 @@ router.get('/room/:roomId', async(req, res) => {
 });
 
 // Create or update a funeral room (POST /api/funerals/room)
-router.post('/room', async(req, res) => {
+router.post('/room', async (req, res) => {
     try {
         const {
             roomId,
@@ -196,7 +194,7 @@ router.post('/room', async(req, res) => {
 });
 
 // Update canvas items for a funeral room (PATCH /api/funerals/room/:roomId/canvas)
-router.patch('/room/:roomId/canvas', async(req, res) => {
+router.patch('/room/:roomId/canvas', async (req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -238,7 +236,7 @@ router.patch('/room/:roomId/canvas', async(req, res) => {
 });
 
 // Verify a funeral room password (POST /api/funerals/room/verify)
-router.post('/room/verify', async(req, res) => {
+router.post('/room/verify', async (req, res) => {
     try {
         const { roomId, password } = req.body;
 
@@ -266,10 +264,10 @@ router.post('/room/verify', async(req, res) => {
         // Check if the password matches
         const isValid = funeral.password === password;
 
-        // 如果密码验证成功，则返回isOrganizer标志为true
-        res.json({ 
+        // If the password verification is successful, return the isOrganizer flag as true
+        res.json({
             valid: isValid,
-            isOrganizer: isValid // 密码正确的用户被视为组织者
+            isOrganizer: isValid
         });
     } catch (error) {
         console.error('Password verification error:', error);
@@ -278,7 +276,7 @@ router.post('/room/verify', async(req, res) => {
 });
 
 // Delete a funeral room by roomId (DELETE /api/funerals/room/:roomId)
-router.delete('/room/:roomId', async(req, res) => {
+router.delete('/room/:roomId', async (req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -302,7 +300,7 @@ router.delete('/room/:roomId', async(req, res) => {
 
         // Using deleteOne to remove the funeral
         await Funeral.deleteOne({ _id: funeral._id });
-        
+
         res.json({ message: 'Funeral room deleted successfully' });
     } catch (error) {
         console.error('Delete funeral room error:', error);
@@ -311,7 +309,7 @@ router.delete('/room/:roomId', async(req, res) => {
 });
 
 // Update a funeral room by roomId (PATCH /api/funerals/room/:roomId)
-router.patch('/room/:roomId', async(req, res) => {
+router.patch('/room/:roomId', async (req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -346,12 +344,12 @@ router.patch('/room/:roomId', async(req, res) => {
 
         // Update fields if provided
         if (updates.deceasedName) funeral.deceasedName = updates.deceasedName;
-        
+
         // Handle funeral type mapping
         if (updates.funeralType) {
             funeral.sceneType = sceneTypeMapping[updates.funeralType] || updates.funeralType;
         }
-        
+
         if (updates.backgroundImage !== undefined) funeral.backgroundImage = updates.backgroundImage;
         if (updates.deceasedImage !== undefined) funeral.deceasedImage = updates.deceasedImage;
         if (updates.password !== undefined) funeral.password = updates.password;
@@ -378,7 +376,7 @@ router.patch('/room/:roomId', async(req, res) => {
 // --- AUTHENTICATED FUNERAL ROUTES ---
 
 // Create a new funeral (POST /api/funerals)
-router.post('/', auth, async(req, res) => {
+router.post('/', auth, async (req, res) => {
     try {
         const { title, sceneType, ceremonySteps = [] } = req.body;
 
@@ -406,7 +404,7 @@ router.post('/', auth, async(req, res) => {
 });
 
 // Get a specific funeral by ID (GET /api/funerals/:id)
-router.get('/:id', auth, validateObjectId, async(req, res) => {
+router.get('/:id', auth, validateObjectId, async (req, res) => {
     try {
         const funeral = await Funeral.findById(req.params.id);
 
@@ -428,7 +426,7 @@ router.get('/:id', auth, validateObjectId, async(req, res) => {
 });
 
 // Get all funerals for the current user (GET /api/funerals)
-router.get('/', auth, async(req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         let query = {};
 
@@ -449,7 +447,7 @@ router.get('/', auth, async(req, res) => {
 });
 
 // Update a funeral (PUT /api/funerals/:id)
-router.put('/:id', auth, validateObjectId, async(req, res) => {
+router.put('/:id', auth, validateObjectId, async (req, res) => {
     try {
         const { title, sceneType, ceremonySteps } = req.body;
         const funeral = await Funeral.findById(req.params.id);
@@ -478,7 +476,7 @@ router.put('/:id', auth, validateObjectId, async(req, res) => {
 });
 
 // Delete a funeral (DELETE /api/funerals/:id)
-router.delete('/:id', auth, validateObjectId, async(req, res) => {
+router.delete('/:id', auth, validateObjectId, async (req, res) => {
     try {
         const funeral = await Funeral.findById(req.params.id);
 

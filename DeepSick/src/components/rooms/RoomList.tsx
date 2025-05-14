@@ -30,9 +30,9 @@ interface RoomCardProps {
 }
 
 // Room card component
-const RoomCard: React.FC<RoomCardProps> = ({ 
-  room, 
-  onClick, 
+const RoomCard: React.FC<RoomCardProps> = ({
+  room,
+  onClick,
   isSelected,
   isOrganizer = false,
   onEdit,
@@ -40,31 +40,31 @@ const RoomCard: React.FC<RoomCardProps> = ({
 }) => {
   // Get the appropriate background image
   const backgroundImage = room.deceasedImage || backgroundImageMap[room.funeralType] || churchImage;
-  
+
   // Handle edit button click
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
     if (onEdit) onEdit(room);
   };
-  
+
   // Handle delete button click
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
     if (onDelete) onDelete(room);
   };
-  
+
   return (
-    <div 
-      className={`room-card ${isSelected ? 'selected' : ''}`} 
+    <div
+      className={`room-card ${isSelected ? 'selected' : ''}`}
       onClick={() => onClick(room)}
     >
       <div className="room-card-image">
         <img src={backgroundImage} alt={room.deceasedName} />
-        
+
         {/* Management controls for organizers */}
         {isOrganizer && (
           <div className="room-card-controls">
-            <button 
+            <button
               className="room-card-edit-btn"
               onClick={handleEdit}
               title="Edit Room"
@@ -72,7 +72,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
               <i className="fas fa-edit"></i>
               Edit
             </button>
-            <button 
+            <button
               className="room-card-delete-btn"
               onClick={handleDelete}
               title="Delete Room"
@@ -103,26 +103,26 @@ interface PasswordModalProps {
 }
 
 // Password modal component
-const PasswordModal: React.FC<PasswordModalProps> = ({ 
-  show, 
-  roomId, 
+const PasswordModal: React.FC<PasswordModalProps> = ({
+  show,
+  roomId,
   title,
   message,
-  onClose, 
-  onSubmit, 
-  error 
+  onClose,
+  onSubmit,
+  error
 }) => {
   const [password, setPassword] = useState('');
-  
+
   // Reset password when modal is opened/closed
   useEffect(() => {
     if (show) {
       setPassword('');
     }
   }, [show]);
-  
+
   if (!show) return null;
-  
+
   return (
     <div className="password-modal-overlay">
       <div className="password-modal">
@@ -143,14 +143,14 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
           {error && <p className="error-message">{error}</p>}
         </div>
         <div className="password-modal-footer">
-          <button 
-            className="cancel-btn" 
+          <button
+            className="cancel-btn"
             onClick={onClose}
           >
             Cancel
           </button>
-          <button 
-            className="submit-btn" 
+          <button
+            className="submit-btn"
             onClick={() => onSubmit(password)}
             disabled={!password}
           >
@@ -171,12 +171,12 @@ interface SearchBoxProps {
 // SearchBox component
 const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, placeholder = "Search by room ID or name..." }) => {
   const [query, setQuery] = useState('');
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(query);
   };
-  
+
   return (
     <div className="search-box-container">
       <form onSubmit={handleSubmit}>
@@ -207,9 +207,9 @@ interface RoomListProps {
 }
 
 // RoomList component
-const RoomList: React.FC<RoomListProps> = ({ 
-  rooms, 
-  onRoomSelect, 
+const RoomList: React.FC<RoomListProps> = ({
+  rooms,
+  onRoomSelect,
   currentRoomId,
   className = '',
   isOrganizer = false,
@@ -219,18 +219,18 @@ const RoomList: React.FC<RoomListProps> = ({
   // State for filtered rooms
   const [filteredRooms, setFilteredRooms] = useState<FuneralRoom[]>(rooms);
   const [searchPerformed, setSearchPerformed] = useState(false);
-  
+
   // Modal states
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [modalMode, setModalMode] = useState<'edit' | 'delete'>('edit');
   const [selectedRoom, setSelectedRoom] = useState<FuneralRoom | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  
+
   // Update filtered rooms when rooms prop changes
   useEffect(() => {
     setFilteredRooms(rooms);
   }, [rooms]);
-  
+
   // Handle search
   const handleSearch = (query: string) => {
     if (!query.trim()) {
@@ -238,23 +238,23 @@ const RoomList: React.FC<RoomListProps> = ({
       setSearchPerformed(false);
       return;
     }
-    
+
     const lowerQuery = query.toLowerCase();
-    const filtered = rooms.filter(room => 
-      room.roomId.toLowerCase().includes(lowerQuery) || 
+    const filtered = rooms.filter(room =>
+      room.roomId.toLowerCase().includes(lowerQuery) ||
       room.deceasedName.toLowerCase().includes(lowerQuery)
     );
-    
+
     setFilteredRooms(filtered);
     setSearchPerformed(true);
   };
-  
+
   // Reset search
   const resetSearch = () => {
     setFilteredRooms(rooms);
     setSearchPerformed(false);
   };
-  
+
   // Handle edit button click
   const handleEdit = (room: FuneralRoom) => {
     setSelectedRoom(room);
@@ -262,7 +262,7 @@ const RoomList: React.FC<RoomListProps> = ({
     setShowPasswordModal(true);
     setPasswordError(null);
   };
-  
+
   // Handle delete button click
   const handleDelete = (room: FuneralRoom) => {
     setSelectedRoom(room);
@@ -270,18 +270,18 @@ const RoomList: React.FC<RoomListProps> = ({
     setShowPasswordModal(true);
     setPasswordError(null);
   };
-  
+
   // Handle password modal close
   const handleCloseModal = () => {
     setShowPasswordModal(false);
     setSelectedRoom(null);
     setPasswordError(null);
   };
-  
+
   // Handle password submit
   const handlePasswordSubmit = (password: string) => {
     if (!selectedRoom) return;
-    
+
     if (modalMode === 'edit' && onRoomEdit) {
       onRoomEdit(selectedRoom, password);
       setShowPasswordModal(false);
@@ -290,21 +290,20 @@ const RoomList: React.FC<RoomListProps> = ({
       setShowPasswordModal(false);
     }
   };
-  
+
   return (
     <div className={`room-list-container ${className}`}>
-      {/* <h2 className="room-list-title">Available Memorial Rooms</h2> */}
-      
+
       {/* Search box */}
       <SearchBox onSearch={handleSearch} placeholder="Search by room ID or name..." />
-      
+
       {/* Room list */}
       {filteredRooms.length > 0 ? (
         <div className="room-grid">
           {filteredRooms.map((room) => (
-            <RoomCard 
-              key={room.roomId} 
-              room={room} 
+            <RoomCard
+              key={room.roomId}
+              room={room}
               onClick={onRoomSelect}
               isSelected={room.roomId === currentRoomId}
               isOrganizer={isOrganizer}
@@ -321,7 +320,7 @@ const RoomList: React.FC<RoomListProps> = ({
           </button>
         </div>
       )}
-      
+
       {/* Password modal for edit/delete operations */}
       <PasswordModal
         show={showPasswordModal}

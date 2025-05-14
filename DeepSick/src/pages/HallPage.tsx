@@ -127,23 +127,18 @@ const HallPage: React.FC = () => {
             className="hall-image"
           />
         </div>
-        
+
         {/* Right content area */}
         <div className="hall-content">
-          {/* <h1 className="hall-title">Digital Memorial Hall</h1> */}
-          {/* <p className="hall-description">
-            The Digital Memorial Hall is a space where users can honor and remember their loved ones by sharing photos, 
-            videos, and written memories. All content is beautifully arranged in a timeline, allowing friends and family to 
-            reflect on special moments and milestones throughout the person's life.
-          </p> */}
-          
+
+
           <div className="upload-section">
             <UploadArea onFileUpload={handleFileUpload} isUploading={isUploading} />
             <p className="upload-note">
               Support for a single or bulk upload. Strictly prohibit from uploading company data or other band files
             </p>
           </div>
-          
+
           <div className="name-input-container">
             <label className="name-label">
               Your Name (Optional)
@@ -157,7 +152,7 @@ const HallPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Timeline section */}
       <div className="timeline-section">
         <Timeline

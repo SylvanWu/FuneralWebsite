@@ -188,6 +188,7 @@ interface VectorToolbarProps {
   onItemDragStart: (e: React.DragEvent<HTMLDivElement>, item: VectorItem) => void;
   onCollapseChange?: (isCollapsed: boolean) => void;
   onItemClick?: (item: VectorItem) => void;
+  loadingItems?: Set<string>; // Set of item IDs that are currently loading
 }
 
 // Define categories
@@ -1254,7 +1255,7 @@ const VECTOR_ITEMS: VectorItem[] = [
   
 ];
 
-export const VectorToolbar: React.FC<VectorToolbarProps> = ({ onItemDragStart, onCollapseChange, onItemClick }) => {
+export const VectorToolbar: React.FC<VectorToolbarProps> = ({ onItemDragStart, onCollapseChange, onItemClick, loadingItems }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].key);
@@ -1344,14 +1345,19 @@ export const VectorToolbar: React.FC<VectorToolbarProps> = ({ onItemDragStart, o
                   {rowItems.map(item => (
                     <div
                       key={item.id}
-                      className={`vector-item ${draggedItem?.id === item.id ? 'dragging' : ''}`}
-                      draggable
+                      className={`vector-item ${draggedItem?.id === item.id ? 'dragging' : ''} ${loadingItems?.has(item.id) ? 'loading' : ''}`}
+                      draggable={!loadingItems?.has(item.id)}  // Only draggable if not loading
                       onDragStart={(e) => handleDragStart(e, item)}
                       onDragEnd={handleDragEnd}
-                      onClick={() => onItemClick?.(item)}
-                      title={item.description || item.name}
+                      onClick={() => !loadingItems?.has(item.id) && onItemClick?.(item)}
+                      title={loadingItems?.has(item.id) ? 'Loading...' : (item.description || item.name)}
                     >
                       <img src={item.src} alt={item.name} className="vector-icon" />
+                      {loadingItems?.has(item.id) && (
+                        <div className="loading-indicator">
+                          <div className="spinner"></div>
+                        </div>
+                      )}
                       {!isCollapsed && <span className="vector-label">{item.name}</span>}
                     </div>
                   ))}

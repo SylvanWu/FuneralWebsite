@@ -1,0 +1,64 @@
+/* FuneralRoomPage.css */
+
+
+/* Main canvas container */
+
+.canvas-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+
+/* Canvas wrapper - maintains 16:9 aspect ratio */
+
+.canvas-wrapper {
+    width: 100%;
+    position: relative;
+    padding-top: 56.25%;
+    /* 16:9 aspect ratio (9 / 16 = 0.5625 = 56.25%) */
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+
+/* Ensures Konva Stage fills the wrapper completely */
+
+.canvas-wrapper .konvajs-content {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+
+/* Ensures Konva canvas fills the container */
+
+.canvas-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+
+/* Responsive adjustments for smaller screens */
+
+@media (max-width: 768px) {
+    .canvas-container {
+        padding: 5px;
+    }
+}
+
+
+/* Better handle visibility for resize handles */
+
+.konvajs-content[class*="Transformer"] {
+    outline: none !important;
+    border: none !important;
+}

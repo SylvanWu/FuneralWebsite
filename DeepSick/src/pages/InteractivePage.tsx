@@ -80,7 +80,7 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
   );
 };
 
-// 将FuneralRoom类型转换为RoomData类型的工具函数
+// A utility for converting the FuneralRoom type to the RoomData type
 const convertToRoomData = (funeralRoom: FuneralRoom) => {
   return {
     roomId: funeralRoom.roomId,
@@ -92,16 +92,16 @@ const convertToRoomData = (funeralRoom: FuneralRoom) => {
   };
 };
 
-// 缓存有效期（毫秒）
+// Cache validity period (milliseconds)
 const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5分钟
 
-// 主页面组件
+//Main page component
 const InteractivePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { roomId: urlRoomId } = useParams<{ roomId?: string }>();
 
-  // 房间数据状态
+  //Room data status
   const [currentRoom, setCurrentRoom] = useState<FuneralRoom | null>(null);
   const [allRooms, setAllRooms] = useState<FuneralRoom[]>([]);
   const [isLoadingCurrentRoom, setIsLoadingCurrentRoom] = useState(true);
@@ -109,20 +109,20 @@ const InteractivePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [roomNotFound, setRoomNotFound] = useState<boolean>(false);
 
-  // 缓存状态
+  // Cache status
   const [roomsCache, setRoomsCache] = useState<{
     data: FuneralRoom[];
     timestamp: number;
   } | null>(null);
 
-  // 密码模态框状态
+  // The state of the password modal box
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedRoomForPassword, setSelectedRoomForPassword] = useState<FuneralRoom | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  // 获取所有房间函数 - 使用缓存以避免频繁API调用
+  // Obtain all room functions - Use caching to avoid frequent API calls
   const fetchAllRooms = useCallback(async (forceRefresh: boolean = false) => {
-    // 如果有有效的缓存并且不是强制刷新，则使用缓存
+
     if (
       roomsCache &&
       !forceRefresh &&
@@ -133,13 +133,13 @@ const InteractivePage: React.FC = () => {
       return roomsCache.data;
     }
 
-    // 否则从API获取新数据
+
     setIsLoadingAllRooms(true);
 
     try {
       const rooms = await getAllFuneralRooms();
 
-      // 更新缓存和状态
+      // Update the cache and status
       setRoomsCache({
         data: rooms,
         timestamp: Date.now()
@@ -156,13 +156,13 @@ const InteractivePage: React.FC = () => {
     }
   }, [roomsCache]);
 
-  // 根据ID加载特定房间
+  // Load a specific room based on the ID
   const loadRoomById = useCallback(async (roomId: string, cachedRooms: FuneralRoom[]) => {
     setIsLoadingCurrentRoom(true);
     setRoomNotFound(false);
 
     try {
-      // 首先尝试从已缓存的房间列表中查找
+      // First, try to search from the cached list of rooms
       const cachedRoom = cachedRooms.find(room => room.roomId === roomId);
       if (cachedRoom) {
         setCurrentRoom(cachedRoom);
@@ -170,7 +170,7 @@ const InteractivePage: React.FC = () => {
         return;
       }
 
-      // 如果缓存中没有，则从API获取
+      // If it is not in the cache, obtain it from the API
       const roomData = await getFuneralRoomById(roomId);
       if (roomData) {
         setCurrentRoom(roomData);
@@ -188,24 +188,24 @@ const InteractivePage: React.FC = () => {
     }
   }, []);
 
-  // 初始化数据 - 从URL或location state加载房间
+  // Initialize data - Load the room from the URL or location state
   useEffect(() => {
     const initializeData = async () => {
-      // 加载所有房间（使用缓存）
+
       const rooms = await fetchAllRooms();
 
-      // 检查是否有房间ID在URL或location state中
+
       const stateData = location.state as FuneralRoom;
 
       if (stateData && stateData.roomId) {
-        // 如果有state数据，使用它设置当前房间
+
         setCurrentRoom(stateData);
         setIsLoadingCurrentRoom(false);
       } else if (urlRoomId) {
-        // 如果URL中有roomId，加载该房间
+
         await loadRoomById(urlRoomId, rooms);
       } else {
-        // 如果没有指定房间，只显示房间列表
+
         setIsLoadingCurrentRoom(false);
       }
     };
@@ -213,14 +213,14 @@ const InteractivePage: React.FC = () => {
     initializeData();
   }, [location, urlRoomId, fetchAllRooms, loadRoomById]);
 
-  // 处理从RoomList选择房间
+  // Handle the selection of rooms from the RoomList
   const handleRoomSelect = (room: FuneralRoom) => {
     setSelectedRoomForPassword(room);
     setShowPasswordModal(true);
     setPasswordError(null);
   };
 
-  // 处理切换到其他房间的快捷方式
+  // Handle the shortcuts for switching to other rooms
   const switchRoom = (roomId: string) => {
     const targetRoom = allRooms.find(room => room.roomId === roomId);
     if (targetRoom) {
@@ -228,14 +228,14 @@ const InteractivePage: React.FC = () => {
     }
   };
 
-  // 处理模态框关闭
+
   const handleCloseModal = () => {
     setShowPasswordModal(false);
     setSelectedRoomForPassword(null);
     setPasswordError(null);
   };
 
-  // 处理密码提交
+  // Handle password submission
   const handlePasswordSubmit = async (password: string) => {
     if (!selectedRoomForPassword) return;
 
@@ -243,23 +243,23 @@ const InteractivePage: React.FC = () => {
       const isValid = await verifyRoomPassword(selectedRoomForPassword.roomId, password);
 
       if (isValid) {
-        // 关闭模态框
+
         setShowPasswordModal(false);
 
-        // 设置选中的房间为当前房间
+
         const roomWithPassword = {
           ...selectedRoomForPassword,
           password
         };
         setCurrentRoom(roomWithPassword);
 
-        // 更新URL，不重新加载页面
+
         navigate(`/interactive/${selectedRoomForPassword.roomId}`, {
           replace: true,
           state: roomWithPassword
         });
 
-        // 清除任何错误
+
         setError(null);
         setRoomNotFound(false);
       } else {
@@ -271,12 +271,12 @@ const InteractivePage: React.FC = () => {
     }
   };
 
-  // 处理刷新房间列表
+  // Handle refreshing the room list
   const handleRefreshRooms = () => {
     fetchAllRooms(true); // 强制刷新
   };
 
-  // 如果正在加载当前房间，显示加载状态
+
   if (isLoadingCurrentRoom) {
     return (
       <div className="loading-container">
@@ -288,7 +288,7 @@ const InteractivePage: React.FC = () => {
 
   return (
     <div className="interactive-page">
-      {/* 面包屑导航 */}
+
       <nav className="breadcrumb-nav">
         <Link to="/" className="breadcrumb-link">Home</Link>
         <span className="breadcrumb-separator">/</span>
@@ -299,7 +299,7 @@ const InteractivePage: React.FC = () => {
         </span>
       </nav>
 
-      {/* 错误提示 */}
+
       {error && (
         <div className="error-notification">
           <p>{error}</p>
@@ -314,10 +314,10 @@ const InteractivePage: React.FC = () => {
         </div>
       )}
 
-      {/* 如果有当前房间，显示房间详情和互动功能 */}
+
       {currentRoom ? (
         <>
-          {/* 房间信息区域 */}
+          {/* Room Information Area */}
           <section className="hero-section">
             <div className="hero-image-container">
               <img
@@ -330,11 +330,11 @@ const InteractivePage: React.FC = () => {
             <p className="hero-subtitle">Room ID: {currentRoom.roomId}</p>
           </section>
 
-          {/* 互动功能区域 - 现在包含了画板和音乐播放器 */}
+          {/* Interactive function area - Now includes a drawing board and a music player */}
           <InteractionSection roomData={convertToRoomData(currentRoom)} />
         </>
       ) : (
-        /* 如果没有当前房间，显示欢迎信息 */
+
         <div className="welcome-section">
           <h1>Welcome to the Funeral Memorial Hall</h1>
           <p>Please select a room below to enter and pay your respects</p>
@@ -345,7 +345,7 @@ const InteractivePage: React.FC = () => {
         <DreamShrink />
       </div>
 
-      {/* 密码模态框 */}
+      {/* Password modal box*/}
       <PasswordModal
         show={showPasswordModal}
         roomId={selectedRoomForPassword?.roomId || ''}

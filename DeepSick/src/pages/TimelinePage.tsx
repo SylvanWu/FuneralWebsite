@@ -6,7 +6,7 @@ import Timeline, { Memory } from '../components/Timeline';
 import {
     fetchMemories,
     createMemory,
-    deleteMemory                    // NEW ⬅️ Make sure this function exists in your API file
+    deleteMemory
 } from '../api';
 
 export interface BackendMemory {

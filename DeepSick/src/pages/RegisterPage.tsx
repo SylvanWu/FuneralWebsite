@@ -1,4 +1,4 @@
-// ✅ RegisterPage.tsx
+// RegisterPage.tsx
 import React, { useEffect, useState } from 'react';
 // import { registerUser } from '../api'; // Removed unused import
 import { useNavigate, Link } from 'react-router-dom';

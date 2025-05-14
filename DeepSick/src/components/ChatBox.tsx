@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSocket } from '../context/SocketContext';
 import '../styles/ChatBox.css';
 
@@ -69,23 +69,74 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ roomId, userId, username }) =>
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socket = useSocket();
 
+  // 保存聊天记录到本地存储
+  const saveMessages = useCallback((msgs: Message[]) => {
+    try {
+      localStorage.setItem(`chat_${roomId}`, JSON.stringify(msgs));
+    } catch (err) {
+      console.error('Failed to save messages to localStorage:', err);
+    }
+  }, [roomId]);
+
+  // 从本地存储恢复聊天记录
+  const restoreMessages = useCallback(() => {
+    try {
+      const savedMessages = localStorage.getItem(`chat_${roomId}`);
+      if (savedMessages) {
+        const parsedMessages = JSON.parse(savedMessages);
+        setMessages(parsedMessages);
+      }
+    } catch (err) {
+      console.error('Failed to restore messages from localStorage:', err);
+    }
+  }, [roomId]);
+
+  // 更新消息时保存到本地存储
+  const updateMessages = useCallback((newMessages: Message[]) => {
+    setMessages(newMessages);
+    saveMessages(newMessages);
+  }, [saveMessages]);
+
   useEffect(() => {
     if (!socket) return;
 
-    // Listen for new messages
+    // 监听重连事件
+    socket.on('reconnect', () => {
+      console.log('Socket reconnected, restoring chat state...');
+      setIsConnected(true);
+      // 重新加入房间
+      socket.emit('joinRoom', { roomId, username });
+      // 请求聊天历史
+      socket.emit('requestChatHistory', roomId);
+      // 尝试从本地存储恢复状态
+      restoreMessages();
+    });
+
+    // 监听连接状态
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      setIsConnected(true);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+      setIsConnected(false);
+    });
+
+    // 监听新消息
     socket.on('chat-message', (message: Message) => {
       console.log('Received message', message);
-      setMessages(prev => [...prev, message]);
+      updateMessages(prev => [...prev, message]);
     });
 
-    // Listen for chat history
+    // 监听聊天历史
     socket.on('chat-history', (history: Message[]) => {
-      setMessages(history);
+      updateMessages(history);
     });
 
-    // Listen for user join
+    // 监听用户加入
     socket.on('user-joined', (data) => {
-      setMessages(prev => [...prev, {
+      updateMessages(prev => [...prev, {
         userId: 'system',
         username: 'System',
         message: `${data.username} joined the room`,
@@ -93,9 +144,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ roomId, userId, username }) =>
       }]);
     });
 
-    // Listen for user leave
+    // 监听用户离开
     socket.on('user-left', (data) => {
-      setMessages(prev => [...prev, {
+      updateMessages(prev => [...prev, {
         userId: 'system',
         username: 'System',
         message: `User left the room`,
@@ -103,12 +154,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ roomId, userId, username }) =>
       }]);
     });
 
-    // Listen for connection status
-    socket.on('connect', () => setIsConnected(true));
-    socket.on('disconnect', () => setIsConnected(false));
-
-    // Join room
+    // 加入房间
     socket.emit('joinRoom', { roomId, username });
+
+    // 组件挂载时尝试恢复状态
+    restoreMessages();
 
     return () => {
       socket.emit('leaveRoom', roomId);
@@ -118,8 +168,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ roomId, userId, username }) =>
       socket.off('user-left');
       socket.off('connect');
       socket.off('disconnect');
+      socket.off('reconnect');
     };
-  }, [socket, roomId, username]);
+  }, [socket, roomId, username, updateMessages, restoreMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
