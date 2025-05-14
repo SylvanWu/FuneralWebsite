@@ -37,35 +37,35 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const socket = socketRef.current;
 
-    // Listen for connection events
+    // 监听连接事件
     socket.on('connect', () => {
       console.log('Socket connected');
       setIsConnected(true);
       reconnectAttemptsRef.current = 0;
     });
 
-    // Listen for disconnect events
+    // 监听断开连接事件
     socket.on('disconnect', (reason) => {
       console.log('Socket disconnected:', reason);
       setIsConnected(false);
     });
 
-    // Listen for reconnection attempt events
+    // 监听重连尝试事件
     socket.on('reconnect_attempt', (attemptNumber) => {
       console.log(`Reconnection attempt ${attemptNumber}`);
       reconnectAttemptsRef.current = attemptNumber;
     });
 
-    // Listen for reconnection failure events
+    // 监听重连失败事件
     socket.on('reconnect_failed', () => {
       console.log('Failed to reconnect after maximum attempts');
       if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-        // Add reconnection failure handling logic here
+        // 可以在这里添加重连失败后的处理逻辑
         console.log('Maximum reconnection attempts reached');
       }
     });
 
-    // Listen for reconnection success events
+    // 监听重连成功事件
     socket.on('reconnect', (attemptNumber) => {
       console.log(`Reconnected after ${attemptNumber} attempts`);
       setIsConnected(true);
@@ -73,13 +73,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
 
     return () => {
-      // Clean up all event listeners
+      // 清理所有事件监听器
       socket.off('connect');
       socket.off('disconnect');
       socket.off('reconnect_attempt');
       socket.off('reconnect_failed');
       socket.off('reconnect');
-      // Disconnect socket
+      // 断开连接
       socket.disconnect();
     };
   }, []);

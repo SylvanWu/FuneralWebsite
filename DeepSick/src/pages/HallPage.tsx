@@ -18,7 +18,7 @@ const HallPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   
-  // Get user role
+  // 获取用户角色
   useEffect(() => {
     try {
       const userStr = localStorage.getItem('user');
@@ -26,7 +26,7 @@ const HallPage: React.FC = () => {
         const user = JSON.parse(userStr);
         setUserRole(user.userType);
       } else {
-        // If no user object, try to get from role
+        // 如果没有user对象，尝试从role中获取
         const roleStr = localStorage.getItem('role');
         setUserRole(roleStr);
       }
@@ -112,7 +112,7 @@ const HallPage: React.FC = () => {
     }
   };
 
-  // Check if user is admin
+  // 检查是否是管理员
   const isOrganizer = userRole === 'organizer' || userRole === 'admin';
 
   return (
@@ -135,7 +135,7 @@ const HallPage: React.FC = () => {
           <div className="upload-section">
             <UploadArea onFileUpload={handleFileUpload} isUploading={isUploading} />
             <p className="upload-note">
-              Supports single or bulk file uploads. Uploading company data or other restricted files is strictly prohibited.
+              Support for a single or bulk upload. Strictly prohibit from uploading company data or other band files
             </p>
           </div>
 

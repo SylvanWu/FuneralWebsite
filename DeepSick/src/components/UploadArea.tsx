@@ -63,7 +63,7 @@ const UploadArea: React.FC<UploadAreaProps> = ({ onFileUpload, isUploading }) =>
                 d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"
               />
             </svg>
-            <p className="text-sm text-gray-600">Uploading, please wait...</p>
+            <p className="text-sm text-gray-600">上传中，请稍候...</p>
           </>
         ) : (
           <>

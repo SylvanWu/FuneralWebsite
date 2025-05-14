@@ -150,7 +150,7 @@
   cursor: not-allowed;
 }
 
-/* Scrollbar styles */
+/* 滚动条样式 */
 .messages::-webkit-scrollbar {
   width: 6px;
 }

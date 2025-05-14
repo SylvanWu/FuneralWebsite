@@ -49,8 +49,8 @@
   background-color: #e0e0e0;
 }
 
-/* Refresh button animation */
-.shared-tool-button[title="Refresh canvas"]:active {
+/* 刷新按钮动画 */
+.shared-tool-button[title="刷新画布"]:active {
   transform: rotate(360deg);
 }
 

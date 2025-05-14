@@ -205,7 +205,7 @@
   margin-bottom: 10px;
 }
 
-/* Responsive: Buttons and menu wrap on small screens */
+/* 响应式：小屏时按钮和菜单自动换行 */
 @media (max-width: 1200px) {
   .topbar, .simplified-topbar {
     padding: 10px 20px;
