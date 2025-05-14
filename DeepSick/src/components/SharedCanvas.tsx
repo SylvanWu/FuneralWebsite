@@ -152,8 +152,14 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
   const updateDrawings = useCallback((newDrawings: DrawingData[]) => {
     setDrawings(newDrawings);
     drawingsRef.current = newDrawings;
-    saveCanvasState();
-  }, [saveCanvasState]);
+  }, []);
+
+  // 监听 drawings 变化并保存到本地存储
+  useEffect(() => {
+    if (drawings.length > 0) {
+      saveCanvasState();
+    }
+  }, [drawings, saveCanvasState]);
 
   // Initialize canvas
   const initCanvas = useCallback(() => {
@@ -227,105 +233,119 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
 
   // Initialize socket connection and event listeners
   useEffect(() => {
-    if (socket) {
-      // 监听重连事件
-      socket.on('reconnect', () => {
-        console.log('Socket reconnected, restoring canvas state...');
-        setIsConnected(true);
-        // 重新加入房间
-        socket.emit('joinRoom', roomId);
-        // 请求当前画布状态
-        socket.emit('selectCanvas', { roomId, canvasId: currentCanvasId });
-        // 尝试从本地存储恢复状态
-        restoreCanvasState();
-      });
+    if (!socket) return;
 
-      // 监听连接状态
-      socket.on('connect', () => {
-        console.log('Socket connected');
-        setIsConnected(true);
-      });
-
-      socket.on('disconnect', () => {
-        console.log('Socket disconnected');
-        setIsConnected(false);
-      });
-
-      // 监听画布状态更新
-      socket.on('canvasStates', (states: CanvasStates) => {
-        try {
-          console.log('Received canvas states:', states);
-          setCanvasList(Object.keys(states));
-          if (states[currentCanvasId]) {
-            redrawCanvas(states[currentCanvasId].drawings);
-            updateDrawings(states[currentCanvasId].drawings);
-          }
-        } catch (err) {
-          console.error('Failed to handle canvas states:', err);
-          setError('Failed to update canvas. Please try refreshing the page.');
-        }
-      });
-
-      socket.on('canvasState', (state: CanvasState) => {
-        try {
-          console.log('Received canvas state:', state);
-          redrawCanvas(state.drawings);
-          updateDrawings(state.drawings);
-        } catch (err) {
-          console.error('Failed to redraw canvas:', err);
-          setError('Failed to redraw canvas. Please refresh the page.');
-        }
-      });
-
-      socket.on('draw', (data: { canvasId: string; drawingData: DrawingData }) => {
-        try {
-          console.log('Received drawing data:', data);
-          if (data.canvasId === currentCanvasId) {
-            drawOnCanvas(data.drawingData);
-            updateDrawings([...drawingsRef.current, data.drawingData]);
-          }
-        } catch (err) {
-          console.error('Failed to draw:', err);
-        }
-      });
-
-      socket.on('canvasCleared', (canvasId: string) => {
-        try {
-          console.log('Canvas cleared:', canvasId);
-          if (canvasId === currentCanvasId) {
-            initCanvas();
-            updateDrawings([]);
-          }
-        } catch (err) {
-          console.error('Failed to clear canvas:', err);
-        }
-      });
-
-      socket.on('canvasCreated', (canvasId: string) => {
-        console.log('Canvas created:', canvasId);
-        setCanvasList(prev => [...prev, canvasId]);
-      });
-
-      socket.on('undo', (canvasId: string) => {
-        console.log('Undo event:', canvasId);
-        if (canvasId === currentCanvasId && drawingsRef.current.length > 0) {
-          const newDrawings = drawingsRef.current.slice(0, -1);
-          updateDrawings(newDrawings);
-          redrawCanvas(newDrawings);
-        }
-      });
-
-      // 组件挂载时尝试恢复状态
+    const handleReconnect = () => {
+      console.log('Socket reconnected, restoring canvas state...');
+      setIsConnected(true);
+      // 重新加入房间
+      socket.emit('joinRoom', roomId);
+      // 请求当前画布状态
+      socket.emit('selectCanvas', { roomId, canvasId: currentCanvasId });
+      // 尝试从本地存储恢复状态
       restoreCanvasState();
+    };
 
-      return () => {
-        if (socket) {
-          socket.removeAllListeners();
+    const handleConnect = () => {
+      console.log('Socket connected');
+      setIsConnected(true);
+    };
+
+    const handleDisconnect = () => {
+      console.log('Socket disconnected');
+      setIsConnected(false);
+    };
+
+    const handleCanvasStates = (states: CanvasStates) => {
+      try {
+        console.log('Received canvas states:', states);
+        setCanvasList(Object.keys(states));
+        if (states[currentCanvasId]) {
+          redrawCanvas(states[currentCanvasId].drawings);
+          updateDrawings(states[currentCanvasId].drawings);
         }
-        window.removeEventListener('resize', calculateScale);
-      };
-    }
-  }, [socket, roomId, currentCanvasId, restoreCanvasState, updateDrawings]);
+      } catch (err) {
+        console.error('Failed to handle canvas states:', err);
+        setError('Failed to update canvas. Please try refreshing the page.');
+      }
+    };
+
+    const handleCanvasState = (state: CanvasState) => {
+      try {
+        console.log('Received canvas state:', state);
+        redrawCanvas(state.drawings);
+        updateDrawings(state.drawings);
+      } catch (err) {
+        console.error('Failed to redraw canvas:', err);
+        setError('Failed to redraw canvas. Please refresh the page.');
+      }
+    };
+
+    const handleDraw = (data: { canvasId: string; drawingData: DrawingData }) => {
+      try {
+        console.log('Received drawing data:', data);
+        if (data.canvasId === currentCanvasId) {
+          drawOnCanvas(data.drawingData);
+          updateDrawings([...drawingsRef.current, data.drawingData]);
+        }
+      } catch (err) {
+        console.error('Failed to draw:', err);
+      }
+    };
+
+    const handleCanvasCleared = (canvasId: string) => {
+      try {
+        console.log('Canvas cleared:', canvasId);
+        if (canvasId === currentCanvasId) {
+          initCanvas();
+          updateDrawings([]);
+        }
+      } catch (err) {
+        console.error('Failed to clear canvas:', err);
+      }
+    };
+
+    const handleCanvasCreated = (canvasId: string) => {
+      console.log('Canvas created:', canvasId);
+      setCanvasList(prev => [...prev, canvasId]);
+    };
+
+    const handleUndo = (canvasId: string) => {
+      console.log('Undo event:', canvasId);
+      if (canvasId === currentCanvasId && drawingsRef.current.length > 0) {
+        const newDrawings = drawingsRef.current.slice(0, -1);
+        updateDrawings(newDrawings);
+        redrawCanvas(newDrawings);
+      }
+    };
+
+    // 注册事件监听器
+    socket.on('reconnect', handleReconnect);
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('canvasStates', handleCanvasStates);
+    socket.on('canvasState', handleCanvasState);
+    socket.on('draw', handleDraw);
+    socket.on('canvasCleared', handleCanvasCleared);
+    socket.on('canvasCreated', handleCanvasCreated);
+    socket.on('undo', handleUndo);
+
+    // 组件挂载时尝试恢复状态
+    restoreCanvasState();
+
+    return () => {
+      // 移除所有事件监听器
+      socket.off('reconnect', handleReconnect);
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('canvasStates', handleCanvasStates);
+      socket.off('canvasState', handleCanvasState);
+      socket.off('draw', handleDraw);
+      socket.off('canvasCleared', handleCanvasCleared);
+      socket.off('canvasCreated', handleCanvasCreated);
+      socket.off('undo', handleUndo);
+    };
+  }, [socket, roomId, currentCanvasId, restoreCanvasState, updateDrawings, redrawCanvas, initCanvas]);
 
   const drawOnCanvas = (data: DrawingData) => {
     const canvas = canvasRef.current;
