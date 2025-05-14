@@ -17,7 +17,7 @@ const validateObjectId = (req, res, next) => {
 
 // Get all public funeral rooms (GET /api/funerals/rooms)
 // This route must come before other routes to avoid being overridden by params
-router.get('/rooms', async (req, res) => {
+router.get('/rooms', async(req, res) => {
     try {
         console.log('GET /api/funerals/rooms called');
 
@@ -35,7 +35,7 @@ router.get('/rooms', async (req, res) => {
 });
 
 // Get a funeral room by roomId (GET /api/funerals/room/:roomId)
-router.get('/room/:roomId', async (req, res) => {
+router.get('/room/:roomId', async(req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -83,7 +83,7 @@ router.get('/room/:roomId', async (req, res) => {
 });
 
 // Create or update a funeral room (POST /api/funerals/room)
-router.post('/room', async (req, res) => {
+router.post('/room', async(req, res) => {
     try {
         const {
             roomId,
@@ -194,11 +194,11 @@ router.post('/room', async (req, res) => {
 });
 
 // Update canvas items for a funeral room (PATCH /api/funerals/room/:roomId/canvas)
-router.patch('/room/:roomId/canvas', async (req, res) => {
+router.patch('/room/:roomId/canvas', async(req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
-        const { canvasItems } = req.body;
+        const { canvasItems, canvasImage } = req.body;
 
         if (!canvasItems) {
             return res.status(400).json({ message: 'Canvas items are required' });
@@ -221,12 +221,21 @@ router.patch('/room/:roomId/canvas', async (req, res) => {
             return res.status(403).json({ message: 'Invalid password' });
         }
 
+        // Update canvas items
         funeral.canvasItems = canvasItems;
+
+        // Also update canvasImage if provided
+        if (canvasImage !== undefined) {
+            funeral.canvasImage = canvasImage;
+            console.log(`Updating canvasImage for room ${roomId} (length: ${canvasImage.length})`);
+        }
+
         await funeral.save();
 
         res.json({
             roomId: funeral.stringId || funeral._id,
             canvasItems: funeral.canvasItems,
+            canvasImage: funeral.canvasImage,
             updatedAt: funeral.updatedAt
         });
     } catch (error) {
@@ -236,7 +245,7 @@ router.patch('/room/:roomId/canvas', async (req, res) => {
 });
 
 // Verify a funeral room password (POST /api/funerals/room/verify)
-router.post('/room/verify', async (req, res) => {
+router.post('/room/verify', async(req, res) => {
     try {
         const { roomId, password } = req.body;
 
@@ -276,7 +285,7 @@ router.post('/room/verify', async (req, res) => {
 });
 
 // Delete a funeral room by roomId (DELETE /api/funerals/room/:roomId)
-router.delete('/room/:roomId', async (req, res) => {
+router.delete('/room/:roomId', async(req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -309,7 +318,7 @@ router.delete('/room/:roomId', async (req, res) => {
 });
 
 // Update a funeral room by roomId (PATCH /api/funerals/room/:roomId)
-router.patch('/room/:roomId', async (req, res) => {
+router.patch('/room/:roomId', async(req, res) => {
     try {
         const { roomId } = req.params;
         const { password } = req.query;
@@ -376,7 +385,7 @@ router.patch('/room/:roomId', async (req, res) => {
 // --- AUTHENTICATED FUNERAL ROUTES ---
 
 // Create a new funeral (POST /api/funerals)
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, async(req, res) => {
     try {
         const { title, sceneType, ceremonySteps = [] } = req.body;
 
@@ -404,7 +413,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Get a specific funeral by ID (GET /api/funerals/:id)
-router.get('/:id', auth, validateObjectId, async (req, res) => {
+router.get('/:id', auth, validateObjectId, async(req, res) => {
     try {
         const funeral = await Funeral.findById(req.params.id);
 
@@ -426,7 +435,7 @@ router.get('/:id', auth, validateObjectId, async (req, res) => {
 });
 
 // Get all funerals for the current user (GET /api/funerals)
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async(req, res) => {
     try {
         let query = {};
 
@@ -447,7 +456,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Update a funeral (PUT /api/funerals/:id)
-router.put('/:id', auth, validateObjectId, async (req, res) => {
+router.put('/:id', auth, validateObjectId, async(req, res) => {
     try {
         const { title, sceneType, ceremonySteps } = req.body;
         const funeral = await Funeral.findById(req.params.id);
@@ -476,7 +485,7 @@ router.put('/:id', auth, validateObjectId, async (req, res) => {
 });
 
 // Delete a funeral (DELETE /api/funerals/:id)
-router.delete('/:id', auth, validateObjectId, async (req, res) => {
+router.delete('/:id', auth, validateObjectId, async(req, res) => {
     try {
         const funeral = await Funeral.findById(req.params.id);
 

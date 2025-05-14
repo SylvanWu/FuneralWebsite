@@ -59,7 +59,7 @@ const DECORATION_ITEM_SIZE = 50; // 50x50px
 
 // Define the selection threshold for resize handles
 const ANCHOR_STROKE_WIDTH = 2;
-const RESIZE_HANDLE_SIZE = 12;
+const RESIZE_HANDLE_SIZE = 18; // Increased from 12 to make handles easier to grab
 
 // Function to create an image from a file
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -631,13 +631,74 @@ const FuneralRoomPage: React.FC = () => {
     if (!roomId) return;
     
     try {
-      // Use the new MongoDB API to update canvas items with password
-      const success = await updateCanvasItems(roomId, items, state.password);
+      // Export canvas image for auto-save
+      let canvasImage = '';
+      if (stageRef.current) {
+        try {
+          // Get the Konva Stage instance
+          const stage = stageRef.current;
+          
+          // Temporarily remove the transformer to avoid capturing it in the image
+          const transformer = transformerRef.current;
+          let nodes = [];
+          if (transformer) {
+            nodes = transformer.nodes();
+            transformer.nodes([]);
+            transformer.getLayer()?.batchDraw();
+          }
+          
+          try {
+            // Export the stage as a PNG image
+            canvasImage = stage.toDataURL({
+              pixelRatio: 2,
+              mimeType: 'image/png',
+              quality: 1
+            });
+            console.log('Auto-save: Canvas exported as PNG, length:', canvasImage.length);
+          } finally {
+            // Restore the transformer even if export fails
+            if (transformer && nodes.length > 0) {
+              transformer.nodes(nodes);
+              transformer.getLayer()?.batchDraw();
+            }
+          }
+        } catch (exportError) {
+          console.error('Auto-save: Error exporting canvas:', exportError);
+        }
+      }
+      
+      // First try to update canvas items and canvas image together
+      const success = await updateCanvasItems(roomId, items, state.password, canvasImage);
       
       if (success) {
-        console.log('Auto-saved funeral room with updated items');
+        console.log('Auto-saved funeral room with updated items and canvas image');
       } else {
-        console.error('Failed to auto-save canvas items');
+        console.error('Failed to auto-save canvas items and image');
+        
+        // If direct update failed, try a full room update as fallback
+        if (canvasImage && canvasImage.length > 0) {
+          console.log('Auto-save: Attempting fallback full room update');
+          try {
+            // Get current funeral room data
+            const funeralRoom = await getFuneralRoomById(roomId, state.password);
+            
+            if (funeralRoom) {
+              // Update with the new canvas image
+              const updatedRoom: FuneralRoom = {
+                ...funeralRoom,
+                canvasItems: items,
+                canvasImage: canvasImage,
+                updatedAt: Date.now(),
+              };
+              
+              // Save to database
+              await saveFuneralRoom(updatedRoom);
+              console.log('Auto-save: Fallback room update successful');
+            }
+          } catch (fullSaveError) {
+            console.error('Auto-save: Error with fallback save:', fullSaveError);
+          }
+        }
       }
     } catch (error) {
       console.error('Error auto-saving funeral room:', error);
@@ -707,16 +768,18 @@ const FuneralRoomPage: React.FC = () => {
     setDragPosition(null);
     
     // Calculate the new dimensions based on scale
-    const newWidth = node.width() * node.scaleX();
-    const newHeight = node.height() * node.scaleY();
+    const newWidth = Math.round(node.width() * node.scaleX());
+    const newHeight = Math.round(node.height() * node.scaleY());
+    
+    console.log(`Resizing item ${id} to ${newWidth}x${newHeight}`);
     
     // Update the item in the canvasItems array
     const updatedItems = canvasItems.map(item => {
       if (item.id === id) {
         return {
           ...item,
-          x: node.x(),
-          y: node.y(),
+          x: Math.round(node.x()),
+          y: Math.round(node.y()),
           width: newWidth,
           height: newHeight
         };
@@ -724,17 +787,25 @@ const FuneralRoomPage: React.FC = () => {
       return item;
     });
     
-    // Update state and save
-    setCanvasItems(updatedItems);
-    saveToDatabase(updatedItems).catch(err => 
-      console.error('Error saving after transform:', err)
-    );
-    
-    // Reset scale to avoid accumulating
+    // Reset scale to avoid accumulating transforms
     node.scaleX(1);
     node.scaleY(1);
     node.width(newWidth);
     node.height(newHeight);
+    
+    // Make sure the stage updates visually
+    const layer = node.getLayer();
+    if (layer) {
+      layer.batchDraw();
+    }
+    
+    // Update state
+    setCanvasItems(updatedItems);
+    
+    // Auto-save the changes to the database
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after transform:', err)
+    );
     
     console.log(`Item ${id} transform completed: new size ${newWidth}x${newHeight}`);
   };
@@ -806,6 +877,50 @@ const FuneralRoomPage: React.FC = () => {
     setSaveMessage('');
     
     try {
+      // Export the canvas as PNG
+      let canvasImage = '';
+      if (stageRef.current) {
+        try {
+          console.log('Stage reference found, attempting to export canvas...');
+          
+          // Get the Konva Stage instance
+          const stage = stageRef.current;
+          
+          // Temporarily remove the transformer to avoid capturing it in the image
+          const transformer = transformerRef.current;
+          let nodes = [];
+          if (transformer) {
+            nodes = transformer.nodes();
+            transformer.nodes([]);
+            transformer.getLayer()?.batchDraw();
+          }
+          
+          // Force a redraw to ensure the latest state is captured
+          stage.getLayer()?.batchDraw();
+          
+          try {
+            // Export the stage as a PNG image
+            canvasImage = stage.toDataURL({
+              pixelRatio: 2, // Higher quality
+              mimeType: 'image/png', // Force PNG format
+              quality: 1 // Highest quality
+            });
+            console.log('Canvas exported as PNG successfully');
+            console.log('Canvas image data length:', canvasImage.length);
+          } finally {
+            // Restore the transformer even if export fails
+            if (transformer && nodes.length > 0) {
+              transformer.nodes(nodes);
+              transformer.getLayer()?.batchDraw();
+            }
+          }
+        } catch (exportError) {
+          console.error('Error exporting canvas:', exportError);
+        }
+      } else {
+        console.error('Stage reference (stageRef.current) is null or undefined');
+      }
+      
       // Get current funeral room data with password
       const funeralRoom = await getFuneralRoomById(roomId, state.password);
       
@@ -819,12 +934,13 @@ const FuneralRoomPage: React.FC = () => {
           backgroundImage: state.backgroundImage,
           deceasedImage: state.deceasedImage,
           canvasItems: canvasItems,
+          canvasImage: canvasImage || funeralRoom.canvasImage, // Use new canvas image or keep existing one
           updatedAt: Date.now(),
         };
         
         // Save to database
         await saveFuneralRoom(updatedRoom);
-        console.log('Manually saved funeral room with all data');
+        console.log('Manually saved funeral room with all data and canvas image');
         
         // Show confirmation dialog
         setIsConfirmOpen(true);
@@ -838,6 +954,7 @@ const FuneralRoomPage: React.FC = () => {
           backgroundImage: state.backgroundImage,
           deceasedImage: state.deceasedImage,
           canvasItems: canvasItems,
+          canvasImage: canvasImage,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         };
@@ -1234,8 +1351,28 @@ const FuneralRoomPage: React.FC = () => {
                     onMouseDown={(e) => {
                       // Deselect when clicking on empty area
                       const clickedOnEmpty = e.target === e.target.getStage();
+                      
                       if (clickedOnEmpty) {
+                        // Clear selection when clicking on empty area
                         setSelectedItemId(null);
+                      } else {
+                        // Check if clicked on an item
+                        const targetNode = e.target;
+                        const parent = targetNode.parent;
+                        
+                        // If it has a parent, we can check if it's an item
+                        if (parent) {
+                          // Clicked on a draggable item
+                          const isItemOrDecorationNode = 
+                            parent.className === 'Layer' || 
+                            parent.className === 'Group';
+                          
+                          if (isItemOrDecorationNode) {
+                            // Bring clicked item to front
+                            targetNode.moveToTop();
+                            targetNode.getLayer()?.batchDraw();
+                          }
+                        }
                       }
                     }}
                   >
@@ -1279,7 +1416,7 @@ const FuneralRoomPage: React.FC = () => {
                                   y={item.y}
                                   width={item.width}
                                   height={item.height}
-                                  draggable
+                                  draggable={true}
                                   onMouseEnter={(e) => {
                                     const container = e.target.getStage()?.container();
                                     if (container) {
@@ -1290,6 +1427,13 @@ const FuneralRoomPage: React.FC = () => {
                                     const container = e.target.getStage()?.container();
                                     if (container) {
                                       container.style.cursor = 'default';
+                                    }
+                                  }}
+                                  onDragStart={() => {
+                                    // Make sure Transformer doesn't interfere with dragging
+                                    if (transformerRef.current) {
+                                      transformerRef.current.nodes([]);
+                                      transformerRef.current.getLayer()?.batchDraw();
                                     }
                                   }}
                                   onDragMove={(e) => {
@@ -1319,6 +1463,13 @@ const FuneralRoomPage: React.FC = () => {
                                     setCanvasItems(updatedItems);
                                     // Auto-save when moving an item
                                     saveToDatabase(updatedItems);
+                                    
+                                    // Reapply transformer if this item is selected
+                                    if (selectedItemId === item.id && transformerRef.current) {
+                                      const node = e.target;
+                                      transformerRef.current.nodes([node]);
+                                      transformerRef.current.getLayer()?.batchDraw();
+                                    }
                                   }}
                                   onClick={() => {
                                     setSelectedItemId(item.id);
@@ -1350,7 +1501,7 @@ const FuneralRoomPage: React.FC = () => {
                                   height={item.height}
                                   fill={item.color}
                                   cornerRadius={5}
-                                  draggable
+                                  draggable={true}
                                   onMouseEnter={(e) => {
                                     const container = e.target.getStage()?.container();
                                     if (container) {
@@ -1361,6 +1512,13 @@ const FuneralRoomPage: React.FC = () => {
                                     const container = e.target.getStage()?.container();
                                     if (container) {
                                       container.style.cursor = 'default';
+                                    }
+                                  }}
+                                  onDragStart={() => {
+                                    // Make sure Transformer doesn't interfere with dragging
+                                    if (transformerRef.current) {
+                                      transformerRef.current.nodes([]);
+                                      transformerRef.current.getLayer()?.batchDraw();
                                     }
                                   }}
                                   onDragMove={(e) => {
@@ -1390,6 +1548,13 @@ const FuneralRoomPage: React.FC = () => {
                                     setCanvasItems(updatedItems);
                                     // Auto-save when moving an item
                                     saveToDatabase(updatedItems);
+                                    
+                                    // Reapply transformer if this item is selected
+                                    if (selectedItemId === item.id && transformerRef.current) {
+                                      const node = e.target;
+                                      transformerRef.current.nodes([node]);
+                                      transformerRef.current.getLayer()?.batchDraw();
+                                    }
                                   }}
                                   onClick={() => {
                                     setSelectedItemId(item.id);
@@ -1434,7 +1599,7 @@ const FuneralRoomPage: React.FC = () => {
                         borderStrokeWidth={2}
                         borderDash={[4, 4]}
                         rotateEnabled={true}
-                        padding={4}
+                        padding={8} // Increased from 4 to give more space for interaction
                         keepRatio={false}
                         enabledAnchors={[
                           'top-left', 'top-right', 
@@ -1442,7 +1607,21 @@ const FuneralRoomPage: React.FC = () => {
                           'middle-left', 'middle-right',
                           'top-center', 'bottom-center'
                         ]}
-                        anchorCornerRadius={2}
+                        anchorCornerRadius={4} // Increased from 2 for better visual
+                        // Additional properties for better hit detection
+                        resizeEnabled={true}
+                        ignoreStroke={false}
+                        centeredScaling={false}
+                        anchorDragBoundFunc={(oldPos, newPos, e) => {
+                          // Snap to grid for more precise control
+                          return {
+                            x: Math.round(newPos.x / 5) * 5,
+                            y: Math.round(newPos.y / 5) * 5
+                          };
+                        }}
+                        // Make sure we capture events properly
+                        onClick={(e) => e.cancelBubble = true}
+                        onTap={(e) => e.cancelBubble = true}
                       />
                     </Layer>
                   </Stage>

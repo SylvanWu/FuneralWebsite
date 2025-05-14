@@ -62,3 +62,51 @@
     outline: none !important;
     border: none !important;
 }
+
+
+/* Add cursor styles for the transformer resize handles */
+
+.konvajs-content .anchor-n,
+.konvajs-content .anchor-s {
+    cursor: ns-resize !important;
+}
+
+.konvajs-content .anchor-e,
+.konvajs-content .anchor-w {
+    cursor: ew-resize !important;
+}
+
+.konvajs-content .anchor-ne,
+.konvajs-content .anchor-sw {
+    cursor: nesw-resize !important;
+}
+
+.konvajs-content .anchor-nw,
+.konvajs-content .anchor-se {
+    cursor: nwse-resize !important;
+}
+
+.konvajs-content .anchor-r {
+    cursor: crosshair !important;
+}
+
+
+/* Increase hitbox for interacting with handles */
+
+.konvajs-content .anchor-point {
+    touch-action: none;
+}
+
+
+/* Make transformer outline more visible */
+
+.konvajs-content [class*="transformer"] {
+    pointer-events: none;
+}
+
+
+/* Make transformer anchors always visible on hover */
+
+.konvajs-content [class*="anchor"]:hover {
+    opacity: 1 !important;
+}
