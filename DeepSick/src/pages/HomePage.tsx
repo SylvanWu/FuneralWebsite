@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import homeVideo from '../assets/Home.mp4';
+import Firework from '../components/effects/Firework';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -9,6 +10,13 @@ const HomePage: React.FC = () => {
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [skipVideo, setSkipVideo] = useState(false);
+  
+  // Firework state
+  const [explosion, setExplosion] = useState<{ x: number; y: number; show: boolean }>({ 
+    x: 0, 
+    y: 0, 
+    show: false 
+  });
   
   // Check if user is authenticated
   useEffect(() => {
@@ -38,12 +46,29 @@ const HomePage: React.FC = () => {
   // Handle skip button click
   const handleSkip = () => {
     if (videoRef.current) {
-      // 设置视频时间到最后一秒
+      // Set video time to the last second
       videoRef.current.currentTime = videoRef.current.duration - 1;
-      // 继续播放最后一秒
+      // Continue playing the last second
       videoRef.current.play();
     }
     setSkipVideo(true);
+  };
+
+  // Handle click for firework effect
+  const handleClick = (e: React.MouseEvent) => {
+    // Only trigger fireworks after video has ended or been skipped
+    if (videoEnded || skipVideo) {
+      setExplosion({ 
+        x: e.clientX, 
+        y: e.clientY, 
+        show: true 
+      });
+      
+      // Reset firework after animation completes (1.3s = rocket + explosion)
+      setTimeout(() => {
+        setExplosion(prev => ({ ...prev, show: false }));
+      }, 1300);
+    }
   };
 
   // Preload video and setup video element
@@ -76,7 +101,7 @@ const HomePage: React.FC = () => {
   }, []);
   
   return (
-    <div className="fullscreen-container">
+    <div className="fullscreen-container" onClick={handleClick}>
       {isVideoLoading && (
         <div className="video-loading">
           <div className="loading-spinner"></div>
@@ -118,6 +143,13 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Firework animation */}
+      <Firework 
+        x={explosion.x} 
+        y={explosion.y} 
+        show={explosion.show} 
+      />
     </div>
   );
 };

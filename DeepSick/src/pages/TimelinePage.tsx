@@ -21,6 +21,25 @@ export default function TimelinePage() {
     const [memories, setMemories] = useState<Memory[]>([]);
     const [name, setName] = useState('');
     const [isUploading, setUploading] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
+
+    // 获取用户角色
+    useEffect(() => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                setUserRole(user.userType);
+            } else {
+                // 如果没有user对象，尝试从role中获取
+                const roleStr = localStorage.getItem('role');
+                setUserRole(roleStr);
+            }
+        } catch (err) {
+            console.error('Failed to parse user data:', err);
+            setUserRole(null);
+        }
+    }, []);
 
     /* ---------- Initial load ---------- */
     useEffect(() => {
@@ -98,6 +117,9 @@ export default function TimelinePage() {
         }
     };
 
+    // 检查是否是管理员
+    const isOrganizer = userRole === 'organizer';
+
     return (
         <div className="max-w-4xl mx-auto p-6">
             {/* Name input */}
@@ -115,7 +137,8 @@ export default function TimelinePage() {
             {/* Timeline, remember to pass onDeleteMemory */}
             <Timeline
                 memories={memories}
-                onDeleteMemory={handleDeleteMemory}          // NEW ⬅️
+                onDeleteMemory={handleDeleteMemory}
+                canDelete={isOrganizer} // 仅在用户是organizer时允许删除
             />
         </div>
     );
