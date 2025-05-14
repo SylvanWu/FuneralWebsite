@@ -344,30 +344,35 @@ const FuneralRoomHallPage: React.FC = () => {
     setPasswordError(null);
   };
 
-  // Handle password submit for room entry
+  // Handle password submit for entering a room
   const handlePasswordSubmit = async (password: string) => {
     if (!selectedRoom) return;
-
+    
     try {
-      const isValid = await verifyRoomPassword(selectedRoom.roomId, password);
-
-      if (isValid) {
+      const verifyResult = await verifyRoomPassword(selectedRoom.roomId, password);
+      
+      if (verifyResult.valid) {
         // Close modal
         setShowPasswordModal(false);
-
-        // Update to directly navigate to the route with the roomId parameter
+        
+        // Set room with password for navigation state
+        const roomWithPassword = {
+          ...selectedRoom,
+          password,
+          isOrganizer: true // Mark as organizer
+        };
+        
+        console.log('[FuneralRoomHallPage] Navigating to room with isOrganizer=true:', {
+          roomId: roomWithPassword.roomId,
+          isOrganizer: roomWithPassword.isOrganizer
+        });
+        
+        // Navigate to room
         navigate(`/interactive/${selectedRoom.roomId}`, {
-          state: {
-            roomId: selectedRoom.roomId,
-            password,
-            funeralType: selectedRoom.funeralType,
-            backgroundImage: selectedRoom.backgroundImage,
-            name: selectedRoom.deceasedName,
-            deceasedImage: selectedRoom.deceasedImage
-          }
+          state: roomWithPassword
         });
       } else {
-        setPasswordError('The password is incorrect. Please try again.');
+        setPasswordError('Invalid password. Please try again.');
       }
     } catch (err) {
       console.error('Failed to verify password:', err);
@@ -379,9 +384,9 @@ const FuneralRoomHallPage: React.FC = () => {
   const handleRoomEdit = async (room: FuneralRoom, password: string) => {
     try {
       // Verify password
-      const isValid = await verifyRoomPassword(room.roomId, password);
+      const verifyResult = await verifyRoomPassword(room.roomId, password);
 
-      if (isValid) {
+      if (verifyResult.valid) {
         // Open edit modal
         setRoomToEdit(room);
         setShowEditModal(true);
@@ -436,9 +441,9 @@ const FuneralRoomHallPage: React.FC = () => {
   const handleRoomDelete = async (room: FuneralRoom, password: string) => {
     try {
       // Verify password
-      const isValid = await verifyRoomPassword(room.roomId, password);
+      const verifyResult = await verifyRoomPassword(room.roomId, password);
 
-      if (isValid) {
+      if (verifyResult.valid) {
         // Store password and room, show confirmation modal
         setRoomToDelete(room);
         setDeletePassword(password);

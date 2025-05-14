@@ -252,8 +252,8 @@ export const deleteFuneralRoom = async (roomId: string, password: string): Promi
     console.log(`Deleting funeral room: ${roomId}`);
     
     // First verify the password
-    const isValid = await verifyRoomPassword(roomId, password);
-    if (!isValid) {
+    const verifyResult = await verifyRoomPassword(roomId, password);
+    if (!verifyResult.valid) {
       console.error('Invalid password for room deletion');
       return false;
     }
@@ -279,8 +279,8 @@ export const editFuneralRoom = async (roomId: string, password: string, updates:
     console.log(`Editing funeral room: ${roomId}`);
     
     // First verify the password
-    const isValid = await verifyRoomPassword(roomId, password);
-    if (!isValid) {
+    const verifyResult = await verifyRoomPassword(roomId, password);
+    if (!verifyResult.valid) {
       console.error('Invalid password for room editing');
       return null;
     }
@@ -332,7 +332,7 @@ export const editFuneralRoom = async (roomId: string, password: string, updates:
 };
 
 // Verify a funeral room password
-export const verifyRoomPassword = async (roomId: string, password: string): Promise<boolean> => {
+export const verifyRoomPassword = async (roomId: string, password: string): Promise<{valid: boolean, isOrganizer: boolean}> => {
   try {
     console.log(`Verifying password for room: ${roomId}`);
     const response = await axios.post(`${API_URL}/room/verify`, {
@@ -343,7 +343,10 @@ export const verifyRoomPassword = async (roomId: string, password: string): Prom
     // 记录后端返回的isOrganizer值
     console.log(`[verifyRoomPassword] Room ${roomId} isOrganizer:`, response.data.isOrganizer);
     
-    return response.data.valid;
+    return {
+      valid: response.data.valid,
+      isOrganizer: response.data.valid === true // 密码正确即为组织者
+    };
   } catch (error: any) {
     console.error('Error verifying room password:', error);
     console.error('Error details:', {
@@ -352,7 +355,7 @@ export const verifyRoomPassword = async (roomId: string, password: string): Prom
       data: error.response?.data,
       roomId
     });
-    return false;
+    return {valid: false, isOrganizer: false};
   }
 };
 

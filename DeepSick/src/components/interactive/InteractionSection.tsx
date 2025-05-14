@@ -19,6 +19,7 @@ export interface RoomData {
   backgroundImage: string;
   name: string;
   deceasedImage?: string;
+  isOrganizer?: boolean;
 }
 
 // Props for interaction card
@@ -68,7 +69,8 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
   // Add the debugging log
   console.log('[InteractionSection] Props:', {
     roomId: roomData.roomId,
-    isOrganizer,
+    roomDataIsOrganizer: roomData.isOrganizer,
+    propsIsOrganizer: isOrganizer,
     hasDeleteFunction: !!onDeleteWill,
     hasUpdateFunction: !!onUpdateWill,
     willsCount: wills.length
@@ -205,16 +207,21 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
         {/* Farewell Will tab content */}
         <TabContent id="will" className="will-container" activeId={activeTabId}>
           <div className="will-wrapper">
-            <h3>Record Your Farewell Message</h3>
+            <h3>Farewell Messages</h3>
             <p className="will-description">
-              Create a video farewell message or will to share your memories and wishes
+              {isOrganizer 
+                ? "Create a video farewell message or will to share your memories and wishes" 
+                : "View farewell messages left by others"}
             </p>
-            <div className="will-form-container">
-              <WillForm
-                roomId={roomData.roomId}
-                onCreated={handleLocalWillCreated}
-              />
-            </div>
+            
+            {isOrganizer && (
+              <div className="will-form-container">
+                <WillForm
+                  roomId={roomData.roomId}
+                  onCreated={handleLocalWillCreated}
+                />
+              </div>
+            )}
 
             <div className="mt-12 p-6 bg-gray-50 rounded-lg shadow">
               <h2 className="text-3xl font-bold text-center text-gray-700 mb-8">
@@ -229,8 +236,8 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
               ) : wills.length > 0 ? (
                 <WillList
                   wills={wills}
-                  onDelete={onDeleteWill}
-                  onUpdate={onUpdateWill}
+                  onDelete={isOrganizer ? onDeleteWill : undefined}
+                  onUpdate={isOrganizer ? onUpdateWill : undefined}
                 />
               ) : (
                 <p className="text-center text-gray-500 py-4">
