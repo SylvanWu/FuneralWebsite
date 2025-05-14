@@ -34,7 +34,7 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
         const user = JSON.parse(userStr);
         setUserRole(user.userType);
       } else {
-        // 如果没有user对象，尝试从role中获取
+        // If no user object, try to get from role
         const roleStr = localStorage.getItem('role');
         setUserRole(roleStr);
       }
@@ -110,7 +110,7 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
 
     // Prevent the file from being too large
     if (file.size > 10 * 1024 * 1024) {
-      setUploadError('文件太大，请上传10MB以下的文件');
+      setUploadError('File is too large, please upload files smaller than 10MB');
       setIsUploading(false);
       return;
     }

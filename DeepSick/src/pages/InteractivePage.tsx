@@ -94,7 +94,7 @@ const convertToRoomData = (funeralRoom: FuneralRoom) => {
 };
 
 // Cache validity period (milliseconds)
-const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5分钟
+const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5 minutes
 
 //Main page component
 const InteractivePage: React.FC = () => {
@@ -199,11 +199,10 @@ const InteractivePage: React.FC = () => {
       const stateData = location.state as FuneralRoom;
 
       if (stateData && stateData.roomId) {
-
         setCurrentRoom(stateData);
         setIsLoadingCurrentRoom(false);
       } else if (urlRoomId) {
-
+        // If no user object, try to get from role
         await loadRoomById(urlRoomId, rooms);
       } else {
 
@@ -274,7 +273,7 @@ const InteractivePage: React.FC = () => {
 
   // Handle refreshing the room list
   const handleRefreshRooms = () => {
-    fetchAllRooms(true); // 强制刷新
+    fetchAllRooms(true); // Force refresh
   };
 
 

@@ -133,7 +133,7 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* 面包屑导航样式 */
+/* Breadcrumb navigation styles */
 .breadcrumb-nav {
   display: flex;
   align-items: center;
@@ -163,7 +163,7 @@
   color: #333;
 }
 
-/* 错误通知样式 */
+/* Error notification styles */
 .error-notification {
   padding: 1rem;
   margin-bottom: 1.5rem;
@@ -196,7 +196,7 @@
   background-color: #aa0000;
 }
 
-/* 房间刷新按钮样式 */
+/* Room refresh button styles */
 .rooms-header {
   display: flex;
   justify-content: space-between;
@@ -224,7 +224,7 @@
   cursor: not-allowed;
 }
 
-/* 快速房间切换器样式 */
+/* Quick room switcher styles */
 .room-switcher {
   margin: 2rem 0;
   padding: 1.5rem;
@@ -451,7 +451,7 @@
   cursor: not-allowed;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .hero-section .hero-name {
     font-size: 2rem;
@@ -621,7 +621,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 蜡烛容器样式 */
+/* Candle container styles */
 .candles-container {
   padding: 2rem;
   background: rgba(0, 0, 0, 0.03);

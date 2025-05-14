@@ -13,7 +13,7 @@ export default function WillsPage() {
     useEffect(() => {
         (async () => {
             try {
-                const result = await getWills();
+                const result = await getWills("default");
                 setWills(Array.isArray(result) ? result : []);
             } catch (e) {
                 console.error('Failed to fetch wills list', e);
@@ -72,7 +72,7 @@ export default function WillsPage() {
 
             {/* Create form */}
             <div className="mb-8">
-                <WillForm onCreated={handleCreated} />
+                <WillForm onCreated={handleCreated} roomId="default" />
             </div>
 
             {/* List / Loading */}

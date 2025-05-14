@@ -10,8 +10,8 @@ const willSchema = new mongoose.Schema({
     },
     roomId: {
         type: String,
-        required: true,           // 房间 ID，必填
-        index: true               // 为查询优化添加索引
+        required: true,           // Room ID, required
+        index: true               // Add index for query optimization
     },
     uploaderName: {
         type: String,

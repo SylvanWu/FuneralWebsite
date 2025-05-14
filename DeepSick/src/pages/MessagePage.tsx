@@ -61,7 +61,7 @@ const MessagePage: React.FC = () => {
       } catch (err) {
         setError('Failed to fetch messages');
         console.error('Error fetching messages:', err);
-        setRecords([]); // 确保在错误时设置为空数组
+        setRecords([]); // Ensure empty array is set on error
       }
     };
     fetchMessages();

@@ -123,8 +123,8 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
   const [newCanvasName, setNewCanvasName] = useState('');
   const reconnectAttemptsRef = useRef(0);
 
-  // 保存画布状态到本地存储
-  const saveCanvasState = useCallback(() => {
+  // Save canvas state to local storage
+  const saveToLocalStorage = useCallback(() => {
     if (drawings.length > 0) {
       try {
         localStorage.setItem(`canvas_${roomId}_${currentCanvasId}`, JSON.stringify(drawings));
@@ -134,8 +134,8 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
     }
   }, [drawings, roomId, currentCanvasId]);
 
-  // 从本地存储恢复画布状态
-  const restoreCanvasState = useCallback(() => {
+  // Restore canvas state from local storage
+  const restoreFromLocalStorage = useCallback(() => {
     try {
       const savedState = localStorage.getItem(`canvas_${roomId}_${currentCanvasId}`);
       if (savedState) {
@@ -148,18 +148,18 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
     }
   }, [roomId, currentCanvasId]);
 
-  // 更新 drawings 时保存到本地存储
+  // Update drawings and save to local storage
   const updateDrawings = useCallback((newDrawings: DrawingData[]) => {
     setDrawings(newDrawings);
     drawingsRef.current = newDrawings;
   }, []);
 
-  // 监听 drawings 变化并保存到本地存储
+  // Listen for drawings changes and save to local storage
   useEffect(() => {
     if (drawings.length > 0) {
-      saveCanvasState();
+      saveToLocalStorage();
     }
-  }, [drawings, saveCanvasState]);
+  }, [drawings, saveToLocalStorage]);
 
   // Initialize canvas
   const initCanvas = useCallback(() => {
@@ -243,7 +243,7 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
       // 请求当前画布状态
       socket.emit('selectCanvas', { roomId, canvasId: currentCanvasId });
       // 尝试从本地存储恢复状态
-      restoreCanvasState();
+      restoreFromLocalStorage();
     };
 
     const handleConnect = () => {
@@ -331,7 +331,7 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
     socket.on('undo', handleUndo);
 
     // 组件挂载时尝试恢复状态
-    restoreCanvasState();
+    restoreFromLocalStorage();
 
     return () => {
       // 移除所有事件监听器
@@ -345,7 +345,7 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
       socket.off('canvasCreated', handleCanvasCreated);
       socket.off('undo', handleUndo);
     };
-  }, [socket, roomId, currentCanvasId, restoreCanvasState, updateDrawings, redrawCanvas, initCanvas]);
+  }, [socket, roomId, currentCanvasId, restoreFromLocalStorage, updateDrawings, redrawCanvas, initCanvas]);
 
   const drawOnCanvas = (data: DrawingData) => {
     const canvas = canvasRef.current;
@@ -553,7 +553,7 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
           <button
             className="shared-tool-button"
             onClick={handleRefreshCanvas}
-            title="刷新画布"
+            title="Refresh canvas"
           >
             🔄
           </button>

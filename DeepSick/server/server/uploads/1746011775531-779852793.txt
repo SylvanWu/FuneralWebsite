@@ -1,6 +1,0 @@
-前端访问路由：http://localhost:3000/#/login
-区块链状态数据库couchdb地址： http://62.234.55.67:5984/_utils/
-前端运行命令： npm run dev (也可在idea里面运行)
-不要重启或者关闭服务器，不然项目无法溯源和添加数据。
-项目用的我云端的mysql，需要可以自己本地安装一个mysql，可以换到本地。
-客户端无需登录溯源地址：http://localhost:3000/#/trace

@@ -356,7 +356,7 @@ export const verifyRoomPassword = async (roomId: string, password: string): Prom
       password
     }, axiosConfig);
     
-    // 记录后端返回的isOrganizer值
+    // Store the isOrganizer value returned from backend
     console.log(`[verifyRoomPassword] Room ${roomId} isOrganizer:`, response.data.isOrganizer);
     
     return response.data.valid;
