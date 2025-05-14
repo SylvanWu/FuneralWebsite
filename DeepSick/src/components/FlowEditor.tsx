@@ -1,17 +1,22 @@
+// FlowEditor component: Ritual Process designer
+// - Provide a drag-and-drop interface for designing personalized funeral processes
+// - Implement the flowchart editing function using the react-flow library (currently implemented by placeholder)
+// Control step navigation and process configuration through status management
+
 import React from 'react';
 import { useFuneral } from '../context/FuneralContext';
 
 const FlowEditor: React.FC = () => {
   const { state, dispatch } = useFuneral();
-  
+
   const handleBack = () => {
     dispatch({ type: 'GO_TO_PREVIOUS_STEP' });
   };
-  
+
   const handleNext = () => {
     dispatch({ type: 'GO_TO_NEXT_STEP' });
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="mb-8">
@@ -20,7 +25,7 @@ const FlowEditor: React.FC = () => {
           Drag and drop elements to create a personalized funeral ceremony.
         </p>
       </div>
-      
+
       <div className="border border-dashed border-gray-300 rounded-lg p-8 min-h-[400px] flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-gray-500 mb-4">
@@ -31,7 +36,7 @@ const FlowEditor: React.FC = () => {
           </p>
         </div>
       </div>
-      
+
       <div className="flex justify-between mt-8">
         <button
           onClick={handleBack}

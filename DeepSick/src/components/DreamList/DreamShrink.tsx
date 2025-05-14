@@ -1,13 +1,14 @@
+//The expansion and contraction of the dreamlist
 import React, { useRef, useState } from 'react';
-import DreamList from './DreamList'; // Import wish list component
-import '../DreamList/DreamList.css'; // Import CSS styles
+import DreamList from './DreamList';
+import '../DreamList/DreamList.css';
 import pokemon from '../../assets/wish.gif';
-import { DreamCard } from './DreamCard'; // ✅ Use draggable outer wrapper
+import { DreamCard } from './DreamCard';
 import { useParams } from 'react-router-dom';
 
 const DreamShrink = () => {
-  const { roomId } = useParams(); // 从路由参数获取 roomId
-  const [isShrunk, setIsShrunk] = useState(true); // Controls shrink/expand state
+  const { roomId } = useParams();
+  const [isShrunk, setIsShrunk] = useState(true);
 
   // Used to detect whether it's a click (vs drag)
   const clickStart = useRef({ x: 0, y: 0 });
@@ -56,7 +57,6 @@ const DreamShrink = () => {
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
               />
-              {/* <div className="wish-text">Wish List</div> */}
             </div>
           ) : (
             <button className="shrink-button" onClick={toggleShrink}>

@@ -60,8 +60,8 @@ router.post(
         videoFilename
       });
 
-      console.log('[POST] /api/wills - Created Will:', { 
-        _id: newWill._id, 
+      console.log('[POST] /api/wills - Created Will:', {
+        _id: newWill._id,
         roomId: newWill.roomId,
         owner: newWill.owner
       });
@@ -90,15 +90,15 @@ router.get(
     try {
       const list = await Will.find({ roomId }).sort({ createdAt: -1 });
       console.log(`[GET] /api/wills - Found ${list.length} wills for roomId:`, roomId);
-      
+
       if (list.length === 0) {
         // 在没有记录时，检查数据库中是否有任何遗嘱记录
         const allWills = await Will.find({}).limit(5);
-        console.log('[GET] /api/wills - No wills found for this room. First 5 wills in database:', 
+        console.log('[GET] /api/wills - No wills found for this room. First 5 wills in database:',
           allWills.map(w => ({ _id: w._id, roomId: w.roomId, owner: w.owner }))
         );
       }
-      
+
       res.json(list);
     } catch (err) {
       console.error('Failed to fetch wills for room:', roomId, err);
@@ -122,13 +122,13 @@ router.patch(
       if (req.file) updateFields.videoFilename = req.file.filename;
 
       const updated = await Will.findOneAndUpdate(
-        { _id: req.params.id }, // 移除了 owner: req.user.userId
+        { _id: req.params.id },
         updateFields,
         { new: true, runValidators: true }
       );
 
       if (!updated) {
-        return res.status(404).json({ message: 'Will not found' }); // 更新了错误信息
+        return res.status(404).json({ message: 'Will not found' });
       }
       res.json(updated);
     } catch (err) {
@@ -144,10 +144,10 @@ router.delete(
   async (req, res) => {
     try {
       const deleted = await Will.findOneAndDelete({
-        _id: req.params.id // 移除了 owner: req.user.userId
+        _id: req.params.id
       });
       if (!deleted) {
-        return res.status(404).json({ message: 'Will not found' }); // 更新了错误信息
+        return res.status(404).json({ message: 'Will not found' });
       }
       res.json({ ok: true });
     } catch (err) {

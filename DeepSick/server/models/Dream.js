@@ -2,32 +2,30 @@
 import mongoose from 'mongoose';
 
 const dreamSchema = new mongoose.Schema({
-  // User ID, references User.js
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    // required: true   // Currently not enforced for easier testing
   },
 
-  roomId: { // 🆕 每个愿望归属于一个房间
+  roomId: {
     type: String,
     required: true
   },
 
   content: {
-    type: String, // Stores rich text HTML; consider limiting length in future
+    type: String,
     required: true
   },
 
-  order: { // Field for drag-and-drop sorting
+  order: {
     type: Number,
-    default: () => Date.now() // Use current timestamp as default
+    default: () => Date.now()
   },
   position: { // Floating position
     x: { type: Number, default: 0 },
     y: { type: Number, default: 0 }
   }
 },
-  { timestamps: true }); // Track creation and last update times
+  { timestamps: true });
 
 export default mongoose.model('Dream', dreamSchema);

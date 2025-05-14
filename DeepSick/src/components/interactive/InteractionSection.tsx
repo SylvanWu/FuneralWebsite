@@ -52,9 +52,9 @@ interface InteractionSectionProps {
 }
 
 // Main interaction section component
-const InteractionSection: React.FC<InteractionSectionProps> = ({ 
-  roomData, 
-  className = '', 
+const InteractionSection: React.FC<InteractionSectionProps> = ({
+  roomData,
+  className = '',
   onWillSuccessfullyCreated,
   wills = [],
   isLoadingWills = false,
@@ -65,7 +65,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
   const navigate = useNavigate();
   const [activeTabId, setActiveTabId] = useState<string>('interact');
 
-  // 添加调试日志
+  // Add the debugging log
   console.log('[InteractionSection] Props:', {
     roomId: roomData.roomId,
     isOrganizer,
@@ -119,23 +119,23 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
     onWillSuccessfullyCreated?.();
   };
 
-  // --- 调试日志移到这里 ---
+  // --- The debugging log has been moved here ---
   if (activeTabId === 'will') {
     console.log('[InteractionSection] Rendering "will" tab. roomData.roomId:', roomData?.roomId, 'roomData:', JSON.stringify(roomData));
   }
-  // --- 调试日志结束 ---
+  // --- The debugging log is over. ---
 
   return (
     <div className={`interaction-section ${className}`}>
       <h2 className="section-title">Interactive Memorial Features</h2>
-      
+
       {/* Tab selector */}
-      <TabSelector 
-        tabs={tabs} 
-        activeTabId={activeTabId} 
-        onChange={handleTabChange} 
+      <TabSelector
+        tabs={tabs}
+        activeTabId={activeTabId}
+        onChange={handleTabChange}
       />
-      
+
       {/* Tab content */}
       <TabContentSection activeTabId={activeTabId}>
         {/* Interactive cards */}
@@ -164,7 +164,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             Choose an interactive feature to pay your respects or share memories
           </p>
         </TabContent>
-        
+
         {/* Drawing canvas - integrated SharedCanvas component */}
         <TabContent id="canvas" className="canvas-container" activeId={activeTabId}>
           <div className="shared-canvas-wrapper">
@@ -175,7 +175,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             <SharedCanvas roomId={roomData.roomId} />
           </div>
         </TabContent>
-        
+
         {/* Chat section */}
         <TabContent id="chat" className="chat-container" activeId={activeTabId}>
           <div className="chat-wrapper">
@@ -187,7 +187,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
               const userStr = localStorage.getItem('user');
               const user = userStr ? JSON.parse(userStr) : {};
               return (
-                <ChatBox 
+                <ChatBox
                   roomId={roomData.roomId}
                   userId={user._id || 'anonymous'}
                   username={user.nickname || user.username || 'Guest'}
@@ -196,7 +196,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             })()}
           </div>
         </TabContent>
-        
+
         {/* Memorial Hall tab content */}
         <TabContent id="memorial" className="memorial-container" activeId={activeTabId}>
           <MemorialHall roomData={roomData} />
@@ -215,12 +215,12 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
                 onCreated={handleLocalWillCreated}
               />
             </div>
-            
+
             <div className="mt-12 p-6 bg-gray-50 rounded-lg shadow">
               <h2 className="text-3xl font-bold text-center text-gray-700 mb-8">
                 Farewell Messages for {roomData.name}
               </h2>
-              
+
               {isLoadingWills ? (
                 <div className="text-center py-4">
                   <div className="loading-spinner-small mx-auto"></div>

@@ -5,10 +5,9 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-const API = axios.create({ 
+const API = axios.create({
     baseURL,
-    timeout: 30000, // 30秒超时
-    // 移除可能导致CORS问题的自定义头
+    timeout: 30000,
 });
 
 /* ---------- inject the JWT token ---------- */
@@ -19,51 +18,51 @@ API.interceptors.request.use(
             cfg.headers = cfg.headers ?? {} as AxiosRequestHeaders;
             cfg.headers.Authorization = `Bearer ${token}`;
         }
-        
-        // 图片加载请求添加时间戳参数避免缓存，而不是通过请求头
+
+        //The image loading request adds a timestamp parameter to avoid caching instead of through the request header
         if (cfg.url?.includes('/uploads/')) {
             const timestamp = new Date().getTime();
-            cfg.url = cfg.url.includes('?') 
-                ? `${cfg.url}&_t=${timestamp}` 
+            cfg.url = cfg.url.includes('?')
+                ? `${cfg.url}&_t=${timestamp}`
                 : `${cfg.url}?_t=${timestamp}`;
         }
-        
+
         return cfg;
     },
     err => Promise.reject(err),
 );
 
-// 添加响应拦截器处理错误
+// Add a response interceptor to handle errors
 API.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
-        
-        // 避免重试循环
+
+        // Avoid retry loops
         if (!originalRequest || originalRequest._retry) {
             return Promise.reject(error);
         }
 
-        // 标记此请求已尝试过重试
+      
         originalRequest._retry = true;
-        
-        // 图片加载错误不自动重试，让组件层面处理
+
+        // Image loading errors do not automatically retry. Let the component level handle it
         if (originalRequest.url?.includes('/uploads/')) {
             return Promise.reject(error);
         }
-        
-        // 如果是网络错误或超时错误，则重试一次
-        if (error.message.includes('Network Error') || 
-            error.code === 'ECONNABORTED' || 
+
+        // If it is a network error or a timeout error, try again
+        if (error.message.includes('Network Error') ||
+            error.code === 'ECONNABORTED' ||
             (error.response && (error.response.status >= 500 || error.response.status === 429))) {
-            
+
             console.log('API错误, 正在重试:', error.message, originalRequest.url);
-            
-            // 等待1秒后重试
+
+            // Wait for 1 second and then try again
             await new Promise(resolve => setTimeout(resolve, 1000));
             return API(originalRequest);
         }
-        
+
         return Promise.reject(error);
     }
 );
@@ -84,17 +83,17 @@ export const createMemory = (fd: FormData) => {
         headers: {
             'Content-Type': 'multipart/form-data'
         },
-        // 上传可能需要更长时间
+   
         timeout: 60000
     })
-    .then(r => {
-        console.log('Memory creation response:', r.data);
-        return r.data;
-    })
-    .catch(error => {
-        console.error('Memory creation error:', error.response || error);
-        throw error;
-    });
+        .then(r => {
+            console.log('Memory creation response:', r.data);
+            return r.data;
+        })
+        .catch(error => {
+            console.error('Memory creation error:', error.response || error);
+            throw error;
+        });
 };
 
 export const deleteMemory = (id: string) => API.delete(`/memories/${id}`);
@@ -102,10 +101,10 @@ export const deleteMemory = (id: string) => API.delete(`/memories/${id}`);
 /* ---------- Wills ---------- */
 export const getWills = (roomId: string) => API.get(`/wills?roomId=${roomId}`).then(r => r.data);
 export const createWill = (roomId: string, fd: FormData) => {
-  fd.append('roomId', roomId); // 将 roomId 添加到 FormData
-  return API.post('/wills', fd).then(r => r.data);
+    fd.append('roomId', roomId); 
+    return API.post('/wills', fd).then(r => r.data);
 };
-export const deleteWill = (id:string)        => API.delete(`/wills/${id}`);
+export const deleteWill = (id: string) => API.delete(`/wills/${id}`);
 
 /**
  * Update a will
@@ -120,7 +119,6 @@ export const updateWill = (
 ) => {
     if (isForm && data instanceof FormData) {
         return API.patch(`/wills/${id}`, data, {
-            // 让 axios 自动带 boundary
             headers: { 'Content-Type': 'multipart/form-data' },
         }).then(r => r.data);
     }
@@ -128,7 +126,7 @@ export const updateWill = (
 };
 
 /* ---------- Auth ---------- */
-export const registerUser = (p:{ username:string; password:string; role:string }) =>
+export const registerUser = (p: { username: string; password: string; role: string }) =>
     API.post('/auth/register', p).then(r => {
         localStorage.setItem('token', r.data.token);
         return r.data;
@@ -176,4 +174,3 @@ API.interceptors.response.use(
 
 export default API;
 
-  
