@@ -1,9 +1,8 @@
 // Main component for wish list management, including add functionality
-import React, { useEffect, useRef } from 'react';
-import { DreamCard } from './DreamCard';
+import React, { useEffect } from 'react';
 import '../DreamList/DreamList.css';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
+import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 
 // Interface definition for new dreams
@@ -17,11 +16,8 @@ interface Dream {
 }
 
 
-// export function DreamList({ onShrink }: DreamListProps) {
-// export function DreamList() {
-// export function DreamList({ roomId }: { roomId: string }) {
 export function DreamList(props: { roomId?: string }) {
-  const { roomId } = useParams(); // 从 URL 拿 roomId
+  const { roomId } = useParams();
   const [dreams, setDreams] = useState<Dream[]>([]);
   const [newDreamContent, setNewDreamContent] = useState<string>('');
   const [showInput, setShowInput] = useState<boolean>(false);
@@ -45,10 +41,7 @@ export function DreamList(props: { roomId?: string }) {
   }, [roomId]);
 
 
-
-
   // Function to create a new dream
-  //can:const response = await fetch(`${import.meta.env.VITE_API_BASE}/api/dreams` is the version based on env)
   const createDream = async (content: string) => {
     try {
       const response = await fetch(`http://localhost:5001/api/dreams/${roomId}`, {
@@ -74,7 +67,6 @@ export function DreamList(props: { roomId?: string }) {
   const handleAddDream = async () => {
 
     if (!showInput) {
-      // If input box is hidden, show it
       setShowInput(true);
       return;
     }
@@ -85,13 +77,13 @@ export function DreamList(props: { roomId?: string }) {
       return;
     }
     try {
-      await createDream(newDreamContent); // First create
-      const res = await fetch(`http://localhost:5001/api/dreams/${roomId}`); // Then fetch latest data
+      await createDream(newDreamContent);
+      const res = await fetch(`http://localhost:5001/api/dreams/${roomId}`);
       const updatedDreams = await res.json();
-      setDreams(updatedDreams); // Update state to avoid inconsistency
+      setDreams(updatedDreams);
 
-      setNewDreamContent(''); // Clear input
-      setShowInput(false); // Hide input after submit
+      setNewDreamContent('');
+      setShowInput(false);
     } catch (err) {
       alert('Failed to add. Try again');
     }
@@ -116,23 +108,17 @@ export function DreamList(props: { roomId?: string }) {
 
       if (!response.ok) throw new Error('failed to delete');
 
-      setDreams((prev) => prev.filter(dream => dream._id !== id)); // Update state to remove deleted dream
+      setDreams((prev) => prev.filter(dream => dream._id !== id));
     } catch (err) {
       console.error('failed to delete the wish:', err);
     }
   }
 
-  // Edit button click event
-  const handleEdit = (dreamId: string) => {
-    // Navigate to edit page, passing dream id
-    navigate(`/dreamlist/edit/${dreamId}`);
-  };
 
   const handleEditAll = async () => {
     try {
       const res = await fetch(`http://localhost:5001/api/dreams/${roomId}`);
       const data = await res.json();
-      // 传递所有的梦想内容
       navigate(`/interactive/${roomId}/edit`, { state: { dreams: data } });
     } catch (err) {
       console.error('Failed to fetch latest dreams:', err);
@@ -143,14 +129,10 @@ export function DreamList(props: { roomId?: string }) {
     <div>
       <h1 className="dream-list-title">Wish List</h1>
       <div className="dream-list-content">
-        {/* Display wish list */}
         {dreams.map(dream => (
           <div key={dream._id} className="dream-item">
-            {/* <span>{dream.content}</span> */}
             <span dangerouslySetInnerHTML={{ __html: dream.content }} />
             <div className="dream-actions">
-
-              {/* <button className="edit-button">Edit</button> */}
               <button className="delete-button" onClick={() => handleDelete(dream._id)}>Delete</button>
             </div>
           </div>

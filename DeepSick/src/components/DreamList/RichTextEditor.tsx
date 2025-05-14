@@ -30,12 +30,12 @@ const FontSize = Extension.create({
     }
   },
 
-  // 声明自定义命令类型（关键）
+  // Declare custom command types
   addKeyboardShortcuts() {
     return {}
   },
 
-  // 注册到命令系统（关键类型定义）
+  // Register to the command system
   addStorage() {
     return {}
   },
@@ -49,7 +49,7 @@ interface RichTextEditorProps {
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ content, onChange }) => {
   console.log("The initial input content is：", content);
   const editor = useEditor({
-    extensions: [StarterKit, TextStyle, Color, FontSize],  // Added FontSize extension here
+    extensions: [StarterKit, TextStyle, Color, FontSize],
     content,
     onUpdate({ editor }) {
       const html = editor.getHTML();

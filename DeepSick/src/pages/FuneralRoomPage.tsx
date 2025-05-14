@@ -134,18 +134,16 @@ const updateBackgroundImageFit = (img: HTMLImageElement, stageWidth: number, sta
   // Ensure the image covers the entire canvas area (object-fit: cover behavior)
   // Always make the image at least as large as the container in both dimensions
   if (imageRatio > stageRatio) {
-    // Image is wider than stage (relative to aspect ratio)
-    // Match height and allow width to be larger (cropped horizontally)
+ 
     height = stageHeight;
     width = height * imageRatio;
-    // Center horizontally
+ 
     x = (stageWidth - width) / 2;
   } else {
-    // Image is taller than stage (relative to aspect ratio)
-    // Match width and allow height to be larger (cropped vertically)
+   
     width = stageWidth;
     height = width / imageRatio;
-    // Center vertically
+
     y = (stageHeight - height) / 2;
   }
   

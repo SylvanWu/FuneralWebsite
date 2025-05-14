@@ -3,7 +3,7 @@ import Dream from '../models/Dream.js';
 
 const router = express.Router();
 
-/*----- 获取某个房间的梦想列表 -----*/
+/* Get the dream list of a certain room */
 router.get('/:roomId', async (req, res) => {
   const { roomId } = req.params;
   try {
@@ -15,7 +15,7 @@ router.get('/:roomId', async (req, res) => {
   }
 });
 
-/*----- 在某房间创建新梦想 -----*/
+/*Create a new dream in a certain room */
 router.post('/:roomId', async (req, res) => {
   const { roomId } = req.params;
   const { content, position } = req.body;
@@ -33,7 +33,7 @@ router.post('/:roomId', async (req, res) => {
   }
 });
 
-/*----- 修改某个梦想 -----*/
+/*Modify a certain dream*/
 router.patch('/:dreamId', async (req, res) => {
   const { dreamId } = req.params;
   const { content, order, position } = req.body;
@@ -52,7 +52,7 @@ router.patch('/:dreamId', async (req, res) => {
   }
 });
 
-/*----- 删除梦想 -----*/
+/*Delete the dream*/
 router.delete('/:dreamId', async (req, res) => {
   const { dreamId } = req.params;
 

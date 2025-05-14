@@ -1,3 +1,5 @@
+// FuneralReview Component: Funeral ceremony preview and creation
+
 import React, { useState } from 'react';
 import { useFuneral } from '../context/FuneralContext';
 import { createFuneral } from '../api/funerals';
@@ -9,31 +11,31 @@ const FuneralReview: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [funeralTitle, setFuneralTitle] = useState(title || '');
   const navigate = useNavigate();
-  
+
   const handleBack = () => {
     dispatch({ type: 'GO_TO_PREVIOUS_STEP' });
   };
-  
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFuneralTitle(e.target.value);
   };
-  
+
   const handleSubmit = async () => {
     if (!funeralTitle.trim()) {
       alert('Please enter a title for the funeral');
       return;
     }
-    
+
     if (!selectedScene) {
       alert('Please select a scene');
       return;
     }
-    
+
     // Update title in context
     dispatch({ type: 'SET_TITLE', payload: funeralTitle });
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Call the API to create the funeral
       await createFuneral({
@@ -57,7 +59,7 @@ const FuneralReview: React.FC = () => {
           }
         ]
       });
-      
+
       alert('Funeral created successfully!');
       // Reset state after successful creation
       dispatch({ type: 'RESET_STATE' });
@@ -70,7 +72,7 @@ const FuneralReview: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="space-y-6">
       <div className="mb-8">
@@ -79,7 +81,7 @@ const FuneralReview: React.FC = () => {
           Review the details of the funeral ceremony before creating it.
         </p>
       </div>
-      
+
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="mb-6">
           <label htmlFor="funeralTitle" className="block text-sm font-medium text-gray-700 mb-1">
@@ -94,16 +96,16 @@ const FuneralReview: React.FC = () => {
             placeholder="Enter a title for the funeral ceremony"
           />
         </div>
-        
+
         <div className="mb-6">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Scene</h3>
           {selectedScene ? (
             <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-md">
               <div className="w-16 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                 {selectedScene.imageUrl && (
-                  <img 
-                    src={selectedScene.imageUrl} 
-                    alt={selectedScene.name} 
+                  <img
+                    src={selectedScene.imageUrl}
+                    alt={selectedScene.name}
                     className="w-full h-full object-cover"
                   />
                 )}
@@ -117,7 +119,7 @@ const FuneralReview: React.FC = () => {
             <p className="text-red-500">No scene selected</p>
           )}
         </div>
-        
+
         <div>
           <h3 className="text-sm font-medium text-gray-700 mb-2">Ceremony Steps</h3>
           {steps.length > 0 ? (
@@ -141,7 +143,7 @@ const FuneralReview: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       <div className="flex justify-between mt-8">
         <button
           onClick={handleBack}

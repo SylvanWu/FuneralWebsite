@@ -6,28 +6,28 @@ const willSchema = new mongoose.Schema({
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true            // Filled from req.userId after JWT verification
+        required: true
     },
     roomId: {
         type: String,
-        required: true,           // 房间 ID，必填
-        index: true               // 为查询优化添加索引
+        required: true,
+        index: true
     },
     uploaderName: {
         type: String,
-        required: true,           // Name passed from frontend
+        required: true,
         trim: true
     },
     farewellMessage: {
         type: String,
-        default: ''               // Farewell text message
+        default: ''
     },
     videoFilename: {
         type: String,
-        default: ''               // Filename saved by multer
+        default: ''
     }
 }, {
-    timestamps: true             // Automatically adds createdAt / updatedAt
+    timestamps: true
 });
 
 export default mongoose.model('Will', willSchema);
