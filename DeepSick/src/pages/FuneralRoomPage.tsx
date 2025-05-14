@@ -10,6 +10,7 @@ import {
 import DeceasedImage from '../components/DeceasedImage';
 import Cropper from 'react-easy-crop';
 import { VectorToolbar, VectorItem } from '../components/VectorToolbar';
+import './FuneralRoomPage.css'; // Import CSS file
 
 // Import background images for direct reference
 import churchImage from '../assets/funeral type/church funeral.png';
@@ -126,57 +127,30 @@ interface CanvasItem {
 
 // Function to update background image size and position to maintain 16:9 aspect ratio
 const updateBackgroundImageFit = (img: HTMLImageElement, stageWidth: number, stageHeight: number) => {
-  const stageRatio = stageWidth / stageHeight;
+  const stageRatio = stageWidth / stageHeight; // Should be 16/9 = 1.778...
   const imageRatio = img.width / img.height;
   
   let width, height, x = 0, y = 0;
   
   // Ensure the image covers the entire canvas area (object-fit: cover behavior)
-  // Always make the image at least as large as the container in both dimensions
+  // The goal is to make sure no empty space is visible, even if some part of the image is cropped
   if (imageRatio > stageRatio) {
- 
+    // Image is wider than stage (relative to height)
+    // Make the height match the stage height and center horizontally
     height = stageHeight;
-    width = height * imageRatio;
- 
-    x = (stageWidth - width) / 2;
+    width = height * imageRatio; // This will be wider than the stage
+    x = (stageWidth - width) / 2; // Center horizontally
   } else {
-   
+    // Image is taller than stage (relative to width)
+    // Make the width match the stage width and center vertically
     width = stageWidth;
-    height = width / imageRatio;
-
-    y = (stageHeight - height) / 2;
+    height = width / imageRatio; // This will be taller than the stage
+    y = (stageHeight - height) / 2; // Center vertically
   }
   
+  console.log(`Background image fit: stage ${stageWidth}x${stageHeight} (ratio: ${stageRatio.toFixed(2)}), image scaled to ${width.toFixed(0)}x${height.toFixed(0)} (ratio: ${imageRatio.toFixed(2)})`);
+  
   return { width, height, x, y };
-};
-
-// Add a custom style for the canvas container
-const canvasContainerStyle = {
-  display: 'flex', 
-  justifyContent: 'center', 
-  alignItems: 'center',
-  padding: '10px',
-  backgroundColor: '#f0f0f0',
-  overflow: 'hidden',
-  borderRadius: '8px',
-};
-
-const canvasStyle = {
-  width: '100%',
-  aspectRatio: '16/9',
-  position: 'relative' as const,
-  overflow: 'hidden',
-  borderRadius: '8px',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-};
-
-const stageStyle = {
-  position: 'absolute' as const,
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  display: 'block',
 };
 
 const FuneralRoomPage: React.FC = () => {
@@ -237,15 +211,15 @@ const FuneralRoomPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Image cropping states
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [showCrop, setShowCrop] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>('');
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const [isCropping, setIsCropping] = useState(false);
   
   // Add background image status
   const [backgroundImg, setBackgroundImg] = useState<HTMLImageElement | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 450 }); // 16:9 ratio
   
   // State to store loaded decoration images
   const [decorationImages, setDecorationImages] = useState<{[key: string]: HTMLImageElement}>({});
@@ -258,6 +232,9 @@ const FuneralRoomPage: React.FC = () => {
   
   // Add dialog state
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
+  // State to track items that are currently loading
+  const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   
   // Function to get background image, with fallback to mapping if needed
   const getBackgroundImage = useCallback(() => {
@@ -339,10 +316,10 @@ const FuneralRoomPage: React.FC = () => {
     const container = document.querySelector('.canvas-container');
     if (container) {
       // Get the width of the container
-      const containerWidth = container.clientWidth - 20; // Subtract padding
+      const containerWidth = container.clientWidth;
       
-      // Calculate height based on 16:9 aspect ratio (height = width * 9/16)
-      const containerHeight = Math.floor(containerWidth * 9 / 16);
+      // Calculate height based on exact 16:9 aspect ratio
+      const containerHeight = Math.round(containerWidth * 9 / 16);
       
       setCanvasSize({ 
         width: containerWidth, 
@@ -451,7 +428,7 @@ const FuneralRoomPage: React.FC = () => {
       if (event.target?.result) {
         // Instead of saving directly, set the image for cropping
         setImageToCrop(event.target.result as string);
-        setIsCropping(true);
+        setShowCrop(true);
       }
     };
     reader.readAsDataURL(file);
@@ -518,25 +495,25 @@ const FuneralRoomPage: React.FC = () => {
       }
       
       // Reset cropping state
-      setIsCropping(false);
-      setImageToCrop(null);
+      setShowCrop(false);
+      setImageToCrop('');
       console.log('Crop process completed');
     } catch (error) {
       console.error('Error cropping image:', error);
       setUploadError('Failed to crop image. Please try again.');
     }
-  }, [imageToCrop, croppedAreaPixels, roomId, state, canvasItems, dispatch, setIsCropping, setImageToCrop, setSaveMessage, setUploadError]);
+  }, [imageToCrop, croppedAreaPixels, roomId, state, canvasItems, dispatch, setShowCrop, setImageToCrop, setSaveMessage, setUploadError]);
   
   // Cancel cropping
   const handleCancelCrop = useCallback(() => {
-    setIsCropping(false);
-    setImageToCrop(null);
-  }, [setIsCropping, setImageToCrop]);
+    setShowCrop(false);
+    setImageToCrop('');
+  }, [setShowCrop, setImageToCrop]);
   
   // Handle re-upload image (triggers file input click)
   const handleReuploadImage = useCallback(() => {
     // Reset states
-    setImageToCrop(null);
+    setImageToCrop('');
     setCroppedAreaPixels(null);
     
     // Trigger file input click to select a new file
@@ -548,7 +525,7 @@ const FuneralRoomPage: React.FC = () => {
   
   // Add a keyboard listener for Enter key to confirm crop when cropping modal is open
   useEffect(() => {
-    if (!isCropping) return;
+    if (!showCrop) return;
     
     const handleCropKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter') {
@@ -562,7 +539,7 @@ const FuneralRoomPage: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleCropKeyDown);
     };
-  }, [isCropping, handleSaveCroppedImage, handleCancelCrop]);
+  }, [showCrop, handleSaveCroppedImage, handleCancelCrop]);
   
   // Function to remove deceased image
   const handleRemoveDeceasedImage = () => {
@@ -736,70 +713,20 @@ const FuneralRoomPage: React.FC = () => {
       y: e.clientY - containerRect.top
     };
 
-    // Create new canvas item
-    const newItem: CanvasItem = {
-      id: `${item.id}-${Date.now()}`,
-      x: pos.x,
-      y: pos.y,
-      width: DECORATION_ITEM_SIZE,
-      height: DECORATION_ITEM_SIZE,
-      color: '#ffffff',
-      name: item.name,
-      image: item.src
-    };
-
-    // Add to canvas items
-    const updatedItems = [...canvasItems, newItem];
-    setCanvasItems(updatedItems);
-
-    // Load the image
-    const img = new Image();
-    img.src = item.src;
-    img.onload = () => {
-      setDecorationImages(prev => ({
-        ...prev,
-        [item.id]: img
-      }));
-    };
-
-    // Auto-save
-    saveToDatabase(updatedItems).catch(err => 
-      console.error('Error saving after adding vector item:', err)
-    );
+    // Use the helper function to add the item
+    handleAddVectorItem(item, pos);
   };
 
   // Handle vector item click
   const handleVectorItemClick = (item: VectorItem) => {
-    // Create new canvas item at the center of the canvas
-    const newItem: CanvasItem = {
-      id: `${item.id}-${Date.now()}`,
+    // Place the item at center of canvas
+    const position = {
       x: canvasSize.width / 2,
-      y: canvasSize.height / 2,
-      width: DECORATION_ITEM_SIZE,
-      height: DECORATION_ITEM_SIZE,
-      color: '#ffffff',
-      name: item.name,
-      image: item.src
+      y: canvasSize.height / 2
     };
-
-    // Add to canvas items
-    const updatedItems = [...canvasItems, newItem];
-    setCanvasItems(updatedItems);
-
-    // Load the image
-    const img = new Image();
-    img.src = item.src;
-    img.onload = () => {
-      setDecorationImages(prev => ({
-        ...prev,
-        [item.id]: img
-      }));
-    };
-
-    // Auto-save
-    saveToDatabase(updatedItems).catch(err => 
-      console.error('Error saving after adding vector item:', err)
-    );
+    
+    // Use the helper function to add the item
+    handleAddVectorItem(item, position);
   };
 
   // Handle toolbar collapse
@@ -879,12 +806,75 @@ const FuneralRoomPage: React.FC = () => {
     );
   };
 
+  // Helper function to handle adding a vector item
+  const handleAddVectorItem = useCallback((item: VectorItem, position: { x: number, y: number }) => {
+    // Track loading state
+    setLoadingItems(prev => new Set([...prev, item.id]));
+    
+    // Create a new image and wait for it to load
+    const img = new Image();
+    img.src = item.src;
+    
+    // Set loading feedback
+    console.log(`Loading vector image: ${item.name}...`);
+    
+    // Wait for the image to load before adding the item to the canvas
+    img.onload = () => {
+      // First update the decorationImages state with the loaded image
+      setDecorationImages(prev => ({
+        ...prev,
+        [item.id]: img
+      }));
+      
+      // Then create the new canvas item
+      const newItem: CanvasItem = {
+        id: `${item.id}-${Date.now()}`,
+        x: position.x,
+        y: position.y,
+        width: DECORATION_ITEM_SIZE,
+        height: DECORATION_ITEM_SIZE,
+        color: '#ffffff',
+        name: item.name,
+        image: item.src
+      };
+      
+      // Finally add to canvas items
+      const updatedItems = [...canvasItems, newItem];
+      setCanvasItems(updatedItems);
+      
+      // Remove from loading state
+      setLoadingItems(prev => {
+        const newSet = new Set([...prev]);
+        newSet.delete(item.id);
+        return newSet;
+      });
+      
+      // Auto-save
+      saveToDatabase(updatedItems).catch(err => 
+        console.error('Error saving after adding vector item:', err)
+      );
+      
+      console.log(`Vector image "${item.name}" added at position (${position.x}, ${position.y})`);
+    };
+    
+    // Add error handling
+    img.onerror = () => {
+      console.error(`Failed to load vector image: ${item.name}`);
+      // Remove from loading state
+      setLoadingItems(prev => {
+        const newSet = new Set([...prev]);
+        newSet.delete(item.id);
+        return newSet;
+      });
+    };
+  }, [canvasItems, saveToDatabase, setLoadingItems, setDecorationImages]);
+
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   // Image Cropping Modal
-  if (isCropping && imageToCrop) {
+  if (showCrop && imageToCrop) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
         {/* The explanatory text on the right */}
@@ -982,6 +972,7 @@ const FuneralRoomPage: React.FC = () => {
         onItemDragStart={handleVectorDragStart}
         onCollapseChange={handleToolbarCollapse}
         onItemClick={handleVectorItemClick}
+        loadingItems={loadingItems}
       />
       
       {/* Main content area with proper margin */}
@@ -1081,16 +1072,19 @@ const FuneralRoomPage: React.FC = () => {
               <div className="text-center text-gray-500 py-2">
                 <p>Click on items in the left toolbar to add them to the scene. Drag to position them. Items are automatically saved.</p>
               </div>
-              <div 
-                className="canvas-container" 
-                style={canvasContainerStyle}
-              >
-                <div style={canvasStyle}>
+              <div className="canvas-container">
+                <div className="canvas-wrapper">
                   <Stage
                     ref={stageRef}
                     width={canvasSize.width}
                     height={canvasSize.height}
-                    style={stageStyle}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%'
+                    }}
                   >
                     <Layer>
                       {/* background image - ensure it completely fills the 16:9 container */}
