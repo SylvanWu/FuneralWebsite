@@ -60,11 +60,11 @@ const DreamEditor = () => {
 
   return (
     <div style={{ paddingLeft: '400px', paddingTop: '20px' }}>
-      <h1>Edit Dreams with Style ✨</h1>
-
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '30px', paddingTop: '100px' }}>
+      <div > <h1  >Edit Dreams with Style ✨</h1>
+      </div>
+      <div className="editor-container">
         {/* Left: Editor area */}
-        <div style={{ flex: '0 0 700px' }}>
+        <div className="editor-left">
           {editableDreams.map((dream, index) => (
             <div key={dream._id} style={{ marginBottom: '30px' }}>
               <RichTextEditor
@@ -80,7 +80,8 @@ const DreamEditor = () => {
           className="dream-card"
           style={{
             width: '400px',
-            marginTop: '0px',
+            marginTop: '150px', // down
+            marginLeft: '500px', // right
             backgroundColor: '#f5f5f5',
             padding: '10px',
             border: '1px solid #ccc',

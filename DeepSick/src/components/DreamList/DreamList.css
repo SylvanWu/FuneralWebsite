@@ -281,7 +281,7 @@
 .rich-text-editor-container {
   display: flex;
   gap: 20px;
-  margin-left: -130px;
+  margin-left: -180px;
 }
 
 .rich-text-toolbar {
@@ -327,5 +327,11 @@
   padding: 8px;
   border-radius: 8px;
   background-color: white;
-  width: 200px;
+  width: 300px;
+}
+
+.editor-container {
+  display: flex;
+  gap: 30px;
+  padding-top: 100px;
 }

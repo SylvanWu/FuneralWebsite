@@ -8,7 +8,7 @@ interface MemoryCardProps {
     canDelete?: boolean;
 }
 
-// 默认图片，用于图片加载失败或URL为空时显示
+// Default image, used for display when image loading fails or the URL is empty
 const DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f0f0f0"/%3E%3Cpath d="M30,40 L70,40 L70,60 L30,60 Z" fill="%23ddd"/%3E%3Ctext x="50" y="50" font-family="Arial" font-size="8" text-anchor="middle" alignment-baseline="middle" fill="%23999"%3EImage%3C/text%3E%3C/svg%3E';
 
 const MemoryCard: React.FC<MemoryCardProps> = ({
@@ -31,29 +31,27 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         return () => clearTimeout(timer);
     }, []);
 
-    /* 修复路径并处理图片和视频URL */
+    /* Fix the path and handle the urls of images and videos */
     useEffect(() => {
         if (memory.type === 'image') {
-            // 重置加载状态
+
             setImageError(false);
             setAttemptCount(0);
 
-            // 处理图片URL
             processMediaUrl(memory.preview, 'image');
         } else if (memory.type === 'video') {
-            // 重置视频加载状态
+
             setVideoError(false);
             setAttemptCount(0);
 
-            // 处理视频URL
             processMediaUrl(memory.preview, 'video');
         }
     }, [memory]);
 
-    // 媒体URL处理函数 - 统一处理图片和视频URL
+    // Media URL processing function - Uniformly handle image and video urls
     const processMediaUrl = (originalUrl: string, mediaType: 'image' | 'video') => {
         try {
-            // 如果URL为空或无效，显示错误
+            // If the URL is empty or invalid, display an error
             if (!originalUrl || originalUrl.trim() === '') {
                 console.error(`Empty or invalid ${mediaType} URL`);
                 if (mediaType === 'image') {
@@ -66,13 +64,9 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 return;
             }
 
-            // 清理和标准化URL
+            // Clean up and standardize urls
             let processedUrl = originalUrl.trim();
-
-            // 1. 替换反斜杠
             processedUrl = processedUrl.replace(/\\/g, '/');
-
-            // 2. 已经是完整URL的情况
             if (processedUrl.startsWith('blob:') || processedUrl.startsWith('data:')) {
                 console.log(`Using direct blob/data URL for ${mediaType}:`, processedUrl);
                 if (mediaType === 'image') {
@@ -83,18 +77,17 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 return;
             }
 
-            // 3. 相对路径处理
+            // 3. Relative path processing
             if (!processedUrl.startsWith('http')) {
-                // 获取基础URL，但移除/api后缀，因为静态资源不在/api路径下
+
                 const baseUrlWithApi = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
                 const baseUrl = baseUrlWithApi.replace(/\/api$/, '');
 
-                // 移除server前缀和多余的路径
                 processedUrl = processedUrl
                     .replace(/^server\/uploads\//, '')
                     .replace(/^uploads\//, '');
 
-                // 确保处理后的URL不为空
+                // Make sure that the processed URL is not empty
                 if (!processedUrl || processedUrl === '') {
                     console.error(`Invalid ${mediaType} path after processing`);
                     if (mediaType === 'image') {
@@ -107,7 +100,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     return;
                 }
 
-                // 构建不同的URL选项尝试加载
+                // Build different URL options and attempt to load
                 const options = [
                     `${baseUrl}/uploads/${processedUrl}`,
                     `${baseUrlWithApi}/uploads/${processedUrl}`,
@@ -122,8 +115,8 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 return;
             }
 
-            // 4. 已经是HTTP URL但可能格式不正确
-            // 尝试移除可能的/api路径
+            // 4. It's already an HTTP URL but the format might be incorrect
+
             if (processedUrl.includes('/api/uploads/')) {
                 processedUrl = processedUrl.replace('/api/uploads/', '/uploads/');
             }
@@ -146,7 +139,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         }
     };
 
-    // 尝试多个URL加载图片
+    // Try loading images from multiple urls
     const loadImageWithFallbacks = (urlOptions: string[]) => {
         const currentOption = attemptCount < urlOptions.length ? urlOptions[attemptCount] : null;
 
@@ -161,7 +154,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         setImageSrc(currentOption);
     };
 
-    // 尝试多个URL加载视频
+    // Try loading the video with multiple urls
     const loadVideoWithFallbacks = (urlOptions: string[]) => {
         const currentOption = attemptCount < urlOptions.length ? urlOptions[attemptCount] : null;
 
@@ -176,13 +169,13 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         setVideoSrc(currentOption);
     };
 
-    // 图片加载成功处理
+    // The image loading was successfully processed
     const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
         try {
             const img = event.currentTarget;
             console.log('Image loaded successfully:', imageSrc);
 
-            // 计算适当尺寸
+            // Calculate the appropriate size
             const maxWidth = 800;
             const maxHeight = 600;
             let width = img.naturalWidth;
@@ -201,21 +194,21 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
         }
     };
 
-    // 图片加载失败处理
+    // Image loading failed handling
     const handleImageError = () => {
-        // 如果当前已经是默认图片，不要再尝试，避免无限循环
+
         if (imageSrc === DEFAULT_IMAGE) return;
 
         console.error('Failed to load image:', imageSrc);
 
-        // 尝试下一个URL选项
+        // Try the next URL option
         const nextAttempt = attemptCount + 1;
-        if (nextAttempt < 5) { // 最多尝试5次不同的URL格式
+        if (nextAttempt < 5) {
             setAttemptCount(nextAttempt);
 
-            // 构建备用URL
+
             if (nextAttempt === 1) {
-                // 如果URL包含/api/uploads/，尝试移除/api
+
                 if (imageSrc && imageSrc.includes('/api/uploads/')) {
                     const altUrl = imageSrc.replace('/api/uploads/', '/uploads/');
                     console.log('Trying URL without /api prefix:', altUrl);
@@ -223,7 +216,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     return;
                 }
 
-                // 尝试不带/api的路径
+
                 const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '');
                 const fileName = imageSrc && imageSrc.split('/').pop();
                 if (fileName) {
@@ -232,7 +225,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     setImageSrc(altUrl);
                 }
             } else if (nextAttempt === 2) {
-                // 尝试直接使用localhost
+
                 const fileName = imageSrc && imageSrc.split('/').pop();
                 if (fileName) {
                     const altUrl = `http://localhost:5001/uploads/${fileName}`;
@@ -240,7 +233,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     setImageSrc(altUrl);
                 }
             } else if (nextAttempt === 3) {
-                // 尝试直接使用localhost并加上/api
+
                 const fileName = imageSrc && imageSrc.split('/').pop();
                 if (fileName) {
                     const altUrl = `http://localhost:5001/api/uploads/${fileName}`;
@@ -248,7 +241,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     setImageSrc(altUrl);
                 }
             } else {
-                // 最后尝试原始URL
+
                 console.log('Trying original URL as fallback');
                 const originalFixed = memory.preview && memory.preview.replace(/\\/g, '/');
                 if (originalFixed) {
@@ -259,25 +252,25 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 }
             }
         } else {
-            // 所有尝试都失败，使用默认图片
+
             console.error('All image loading attempts failed, using default image');
             setImageSrc(DEFAULT_IMAGE);
             setImageError(true);
         }
     };
 
-    // 视频加载错误处理
+    // Video loading error handling
     const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
         console.error('Video error:', e);
 
-        // 尝试下一个URL选项
+
         const nextAttempt = attemptCount + 1;
-        if (nextAttempt < 5) { // 最多尝试5次不同的URL格式
+        if (nextAttempt < 5) {
             setAttemptCount(nextAttempt);
 
-            // 构建备用URL
+            // Build a backup URL
             if (nextAttempt === 1) {
-                // 如果URL包含/api/uploads/，尝试移除/api
+
                 if (videoSrc && videoSrc.includes('/api/uploads/')) {
                     const altUrl = videoSrc.replace('/api/uploads/', '/uploads/');
                     console.log('Trying video URL without /api prefix:', altUrl);
@@ -285,7 +278,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     return;
                 }
 
-                // 尝试不带/api的路径
+                // Try the path without /api
                 const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/api$/, '');
                 const fileName = videoSrc && videoSrc.split('/').pop();
                 if (fileName) {
@@ -294,7 +287,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     setVideoSrc(altUrl);
                 }
             } else if (nextAttempt === 2) {
-                // 尝试直接使用localhost
+                // Try using localhost directly
                 const fileName = videoSrc && videoSrc.split('/').pop();
                 if (fileName) {
                     const altUrl = `http://localhost:5001/uploads/${fileName}`;
@@ -302,7 +295,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     setVideoSrc(altUrl);
                 }
             } else if (nextAttempt === 3) {
-                // 尝试直接使用localhost并加上/api
+                // Try to use localhost directly and add /api
                 const fileName = videoSrc && videoSrc.split('/').pop();
                 if (fileName) {
                     const altUrl = `http://localhost:5001/api/uploads/${fileName}`;
@@ -310,7 +303,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     setVideoSrc(altUrl);
                 }
             } else {
-                // 最后尝试原始URL
+                // Finally, try the original URL
                 console.log('Trying original video URL as fallback');
                 const originalFixed = memory.preview && memory.preview.replace(/\\/g, '/');
                 if (originalFixed) {
@@ -321,7 +314,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                 }
             }
         } else {
-            // 所有尝试都失败
+            // All attempts failed
             console.error('All video loading attempts failed');
             setVideoSrc(null);
             setVideoError(true);
@@ -367,7 +360,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                                     onClick={() => imageSrc && window.open(imageSrc, '_blank')}
                                     disabled={!imageSrc || imageSrc === DEFAULT_IMAGE}
                                 >
-                                    打开图片链接
+                                    Open the picture link
                                 </button>
                                 <button
                                     className="mt-2 ml-2 px-2 py-1 bg-green-500 text-white text-xs rounded"
@@ -377,11 +370,11 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                                         processMediaUrl(memory.preview, 'image');
                                     }}
                                 >
-                                    重试加载
+                                    Retry loading
                                 </button>
                             </div>
                         ) : (
-                            // 只在imageSrc有值时渲染图片，避免空src警告
+                            //Render images only when imageSrc has a value to avoid empty src warnings
                             imageSrc && (
                                 <img
                                     src={imageSrc}
@@ -405,7 +398,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                     <div className="mt-3 flex justify-center">
                         {videoError ? (
                             <div className="text-red-500 p-4 bg-red-50 rounded-lg">
-                                <p>无法加载视频</p>
+                                <p>Unable to load the video</p>
                                 <p className="text-xs overflow-auto max-w-md">{memory.preview || '没有视频URL'}</p>
                                 {videoSrc && videoSrc !== memory.preview && (
                                     <p className="text-xs overflow-auto max-w-md">尝试过: {videoSrc}</p>
@@ -415,7 +408,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                                     onClick={() => videoSrc && window.open(videoSrc, '_blank')}
                                     disabled={!videoSrc}
                                 >
-                                    打开视频链接
+                                    Open the video link
                                 </button>
                                 <button
                                     className="mt-2 ml-2 px-2 py-1 bg-green-500 text-white text-xs rounded"
@@ -425,7 +418,7 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                                         processMediaUrl(memory.preview, 'video');
                                     }}
                                 >
-                                    重试加载
+                                    Retry loading
                                 </button>
                             </div>
                         ) : (
