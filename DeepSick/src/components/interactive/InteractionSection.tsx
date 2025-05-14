@@ -19,6 +19,7 @@ export interface RoomData {
   backgroundImage: string;
   name: string;
   deceasedImage?: string;
+  funeralPicture?: string;
   isOrganizer?: boolean;
 }
 

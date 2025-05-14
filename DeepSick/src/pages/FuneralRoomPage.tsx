@@ -54,6 +54,10 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024;
 // Size constants for cropped image
 const CROP_IMAGE_SIZE = 128; 
 
+// Size constants for funeral picture (16:9 ratio)
+const FUNERAL_PICTURE_WIDTH = 320;
+const FUNERAL_PICTURE_HEIGHT = 180;
+
 // Size constant for decoration items
 const DECORATION_ITEM_SIZE = 50; // 50x50px
 
@@ -109,6 +113,50 @@ const getCroppedImg = async (imageSrc: string, pixelCrop: { x: number; y: number
     return dataUrl;
   } catch (error) {
     console.error('Error in getCroppedImg function:', error);
+    throw error;
+  }
+};
+
+// Function to get cropped canvas from image and crop area (for funeral picture with 16:9 ratio)
+const getCroppedFuneralPicture = async (imageSrc: string, pixelCrop: { x: number; y: number; width: number; height: number }): Promise<string> => {
+  try {
+    console.log('Loading funeral image for cropping...');
+    const image = await createImage(imageSrc);
+    console.log('Funeral image loaded, dimensions:', image.width, 'x', image.height);
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+
+    // Set the canvas size to a more reasonable size (16:9 ratio) to prevent 413 Payload Too Large errors
+    // Reduced from 1920x1080 (FUNERAL_PICTURE_WIDTH*6) to 1280x720 for a smaller payload
+    canvas.width = 1280;
+    canvas.height = 720;
+    
+    console.log('Drawing cropped section on canvas...');
+    // Draw the cropped image with scaling
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    
+    // Return as data URL (base64 string) with lower quality to reduce size
+    console.log('Converting funeral picture canvas to data URL...');
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8); // Reduced quality from 0.95 to 0.8
+    console.log('Funeral picture data URL generated, length:', dataUrl.length);
+    return dataUrl;
+  } catch (error) {
+    console.error('Error in getCroppedFuneralPicture function:', error);
     throw error;
   }
 };
@@ -169,7 +217,7 @@ const FuneralRoomPage: React.FC = () => {
 
   // Define reducer for room state management
   type RoomAction = 
-    | { type: 'SET_ALL'; payload: { name: string; password: string; backgroundImage: string; funeralType: string; deceasedImage?: string } }
+    | { type: 'SET_ALL'; payload: { name: string; password: string; backgroundImage: string; funeralType: string; deceasedImage?: string; funeralPicture?: string } }
     | { type: 'UPDATE_FIELD'; field: string; value: string };
 
   // Reducer function
@@ -179,6 +227,7 @@ const FuneralRoomPage: React.FC = () => {
     password: string;
     name: string;
     deceasedImage?: string;
+    funeralPicture?: string;
   }, action: RoomAction) => {
     switch (action.type) {
       case 'SET_ALL':
@@ -196,6 +245,7 @@ const FuneralRoomPage: React.FC = () => {
     backgroundImage: locationState?.backgroundImage || '',
     password: locationState?.password || '',
     name: locationState?.name || '',
+    funeralPicture: '',
   });
   
   // Canvas state
@@ -239,6 +289,17 @@ const FuneralRoomPage: React.FC = () => {
   // Add state for tracking item position during dragging
   const [dragPosition, setDragPosition] = useState<{id: string, x: number, y: number, width: number, height: number} | null>(null);
   
+  // Add funeral picture upload state
+  const [funeralPictureError, setFuneralPictureError] = useState<string | null>(null);
+  const funeralPictureInputRef = useRef<HTMLInputElement>(null);
+  
+  // Funeral picture cropping states
+  const [showFuneralPictureCrop, setShowFuneralPictureCrop] = useState(false);
+  const [funeralImageToCrop, setFuneralImageToCrop] = useState<string>('');
+  const [funeralCrop, setFuneralCrop] = useState({ x: 0, y: 0 });
+  const [funeralZoom, setFuneralZoom] = useState(1);
+  const [funeralCroppedAreaPixels, setFuneralCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  
   // Function to get background image, with fallback to mapping if needed
   const getBackgroundImage = useCallback(() => {
     // Check if we have state.funeralType and it exists in the mapping
@@ -255,25 +316,6 @@ const FuneralRoomPage: React.FC = () => {
   
   // Load funeral room data from database on mount
   useEffect(() => {
-    // If we already have location state with funeral type, apply it immediately
-    if (locationState) {
-      console.log('Using location state for initial load:', locationState);
-      dispatch({
-        type: 'SET_ALL',
-        payload: {
-          name: locationState.name || '',
-          password: locationState.password || '',
-          backgroundImage: locationState.backgroundImage || '',
-          funeralType: locationState.funeralType || 'church',
-        }
-      });
-      
-      // Set canvas items if they exist in the location state
-      if (locationState.canvasItems && Array.isArray(locationState.canvasItems)) {
-        setCanvasItems(locationState.canvasItems);
-      }
-    }
-    
     const loadFuneralRoom = async () => {
       if (!roomId) return;
       
@@ -296,6 +338,7 @@ const FuneralRoomPage: React.FC = () => {
                 backgroundImage: roomData.backgroundImage,
                 funeralType: roomData.funeralType,
                 deceasedImage: roomData.deceasedImage,
+                funeralPicture: roomData.funeralPicture,
               }
             });
             
@@ -306,17 +349,39 @@ const FuneralRoomPage: React.FC = () => {
           }
         } catch (apiError) {
           console.error('API Error loading funeral room:', apiError);
-          // Set default values to prevent UI from breaking
-          dispatch({
-            type: 'SET_ALL',
-            payload: {
-              name: locationState?.name || 'New Funeral',
-              password: initialPassword,
-              backgroundImage: '',
-              funeralType: locationState?.funeralType || 'church',
-              deceasedImage: '',
+          // 只有在API请求失败时才使用locationState作为兜底
+          if (locationState) {
+            // Set default values to prevent UI from breaking
+            dispatch({
+              type: 'SET_ALL',
+              payload: {
+                name: locationState?.name || 'New Funeral',
+                password: initialPassword,
+                backgroundImage: locationState?.backgroundImage || '',
+                funeralType: locationState?.funeralType || 'church',
+                deceasedImage: '',
+                funeralPicture: '',
+              }
+            });
+            
+            // 只有当数据库读取失败时才使用locationState中的canvasItems
+            if (locationState.canvasItems && Array.isArray(locationState.canvasItems)) {
+              setCanvasItems(locationState.canvasItems);
             }
-          });
+          } else {
+            // 如果locationState都没有，设置默认值
+            dispatch({
+              type: 'SET_ALL',
+              payload: {
+                name: 'New Funeral',
+                password: initialPassword,
+                backgroundImage: '',
+                funeralType: 'church',
+                deceasedImage: '',
+                funeralPicture: '',
+              }
+            });
+          }
         }
       } catch (error) {
         console.error('Error loading funeral room:', error);
@@ -427,32 +492,49 @@ const FuneralRoomPage: React.FC = () => {
   // Load images when component mounts
   useEffect(() => {
     // Preload all decoration images
+    const loadingPromises: Promise<void>[] = [];
+    
     decorationItems.forEach(item => {
-      if (item.image) {
-        const img = new Image();
-        img.src = item.image;
-        img.onload = () => {
-          setDecorationImages(prev => ({
-            ...prev,
-            [item.id]: img
-          }));
-        };
+      if (item.image && !decorationImages[item.id]) {
+        const promise = new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            setDecorationImages(prev => ({
+              ...prev,
+              [item.id]: img
+            }));
+            resolve();
+          };
+          img.onerror = () => {
+            console.error(`Failed to load decoration image: ${item.image}`);
+            reject();
+          };
+          img.src = item.image;
+        });
+        loadingPromises.push(promise);
       }
+    });
+    
+    // Wait for all images to load
+    Promise.allSettled(loadingPromises).then(() => {
+      console.log('All decoration images preloaded');
     });
   }, []);
   
   // Load or update item images when canvasItems changes
   useEffect(() => {
+    // 只处理那些没有加载过图片的项目
     canvasItems.forEach(item => {
-      if (item.image && !decorationImages[item.id.split('-')[0]]) {
+      const baseId = item.id.split('-')[0];
+      if (item.image && !decorationImages[baseId]) {
         const img = new Image();
-        img.src = item.image;
         img.onload = () => {
           setDecorationImages(prev => ({
             ...prev,
-            [item.id.split('-')[0]]: img
+            [baseId]: img
           }));
         };
+        img.src = item.image;
       }
     });
   }, [canvasItems, decorationImages]);
@@ -599,15 +681,44 @@ const FuneralRoomPage: React.FC = () => {
       value: '',
     });
     
-    // Save changes
-    handleSave();
+    // Auto-save the removal to database
+    if (roomId) {
+      console.log('Auto-saving deceased image removal to database...');
+      // Get current funeral room data with password if possible
+      getFuneralRoomById(roomId, state.password)
+        .then(existingRoom => {
+          if (existingRoom) {
+            const updatedRoom: FuneralRoom = {
+              ...existingRoom,
+              deceasedImage: '',
+              updatedAt: Date.now(),
+            };
+            
+            return saveFuneralRoom(updatedRoom);
+          }
+        })
+        .then(() => {
+          setSaveMessage('Deceased image removed successfully!');
+          
+          // Hide message after 3 seconds
+          setTimeout(() => {
+            setSaveMessage('');
+          }, 3000);
+        })
+        .catch(error => {
+          console.error('Error auto-saving deceased image removal:', error);
+          setUploadError('Failed to remove deceased image. Please try again.');
+        });
+    }
   };
   
   // Function to add a new item to the canvas
   const handleAddItem = (item: { id: string; color: string; name: string; image?: string; description?: string }) => {
-    // Adjust the position of the new item to be in the center of the canvas
+    // 使用canvasItems长度+id作为唯一标识，避免使用时间戳
+    // 这样即使刷新页面，只要item数量和顺序不变，id也不会变
+    const itemCount = canvasItems.filter(ci => ci.id.startsWith(item.id)).length;
     const newItem: CanvasItem = {
-      id: `${item.id}-${Date.now()}`,
+      id: `${item.id}-${itemCount + 1}`,
       x: canvasSize.width / 2,
       y: canvasSize.height / 2,
       width: DECORATION_ITEM_SIZE,
@@ -799,15 +910,13 @@ const FuneralRoomPage: React.FC = () => {
       layer.batchDraw();
     }
     
-    // Update state
+    // Update state with the new dimensions
     setCanvasItems(updatedItems);
     
-    // Auto-save the changes to the database
+    // 确保尺寸变化立即保存到数据库，避免刷新后丢失
     saveToDatabase(updatedItems).catch(err => 
       console.error('Error saving after transform:', err)
     );
-    
-    console.log(`Item ${id} transform completed: new size ${newWidth}x${newHeight}`);
   };
   
   // Function to remove a selected item with delete icon
@@ -933,8 +1042,9 @@ const FuneralRoomPage: React.FC = () => {
           funeralType: state.funeralType,
           backgroundImage: state.backgroundImage,
           deceasedImage: state.deceasedImage,
+          funeralPicture: state.funeralPicture,
           canvasItems: canvasItems,
-          canvasImage: canvasImage || funeralRoom.canvasImage, // Use new canvas image or keep existing one
+          canvasImage: canvasImage || funeralRoom.canvasImage,
           updatedAt: Date.now(),
         };
         
@@ -953,6 +1063,7 @@ const FuneralRoomPage: React.FC = () => {
           funeralType: state.funeralType,
           backgroundImage: state.backgroundImage,
           deceasedImage: state.deceasedImage,
+          funeralPicture: state.funeralPicture,
           canvasItems: canvasItems,
           canvasImage: canvasImage,
           createdAt: Date.now(),
@@ -1132,11 +1243,238 @@ const FuneralRoomPage: React.FC = () => {
     };
   }, [canvasItems, saveToDatabase, setLoadingItems, setDecorationImages]);
 
+  // Add a function to handle downloading the canvas as an image
+  const handleDownloadImage = () => {
+    if (!stageRef.current) return;
+    
+    try {
+      // Get the Konva Stage instance
+      const stage = stageRef.current;
+      
+      // Temporarily remove the transformer to avoid capturing it in the image
+      const transformer = transformerRef.current;
+      let nodes = [];
+      if (transformer) {
+        nodes = transformer.nodes();
+        transformer.nodes([]);
+        transformer.getLayer()?.batchDraw();
+      }
+      
+      try {
+        // Export the stage as a PNG image
+        const dataURL = stage.toDataURL({
+          pixelRatio: 2, // Higher quality
+          mimeType: 'image/png',
+          quality: 1 // Highest quality
+        });
+        
+        // Create a download link and trigger the download
+        const link = document.createElement('a');
+        link.download = `funeral-room-${roomId || 'image'}.png`;
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Image downloaded successfully');
+      } finally {
+        // Restore the transformer even if export fails
+        if (transformer && nodes.length > 0) {
+          transformer.nodes(nodes);
+          transformer.getLayer()?.batchDraw();
+        }
+      }
+    } catch (error) {
+      console.error('Error downloading image:', error);
+    }
+  };
+
+  // Function to handle funeral picture upload
+  const handleFuneralPictureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Reset any previous error
+    setFuneralPictureError(null);
+    
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file size (max 500MB)
+    const MAX_FUNERAL_PICTURE_SIZE = 500 * 1024 * 1024; // 500MB (same as deceased image)
+    if (file.size > MAX_FUNERAL_PICTURE_SIZE) {
+      setFuneralPictureError(`File size exceeds the limit of 500MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`);
+      return;
+    }
+    
+    // Create a FileReader to read the image file
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        // Instead of saving directly, set the image for cropping
+        setFuneralImageToCrop(event.target.result as string);
+        setShowFuneralPictureCrop(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Function to remove funeral picture
+  const handleRemoveFuneralPicture = () => {
+    // Update state
+    dispatch({
+      type: 'UPDATE_FIELD',
+      field: 'funeralPicture',
+      value: '',
+    });
+    
+    console.log('Funeral picture removed');
+    
+    // Optional: clear the file input
+    if (funeralPictureInputRef.current) {
+      funeralPictureInputRef.current.value = '';
+    }
+    
+    // Auto-save the removal to database
+    if (roomId) {
+      console.log('Auto-saving funeral picture removal to database...');
+      // Get current funeral room data with password if possible
+      getFuneralRoomById(roomId, state.password)
+        .then(existingRoom => {
+          if (existingRoom) {
+            const updatedRoom: FuneralRoom = {
+              ...existingRoom,
+              funeralPicture: '',
+              updatedAt: Date.now(),
+            };
+            
+            return saveFuneralRoom(updatedRoom);
+          }
+        })
+        .then(() => {
+          setSaveMessage('Funeral picture removed successfully!');
+          
+          // Hide message after 3 seconds
+          setTimeout(() => {
+            setSaveMessage('');
+          }, 3000);
+        })
+        .catch(error => {
+          console.error('Error auto-saving funeral picture removal:', error);
+        });
+    }
+  };
+
+  // Handle funeral picture crop complete event
+  const onFuneralPictureCropComplete = (
+    _croppedArea: { x: number; y: number; width: number; height: number },
+    croppedAreaPixels: { x: number; y: number; width: number; height: number }
+  ) => {
+    setFuneralCroppedAreaPixels(croppedAreaPixels);
+  };
+  
+  // Handle save cropped funeral picture
+  const handleSaveFuneralCroppedImage = useCallback(async () => {
+    if (!funeralImageToCrop || !funeralCroppedAreaPixels) {
+      console.error('Missing funeral image or crop area data');
+      return;
+    }
+    
+    try {
+      console.log('Cropping funeral image with parameters:', funeralCroppedAreaPixels);
+      
+      // Get the cropped image
+      const croppedImage = await getCroppedFuneralPicture(funeralImageToCrop, funeralCroppedAreaPixels);
+      console.log('Funeral image cropped successfully');
+      
+      // Update component state with the cropped image
+      dispatch({
+        type: 'UPDATE_FIELD',
+        field: 'funeralPicture',
+        value: croppedImage,
+      });
+      
+      // Save to database
+      if (roomId) {
+        console.log('Saving funeral picture to database...');
+        // Get current funeral room data with password if possible
+        const existingRoom = await getFuneralRoomById(roomId, state.password);
+        
+        const updatedRoom: FuneralRoom = existingRoom ? {
+          ...existingRoom,
+          funeralPicture: croppedImage,
+          updatedAt: Date.now(),
+        } : {
+          roomId,
+          password: state.password,
+          deceasedName: state.name,
+          funeralType: state.funeralType,
+          backgroundImage: state.backgroundImage,
+          deceasedImage: state.deceasedImage,
+          funeralPicture: croppedImage,
+          canvasItems: canvasItems,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        
+        saveFuneralRoom(updatedRoom);
+        setSaveMessage('Funeral picture saved successfully!');
+        
+        // Hide message after 3 seconds
+        setTimeout(() => {
+          setSaveMessage('');
+        }, 3000);
+      }
+      
+      // Reset cropping state
+      setShowFuneralPictureCrop(false);
+      setFuneralImageToCrop('');
+      console.log('Funeral picture crop process completed');
+    } catch (error) {
+      console.error('Error cropping funeral image:', error);
+      setFuneralPictureError('Failed to crop funeral image. Please try again.');
+    }
+  }, [funeralImageToCrop, funeralCroppedAreaPixels, roomId, state, canvasItems, dispatch, setShowFuneralPictureCrop, setFuneralImageToCrop, setSaveMessage, setFuneralPictureError]);
+  
+  // Cancel funeral picture cropping
+  const handleCancelFuneralPictureCrop = useCallback(() => {
+    setShowFuneralPictureCrop(false);
+    setFuneralImageToCrop('');
+  }, [setShowFuneralPictureCrop, setFuneralImageToCrop]);
+  
+  // Handle re-upload funeral picture (triggers file input click)
+  const handleReuploadFuneralPicture = useCallback(() => {
+    // Reset states
+    setFuneralImageToCrop('');
+    setFuneralCroppedAreaPixels(null);
+    
+    // Trigger file input click to select a new file
+    if (funeralPictureInputRef.current) {
+      funeralPictureInputRef.current.value = '';
+      funeralPictureInputRef.current.click();
+    }
+  }, []);
+
+  // Add a keyboard listener for Enter key to confirm crop when funeral picture cropping modal is open
+  useEffect(() => {
+    if (!showFuneralPictureCrop) return;
+    
+    const handleFuneralPictureCropKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSaveFuneralCroppedImage();
+      } else if (e.key === 'Escape') {
+        handleCancelFuneralPictureCrop();
+      }
+    };
+    
+    window.addEventListener('keydown', handleFuneralPictureCropKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleFuneralPictureCropKeyDown);
+    };
+  }, [showFuneralPictureCrop, handleSaveFuneralCroppedImage, handleCancelFuneralPictureCrop]);
+
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Image Cropping Modal
+  // Image Cropping Modal for Deceased Image
   if (showCrop && imageToCrop) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -1158,6 +1496,36 @@ const FuneralRoomPage: React.FC = () => {
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropComplete}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Image Cropping Modal for Funeral Picture
+  if (showFuneralPictureCrop && funeralImageToCrop) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+        {/* The explanatory text on the right */}
+        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-50">
+          <div className="border-2 border-blue-500 rounded-lg p-6 bg-white shadow-lg text-center font-bold text-lg text-blue-700">
+            Press <span className="text-blue-600">enter</span> to save<br/>
+            and <span className="text-gray-600">esc</span> to exit!
+          </div>
+        </div>
+        {/* Crop pop-up window (without title and description) */}
+        <div className="bg-white rounded-lg p-6 w-full max-w-4xl relative">
+          <h3 className="text-xl font-bold mb-4 text-center">Crop Funeral Picture</h3>
+          <div className="w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
+            <Cropper
+              image={funeralImageToCrop}
+              crop={funeralCrop}
+              zoom={funeralZoom}
+              aspect={16/9} // 16:9 ratio for rectangular crop
+              onCropChange={setFuneralCrop}
+              onZoomChange={setFuneralZoom}
+              onCropComplete={onFuneralPictureCropComplete}
             />
           </div>
         </div>
@@ -1209,10 +1577,10 @@ const FuneralRoomPage: React.FC = () => {
               <p className="text-gray-700 mb-2 text-center">Room ID: <span className="font-semibold">{roomId}</span></p>
               <p className="text-gray-600 text-center">Do you want to go back to the funeral hall?</p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="mt-6 text-center flex justify-center space-x-4">
               <button
                 onClick={() => setIsConfirmOpen(false)}
-                className="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded"
               >
                 Continue Editing
               </button>
@@ -1221,7 +1589,7 @@ const FuneralRoomPage: React.FC = () => {
                   setIsConfirmOpen(false);
                   navigate('/funeralhall');
                 }}
-                className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="bg-blue-500 text-white px-4 py-2 rounded"
               >
                 Go to Hall
               </button>
@@ -1329,7 +1697,86 @@ const FuneralRoomPage: React.FC = () => {
               </div>
             </div>
             
-            {/* 3. Canvas (Drawing Board) at the bottom with 16:9 aspect ratio */}
+            {/* 3. Funeral Picture Upload Section */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-4">Custom Funeral Room Image</h2>
+              <div className="text-center text-gray-500 py-2 mb-4">
+                <p>Upload a custom 16:9 image that represents this funeral room. This image can be used in the hall display.</p>
+              </div>
+              <div className="flex flex-col md:flex-row items-center mb-4">
+                {/* Left side: Display the funeral picture or placeholder */}
+                <div className="mb-4 md:mb-0 md:mr-8">
+                  {state.funeralPicture ? (
+                    <div className="relative">
+                      <img 
+                        src={state.funeralPicture} 
+                        alt="Funeral Picture"
+                        className="object-contain rounded-lg border-2 border-gray-300"
+                        style={{ 
+                          width: `${FUNERAL_PICTURE_WIDTH}px`, 
+                          height: `${FUNERAL_PICTURE_HEIGHT}px`,
+                          backgroundColor: '#f1f1f1'
+                        }}
+                      />
+                      <button
+                        onClick={handleRemoveFuneralPicture}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                        title="Remove picture"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div 
+                      className="bg-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center text-gray-400"
+                      style={{ 
+                        width: `${FUNERAL_PICTURE_WIDTH}px`, 
+                        height: `${FUNERAL_PICTURE_HEIGHT}px`
+                      }}
+                    >
+                      <span>No custom room image (16:9)</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right side: Upload controls */}
+                <div className="flex-1">
+                  <div className="mb-4">
+                    <p className="text-gray-700">
+                      Upload a custom image for this funeral room to be displayed in the memorial hall.
+                      Images will be resized to fit a 16:9 aspect ratio without cropping.
+                    </p>
+                  </div>
+                  
+                  {/* Upload picture section */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFuneralPictureUpload}
+                      ref={funeralPictureInputRef}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => funeralPictureInputRef.current?.click()}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    >
+                      {state.funeralPicture ? 'Change Room Image' : 'Upload Room Image'}
+                    </button>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Maximum size: 500MB
+                    </p>
+                    
+                    {/* Error message for file size */}
+                    {funeralPictureError && (
+                      <p className="text-red-500 text-sm mt-1">{funeralPictureError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* 4. Canvas (Drawing Board) at the bottom with 16:9 aspect ratio */}
             <div className="mb-6">
               <h2 className="text-2xl font-bold mb-4">Let the farewell bloom</h2>
               <div className="text-center text-gray-500 py-2">
@@ -1416,6 +1863,8 @@ const FuneralRoomPage: React.FC = () => {
                                   y={item.y}
                                   width={item.width}
                                   height={item.height}
+                                  scaleX={1} // 确保初始scale为1
+                                  scaleY={1} // 确保初始scale为1
                                   draggable={true}
                                   onMouseEnter={(e) => {
                                     const container = e.target.getStage()?.container();
@@ -1612,16 +2061,16 @@ const FuneralRoomPage: React.FC = () => {
                         resizeEnabled={true}
                         ignoreStroke={false}
                         centeredScaling={false}
-                        anchorDragBoundFunc={(oldPos, newPos, e) => {
-                          // Snap to grid for more precise control
-                          return {
-                            x: Math.round(newPos.x / 5) * 5,
-                            y: Math.round(newPos.y / 5) * 5
-                          };
-                        }}
+                        // 移除anchorDragBoundFunc以避免可能的干扰
+                        // anchorDragBoundFunc={(oldPos, newPos, e) => {
+                        //   // Snap to grid for more precise control
+                        //   return {
+                        //     x: Math.round(newPos.x / 5) * 5,
+                        //     y: Math.round(newPos.y / 5) * 5
+                        //   };
+                        // }}
                         // Make sure we capture events properly
                         onClick={(e) => e.cancelBubble = true}
-                        onTap={(e) => e.cancelBubble = true}
                       />
                     </Layer>
                   </Stage>
@@ -1630,13 +2079,18 @@ const FuneralRoomPage: React.FC = () => {
             </div>
             
             {/* Save Button */}
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center flex justify-center space-x-4">
               <button
-                onClick={handleSave}
-                disabled={isSaving}
+                onClick={handleDownloadImage}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Download to Local
+              </button>
+              <button
+                onClick={() => navigate('/funeralhall')}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
               >
-                {isSaving ? 'Saving...' : 'Save Room'}
+                Go to Hall
               </button>
             </div>
           </div>

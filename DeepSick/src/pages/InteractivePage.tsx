@@ -89,7 +89,8 @@ const convertToRoomData = (funeralRoom: FuneralRoom) => {
     funeralType: funeralRoom.funeralType,
     backgroundImage: funeralRoom.backgroundImage,
     name: funeralRoom.deceasedName,
-    deceasedImage: funeralRoom.deceasedImage
+    deceasedImage: funeralRoom.deceasedImage,
+    funeralPicture: funeralRoom.funeralPicture
   };
 };
 
@@ -330,6 +331,18 @@ const InteractivePage: React.FC = () => {
               <h1 className="hero-name">{(currentRoom as any).deceasedName || (currentRoom as any).name}</h1>
               <p className="hero-subtitle">Room ID: {currentRoom.roomId}</p>
             </div>
+            
+            {/* Funeral Picture Display */}
+            {currentRoom.funeralPicture && (
+              <div className="funeral-picture-container">
+                <h3 className="funeral-picture-title">Funeral Room Picture</h3>
+                <img 
+                  src={currentRoom.funeralPicture} 
+                  alt="Funeral Room" 
+                  className="funeral-picture-image"
+                />
+              </div>
+            )}
           </section>
 
           {/* Interactive function area - Now includes a drawing board and a music player */}

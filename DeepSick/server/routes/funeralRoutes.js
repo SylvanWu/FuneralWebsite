@@ -23,7 +23,7 @@ router.get('/rooms', async(req, res) => {
 
         // Find all funeral rooms and select only necessary fields
         const funerals = await Funeral.find({})
-            .select('stringId deceasedName sceneType deceasedImage createdAt updatedAt')
+            .select('stringId deceasedName sceneType deceasedImage funeralPicture createdAt updatedAt')
             .sort({ createdAt: -1 });
 
         console.log(`Found ${funerals.length} funeral rooms`);
@@ -92,6 +92,7 @@ router.post('/room', async(req, res) => {
             funeralType,
             backgroundImage,
             deceasedImage,
+            funeralPicture,
             canvasItems
         } = req.body;
 
@@ -157,6 +158,10 @@ router.post('/room', async(req, res) => {
                 funeral.deceasedImage = deceasedImage;
             }
 
+            if (funeralPicture !== undefined) {
+                funeral.funeralPicture = funeralPicture;
+            }
+
             if (canvasItems !== undefined) {
                 funeral.canvasItems = canvasItems;
             }
@@ -171,6 +176,7 @@ router.post('/room', async(req, res) => {
                 deceasedName,
                 backgroundImage,
                 deceasedImage,
+                funeralPicture,
                 canvasItems: canvasItems || []
             });
         }
@@ -183,6 +189,7 @@ router.post('/room', async(req, res) => {
             funeralType: funeral.sceneType,
             backgroundImage: funeral.backgroundImage,
             deceasedImage: funeral.deceasedImage,
+            funeralPicture: funeral.funeralPicture,
             canvasItems: funeral.canvasItems,
             createdAt: funeral.createdAt,
             updatedAt: funeral.updatedAt
@@ -361,6 +368,7 @@ router.patch('/room/:roomId', async(req, res) => {
 
         if (updates.backgroundImage !== undefined) funeral.backgroundImage = updates.backgroundImage;
         if (updates.deceasedImage !== undefined) funeral.deceasedImage = updates.deceasedImage;
+        if (updates.funeralPicture !== undefined) funeral.funeralPicture = updates.funeralPicture;
         if (updates.password !== undefined) funeral.password = updates.password;
 
         await funeral.save();
@@ -372,6 +380,7 @@ router.patch('/room/:roomId', async(req, res) => {
             sceneType: funeral.sceneType,
             backgroundImage: funeral.backgroundImage,
             deceasedImage: funeral.deceasedImage,
+            funeralPicture: funeral.funeralPicture,
             password: funeral.password,
             createdAt: funeral.createdAt,
             updatedAt: funeral.updatedAt

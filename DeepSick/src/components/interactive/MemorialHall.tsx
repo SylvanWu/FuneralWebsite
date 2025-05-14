@@ -253,6 +253,33 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
 
   return (
     <div className="memorial-hall-container">
+      {/* Display deceased image and funeral picture if available */}
+      {(roomData.deceasedImage || roomData.funeralPicture) && (
+        <div className="memorial-hall-images">
+          {roomData.deceasedImage && (
+            <div className="deceased-image-section">
+              <h3 className="image-section-title">Deceased Image</h3>
+              <img 
+                src={roomData.deceasedImage} 
+                alt={roomData.name}
+                className="deceased-image"
+              />
+            </div>
+          )}
+          
+          {roomData.funeralPicture && (
+            <div className="funeral-picture-section">
+              <h3 className="image-section-title">Funeral Room Picture</h3>
+              <img 
+                src={roomData.funeralPicture} 
+                alt="Funeral Room"
+                className="funeral-picture"
+              />
+            </div>
+          )}
+        </div>
+      )}
+      
       {/* Upload the area and user information */}
       <div className="memorial-hall-header">
         <div className="upload-section">

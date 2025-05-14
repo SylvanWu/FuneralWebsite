@@ -104,6 +104,9 @@ const funeralSchema = new mongoose.Schema({
     deceasedImage: {
         type: String
     },
+    funeralPicture: {
+        type: String
+    },
     backgroundImage: {
         type: String
     },

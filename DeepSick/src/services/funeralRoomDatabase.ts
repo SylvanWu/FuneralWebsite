@@ -19,6 +19,7 @@ export interface FuneralRoom {
   funeralType: string;
   backgroundImage: string;
   deceasedImage?: string;
+  funeralPicture?: string; // Base64 encoded image of the funeral creation (16:9 ratio)
   canvasItems?: any[]; // For storing items on the canvas
   canvasImage?: string; // Base64 encoded PNG image of the canvas
   isOrganizer?: boolean;
@@ -96,6 +97,7 @@ export const getAllFuneralRooms = async (): Promise<FuneralRoom[]> => {
         funeralType: funeralType,
         backgroundImage: room.backgroundImage || '',
         deceasedImage: room.deceasedImage || '',
+        funeralPicture: room.funeralPicture || '',
         canvasItems: room.canvasItems || [],
         createdAt: new Date(room.createdAt || Date.now()).getTime(),
         updatedAt: new Date(room.updatedAt || Date.now()).getTime(),
@@ -139,7 +141,9 @@ export const saveFuneralRoom = async (room: FuneralRoom): Promise<FuneralRoom> =
       funeralType: sceneType,
       backgroundImage: room.backgroundImage,
       deceasedImage: room.deceasedImage,
+      funeralPicture: room.funeralPicture,
       canvasItems: room.canvasItems,
+      canvasImage: room.canvasImage,
     }, axiosConfig);
     
     return response.data;
@@ -195,6 +199,7 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
       funeralType: funeralType,
       backgroundImage: data.backgroundImage || '',
       deceasedImage: data.deceasedImage || '',
+      funeralPicture: data.funeralPicture || '',
       canvasItems: data.canvasItems || [],
       canvasImage: data.canvasImage || '',
       isOrganizer: data.isOrganizer || false,
@@ -330,6 +335,7 @@ export const editFuneralRoom = async (roomId: string, password: string, updates:
       funeralType: funeralType,
       backgroundImage: data.backgroundImage || '',
       deceasedImage: data.deceasedImage || '',
+      funeralPicture: data.funeralPicture || '',
       canvasItems: data.canvasItems || [],
       canvasImage: data.canvasImage || '',
       createdAt: new Date(data.createdAt).getTime(),
@@ -385,6 +391,7 @@ export const getMockFuneralRooms = (): FuneralRoom[] => {
       funeralType: 'church',
       backgroundImage: '',
       deceasedImage: '',
+      funeralPicture: '',
       canvasItems: [],
       canvasImage: '',
       createdAt: Date.now(),
@@ -397,6 +404,7 @@ export const getMockFuneralRooms = (): FuneralRoom[] => {
       funeralType: 'garden',
       backgroundImage: '',
       deceasedImage: '',
+      funeralPicture: '',
       canvasItems: [],
       canvasImage: '',
       createdAt: Date.now(),
@@ -409,6 +417,7 @@ export const getMockFuneralRooms = (): FuneralRoom[] => {
       funeralType: 'forest',
       backgroundImage: '',
       deceasedImage: '',
+      funeralPicture: '',
       canvasItems: [],
       canvasImage: '',
       createdAt: Date.now(),
