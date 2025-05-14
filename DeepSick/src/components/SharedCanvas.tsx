@@ -123,11 +123,37 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
   const [newCanvasName, setNewCanvasName] = useState('');
   const reconnectAttemptsRef = useRef(0);
 
-  // Update drawings when it changes
+  // 保存画布状态到本地存储
+  const saveCanvasState = useCallback(() => {
+    if (drawings.length > 0) {
+      try {
+        localStorage.setItem(`canvas_${roomId}_${currentCanvasId}`, JSON.stringify(drawings));
+      } catch (err) {
+        console.error('Failed to save canvas state to localStorage:', err);
+      }
+    }
+  }, [drawings, roomId, currentCanvasId]);
+
+  // 从本地存储恢复画布状态
+  const restoreCanvasState = useCallback(() => {
+    try {
+      const savedState = localStorage.getItem(`canvas_${roomId}_${currentCanvasId}`);
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        updateDrawings(parsedState);
+        redrawCanvas(parsedState);
+      }
+    } catch (err) {
+      console.error('Failed to restore canvas state from localStorage:', err);
+    }
+  }, [roomId, currentCanvasId]);
+
+  // 更新 drawings 时保存到本地存储
   const updateDrawings = useCallback((newDrawings: DrawingData[]) => {
     setDrawings(newDrawings);
     drawingsRef.current = newDrawings;
-  }, []);
+    saveCanvasState();
+  }, [saveCanvasState]);
 
   // Initialize canvas
   const initCanvas = useCallback(() => {
@@ -202,20 +228,41 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
   // Initialize socket connection and event listeners
   useEffect(() => {
     if (socket) {
-      // Join the room
-      socket.emit('joinRoom', roomId);
+      // 监听重连事件
+      socket.on('reconnect', () => {
+        console.log('Socket reconnected, restoring canvas state...');
+        setIsConnected(true);
+        // 重新加入房间
+        socket.emit('joinRoom', roomId);
+        // 请求当前画布状态
+        socket.emit('selectCanvas', { roomId, canvasId: currentCanvasId });
+        // 尝试从本地存储恢复状态
+        restoreCanvasState();
+      });
 
-      // Set up event listeners
+      // 监听连接状态
+      socket.on('connect', () => {
+        console.log('Socket connected');
+        setIsConnected(true);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Socket disconnected');
+        setIsConnected(false);
+      });
+
+      // 监听画布状态更新
       socket.on('canvasStates', (states: CanvasStates) => {
         try {
           console.log('Received canvas states:', states);
           setCanvasList(Object.keys(states));
           if (states[currentCanvasId]) {
             redrawCanvas(states[currentCanvasId].drawings);
+            updateDrawings(states[currentCanvasId].drawings);
           }
         } catch (err) {
-          console.error('Failed to redraw canvas:', err);
-          setError('Failed to redraw canvas. Please refresh the page.');
+          console.error('Failed to handle canvas states:', err);
+          setError('Failed to update canvas. Please try refreshing the page.');
         }
       });
 
@@ -267,15 +314,18 @@ const SharedCanvas: React.FC<SharedCanvasProps> = ({ roomId }) => {
           redrawCanvas(newDrawings);
         }
       });
-    }
 
-    return () => {
-      if (socket) {
-        socket.removeAllListeners();
-      }
-      window.removeEventListener('resize', calculateScale);
-    };
-  }, [initCanvas, calculateScale, socket, currentCanvasId, redrawCanvas, updateDrawings, roomId]);
+      // 组件挂载时尝试恢复状态
+      restoreCanvasState();
+
+      return () => {
+        if (socket) {
+          socket.removeAllListeners();
+        }
+        window.removeEventListener('resize', calculateScale);
+      };
+    }
+  }, [socket, roomId, currentCanvasId, restoreCanvasState, updateDrawings]);
 
   const drawOnCanvas = (data: DrawingData) => {
     const canvas = canvasRef.current;
