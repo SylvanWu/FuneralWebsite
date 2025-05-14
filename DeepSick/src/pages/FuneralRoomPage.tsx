@@ -13,20 +13,20 @@ import { VectorToolbar, VectorItem } from '../components/VectorToolbar';
 import './FuneralRoomPage.css'; // Import CSS file
 
 // Import background images for direct reference
-import churchImage from '../assets/funeral type/church funeral.png';
-import gardenImage from '../assets/funeral type/garden funeral.png';
-import forestImage from '../assets/funeral type/forest funeral.png';
-import seasideImage from '../assets/funeral type/seaside funeral.png';
-import starryNightImage from '../assets/funeral type/Starry Night Funeral.png';
-import chineseTraditionalImage from '../assets/funeral type/Chinese traditional funeral.png';
+import churchImage from '../assets/funeralType/churchFuneral.png';
+import gardenImage from '../assets/funeralType/gardenFuneral.png';
+import forestImage from '../assets/funeralType/forestFuneral.png';
+import seasideImage from '../assets/funeralType/seasideFuneral.png';
+import starryNightImage from '../assets/funeralType/starryNightFuneral.png';
+import chineseTraditionalImage from '../assets/funeralType/chineseTraditionalFuneral.png';
 
 // Import decoration images
-import chocolateImage from '../assets/small picture/chocolate.png';
-import milkImage from '../assets/small picture/milk.png';
-import strawberryMilkImage from '../assets/small picture/streberry milk.png';
-import blueFlowerImage from '../assets/small picture/blue flower.png';
-import redTreeImage from '../assets/small picture/red tree.png';
-import bianfuImage from '../assets/small picture/bianfu.png';
+import chocolateImage from '../assets/smallPicture/chocolate.png';
+import milkImage from '../assets/smallPicture/milk.png';
+import strawberryMilkImage from '../assets/smallPicture/streberryMilk.png';
+import blueFlowerImage from '../assets/smallPicture/blueFlower.png';
+import redTreeImage from '../assets/smallPicture/redTree.png';
+import bianfuImage from '../assets/smallPicture/bianfu.png';
 
 // Background image mapping for fallback or replacement
 const backgroundImageMap: Record<string, string> = {

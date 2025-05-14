@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FuneralRoom } from '../../services/funeralRoomDatabase';
 import './RoomList.css';
+import { useNavigate } from 'react-router-dom';
 
 // Background image mapping
-import churchImage from '../../assets/funeral type/church funeral.png';
-import gardenImage from '../../assets/funeral type/garden funeral.png';
-import forestImage from '../../assets/funeral type/forest funeral.png';
-import seasideImage from '../../assets/funeral type/seaside funeral.png';
-import starryNightImage from '../../assets/funeral type/Starry Night Funeral.png';
-import chineseTraditionalImage from '../../assets/funeral type/Chinese traditional funeral.png';
+import churchImage from '../../assets/funeralType/churchFuneral.png';
+import gardenImage from '../../assets/funeralType/gardenFuneral.png';
+import forestImage from '../../assets/funeralType/forestFuneral.png';
+import seasideImage from '../../assets/funeralType/seasideFuneral.png';
+import starryNightImage from '../../assets/funeralType/starryNightFuneral.png';
+import chineseTraditionalImage from '../../assets/funeralType/chineseTraditionalFuneral.png';
 
 const backgroundImageMap: Record<string, string> = {
   'church': churchImage,
