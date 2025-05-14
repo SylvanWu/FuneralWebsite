@@ -13,19 +13,19 @@ import { VectorToolbar, VectorItem } from '../components/VectorToolbar';
 import './FuneralRoomPage.css'; // Import CSS file
 
 // Import background images for direct reference
-import churchImage from '../assets/funeralType/church funeral.png';
-import gardenImage from '../assets/funeralType/garden funeral.png';
-import forestImage from '../assets/funeralType/forest funeral.png';
-import seasideImage from '../assets/funeralType/seaside funeral.png';
-import starryNightImage from '../assets/funeralType/Starry Night Funeral.png';
-import chineseTraditionalImage from '../assets/funeralType/Chinese traditional funeral.png';
+import churchImage from '../assets/funeralType/churchFuneral.png';
+import gardenImage from '../assets/funeralType/gardenFuneral.png';
+import forestImage from '../assets/funeralType/forestFuneral.png';
+import seasideImage from '../assets/funeralType/seasideFuneral.png';
+import starryNightImage from '../assets/funeralType/starryNightFuneral.png';
+import chineseTraditionalImage from '../assets/funeralType/chineseTraditionalFuneral.png';
 
 // Import decoration images
 import chocolateImage from '../assets/smallPicture/chocolate.png';
 import milkImage from '../assets/smallPicture/milk.png';
-import strawberryMilkImage from '../assets/smallPicture/streberry milk.png';
-import blueFlowerImage from '../assets/smallPicture/blue flower.png';
-import redTreeImage from '../assets/smallPicture/red tree.png';
+import strawberryMilkImage from '../assets/smallPicture/streberryMilk.png';
+import blueFlowerImage from '../assets/smallPicture/blueFlower.png';
+import redTreeImage from '../assets/smallPicture/redTree.png';
 import bianfuImage from '../assets/smallPicture/bianfu.png';
 
 // Background image mapping for fallback or replacement

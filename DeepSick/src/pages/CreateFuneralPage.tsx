@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FuneralProvider } from '../context/FuneralContext';
 import { useNavigate } from 'react-router-dom';
-import funeralCreationBg from '../assets/funeral creation.png';
+import funeralCreationBg from '../assets/funeralCreation.png';
 // Map funeral types to their respective background images
-import churchImage from '../assets/funeralType/church funeral.png';
-import gardenImage from '../assets/funeralType/garden funeral.png';
-import forestImage from '../assets/funeralType/forest funeral.png';
-import seasideImage from '../assets/funeralType/seaside funeral.png';
-import starryNightImage from '../assets/funeralType/Starry Night Funeral.png';
-import chineseTraditionalImage from '../assets/funeralType/Chinese traditional funeral.png';
+import churchImage from '../assets/funeralType/churchFuneral.png';
+import gardenImage from '../assets/funeralType/gardenFuneral.png';
+import forestImage from '../assets/funeralType/forestFuneral.png';
+import seasideImage from '../assets/funeralType/seasideFuneral.png';
+import starryNightImage from '../assets/funeralType/starryNightFuneral.png';
+import chineseTraditionalImage from '../assets/funeralType/chineseTraditionalFuneral.png';
 import { saveFuneralRoom, FuneralRoom } from '../services/funeralRoomDatabase';
 
 // Mapping funeral types to their background images
