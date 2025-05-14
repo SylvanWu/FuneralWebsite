@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import homeVideo from '../assets/Home.mp4';
-import Firework from '../components/effects/PixelExplosion';
+import Firework from '../components/effects/Firework';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
