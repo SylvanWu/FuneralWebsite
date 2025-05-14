@@ -9,7 +9,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "node server/index.js",
-    "dev:server": "nodemon server/index.js"
+    "dev:server": "nodemon server/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "cypress open",
+    "test:e2e:headless": "cypress run",
+    "test:api": "vitest run server/tests"
   },
   "dependencies": {
     "@tiptap/core": "^2.12.0",
@@ -42,22 +48,30 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^15.0.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/history": "^4.7.11",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-jsx": "^2.2.9",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^1.4.0",
     "autoprefixer": "^10.4.21",
+    "cypress": "^13.8.1",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "jsdom": "^24.0.0",
     "nodemon": "^3.1.0",
     "postcss": "^8.5.3",
+    "supertest": "^6.3.4",
     "tailwindcss": "^4.1.4",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vitest": "^1.4.0"
   }
 }
