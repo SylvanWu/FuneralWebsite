@@ -210,6 +210,9 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
 
     return result;
   } catch (error: any) {
+    if (error?.response?.status === 404) {
+      return null;
+    }
     console.error('Error getting funeral room:', error);
     console.error('Error details:', {
       message: error.message,
@@ -217,7 +220,7 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
       data: error.response?.data,
       roomId
     });
-    return null;
+    throw error;
   }
 };
 

@@ -326,8 +326,10 @@ const InteractivePage: React.FC = () => {
                 className="hero-image"
               />
             </div>
-            <h1 className="hero-name">{currentRoom.deceasedName}</h1>
-            <p className="hero-subtitle">Room ID: {currentRoom.roomId}</p>
+            <div className="hero-info">
+              <h1 className="hero-name">{(currentRoom as any).deceasedName || (currentRoom as any).name}</h1>
+              <p className="hero-subtitle">Room ID: {currentRoom.roomId}</p>
+            </div>
           </section>
 
           {/* Interactive function area - Now includes a drawing board and a music player */}

@@ -82,7 +82,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ roomId, userId, username }) =>
   const restoreMessages = useCallback(() => {
     try {
       const savedMessages = localStorage.getItem(`chat_${roomId}`);
-      if (savedMessages) {
+      if (savedMessages && savedMessages !== "undefined") {
         const parsedMessages = JSON.parse(savedMessages);
         setMessages(parsedMessages);
       }
