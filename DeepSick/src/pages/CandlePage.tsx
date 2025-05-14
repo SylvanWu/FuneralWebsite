@@ -1,11 +1,13 @@
 // src/pages/CandlePage.tsx
-// Dedicated page for "Light a Candle" interaction with user history
+// Page component for the "Light a Candle" memorial interaction feature
+// Allows visitors to light virtual candles and view candle lighting history
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 import './InteractivePage.css'
+import { getFuneralRoomById } from '../services/funeralRoomDatabase';
 
 // Get server URL from environment variable or use default
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
@@ -23,6 +25,7 @@ interface RoomData {
   backgroundImage: string;
   name: string;
   deceasedImage?: string;
+  deceasedName?: string;
 }
 
 interface Candle {
@@ -33,10 +36,11 @@ interface Candle {
 const CandlePage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { roomId } = useParams<{ roomId: string }>();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   
   // Candle states
-  const [candles, setCandles] = useState<Candle[]>(Array.from({ length: 48 }, (_, i) => ({ 
+  const [candles, setCandles] = useState<Candle[]>(Array.from({ length: 54 }, (_, i) => ({ 
     id: i + 1, 
     isLit: false 
   })));
@@ -46,16 +50,48 @@ const CandlePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // Get room data from location state
+  // Get room data from location state or fetch it
   useEffect(() => {
-    const state = location.state as RoomData;
-    if (state) {
-      setRoomData(state);
-    } else {
-      // If no room data, redirect to funeral hall
-      navigate('/funeralhall');
-    }
-  }, [location, navigate]);
+    const loadRoomData = async () => {
+      try {
+        // First try to get from location state
+        const state = location.state as RoomData;
+        if (state && state.roomId) {
+          setRoomData(state);
+          return;
+        }
+
+        // If no state and no roomId, redirect to funeral hall
+        if (!roomId) {
+          navigate('/funeralhall');
+          return;
+        }
+
+        // Fetch room data using roomId
+        const fetchedRoom = await getFuneralRoomById(roomId);
+        if (fetchedRoom) {
+          setRoomData({
+            roomId: fetchedRoom.roomId,
+            password: fetchedRoom.password || '',
+            funeralType: fetchedRoom.funeralType,
+            backgroundImage: fetchedRoom.backgroundImage,
+            name: fetchedRoom.deceasedName,
+            deceasedName: fetchedRoom.deceasedName,
+            deceasedImage: fetchedRoom.deceasedImage
+          });
+        } else {
+          setError('Room not found');
+          navigate('/funeralhall');
+        }
+      } catch (err) {
+        console.error('Error loading room data:', err);
+        setError('Failed to load room data');
+        navigate('/funeralhall');
+      }
+    };
+
+    loadRoomData();
+  }, [location, navigate, roomId]);
 
   // Fetch history records and lit candles
   useEffect(() => {
@@ -137,17 +173,17 @@ const CandlePage: React.FC = () => {
       <section className="hero-section">
         <img 
           src={roomData.deceasedImage || roomData.backgroundImage} 
-          alt={roomData.name} 
+          alt={roomData.deceasedName || roomData.name} 
           className="hero-image" 
         />
-        <h1 className="hero-name">{roomData.name}</h1>
+        <h1 className="hero-name">{roomData.deceasedName || roomData.name}</h1>
         <p className="hero-subtitle">Room ID: {roomData.roomId}</p>
       </section>
 
       {/* Title Section */}
       <section className="hero-section">
         <h1 className="hero-name">Light a Candle</h1>
-        <p className="hero-subtitle">Light a candle in memory</p>
+        <p className="hero-subtitle">Start by choosing a candle and leaving your name below</p>
       </section>
 
       {/* Candles Grid */}

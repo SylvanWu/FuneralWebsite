@@ -34,7 +34,7 @@ import ProfilePage from './pages/ProfilePage';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
 
-import DreamEditor from './components/DreamList/DreamEditor';  // 编辑页面组件
+import DreamEditor from './components/DreamList/DreamEditor';  // Dream Editor component
 
 import './App.css';
 import { SocketProvider } from './context/SocketContext';
@@ -127,15 +127,18 @@ export default function App() {
             <Route path="/funeralhall" element={<FuneralRoomHallPage />} />
             <Route path="/interactive" element={<InteractivePage />} />
             <Route path="/interactive/:roomId" element={<InteractivePage />} />
+            <Route path="/candle/:roomId" element={<CandlePage />} />
             <Route path="/candle" element={<CandlePage />} />
+            <Route path="/flower/:roomId" element={<FlowerPage />} />
             <Route path="/flower" element={<FlowerPage />} />
+            <Route path="/message/:roomId" element={<MessagePage />} />
             <Route path="/message" element={<MessagePage />} />
             <Route path="/create-funeral" element={<CreateFuneralPage />} />
             <Route path="/funeral-room/:roomId" element={<FuneralRoomPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            {/* 编辑页面的路由，路径包含 roomId 参数 */}
+            {/* Route for editing page with roomId parameter */}
             <Route path="/interactive/:roomId/edit" element={<DreamEditor />} />
-            {/* 房间列表页面的路由 */}
+            {/* Route for room list page */}
             <Route path="/interactive/:roomId" element={<DreamList />} />
 
             {/* Room placeholder page */}
@@ -160,7 +163,6 @@ export default function App() {
               }
             />
             <Route
-              // path="/dreamlist"
               path="/dreamlist/:roomId"
               element={
                 <RoleProtected userType="organizer">

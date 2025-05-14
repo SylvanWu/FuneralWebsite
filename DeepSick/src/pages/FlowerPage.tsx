@@ -1,11 +1,13 @@
 // src/pages/FlowerPage.tsx
-// Dedicated page for "Lay Flowers" interaction with user history
+// Page component for the "Lay Flowers" memorial interaction feature
+// Allows visitors to offer virtual flowers and view flower offering history
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 import './InteractivePage.css';
+import { getFuneralRoomById } from '../services/funeralRoomDatabase';
 
 // Get server URL from environment variable or use default
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
@@ -23,11 +25,13 @@ interface RoomData {
   backgroundImage: string;
   name: string;
   deceasedImage?: string;
+  deceasedName?: string;
 }
 
 interface FlowerDisplay {
   id: number;
   isVisible: boolean;
+  flowerType?: string;
 }
 
 const FLOWER_TYPES = ['🌹', '🌷', '🌺', '🌸', '🌼', '💐'];
@@ -35,6 +39,7 @@ const FLOWER_TYPES = ['🌹', '🌷', '🌺', '🌸', '🌼', '💐'];
 const FlowerPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { roomId } = useParams<{ roomId: string }>();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   
   // States for flowers display and records
@@ -43,21 +48,53 @@ const FlowerPage: React.FC = () => {
   );
   const [totalFlowers, setTotalFlowers] = useState<number>(0);
   const [username, setUsername] = useState<string>('');
-  const [selectedFlower, setSelectedFlower] = useState<string>('');
   const [records, setRecords] = useState<FlowerRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [displayedFlowers, setDisplayedFlowers] = useState<FlowerDisplay[]>([]);
 
-  // Get room data from location state
+  // Get room data from location state or fetch it
   useEffect(() => {
-    const state = location.state as RoomData;
-    if (state) {
-      setRoomData(state);
-    } else {
-      // If no room data, redirect to funeral hall
-      navigate('/funeralhall');
-    }
-  }, [location, navigate]);
+    const loadRoomData = async () => {
+      try {
+        // First try to get from location state
+        const state = location.state as RoomData;
+        if (state && state.roomId) {
+          setRoomData(state);
+          return;
+        }
+
+        // If no state and no roomId, redirect to funeral hall
+        if (!roomId) {
+          navigate('/funeralhall');
+          return;
+        }
+
+        // Fetch room data using roomId
+        const fetchedRoom = await getFuneralRoomById(roomId);
+        if (fetchedRoom) {
+          setRoomData({
+            roomId: fetchedRoom.roomId,
+            password: fetchedRoom.password || '',
+            funeralType: fetchedRoom.funeralType,
+            backgroundImage: fetchedRoom.backgroundImage,
+            name: fetchedRoom.deceasedName,
+            deceasedName: fetchedRoom.deceasedName,
+            deceasedImage: fetchedRoom.deceasedImage
+          });
+        } else {
+          setError('Room not found');
+          navigate('/funeralhall');
+        }
+      } catch (err) {
+        console.error('Error loading room data:', err);
+        setError('Failed to load room data');
+        navigate('/funeralhall');
+      }
+    };
+
+    loadRoomData();
+  }, [location, navigate, roomId]);
 
   // Get a random flower emoji
   const getRandomFlower = () => {
@@ -76,11 +113,13 @@ const FlowerPage: React.FC = () => {
           const total = response.data.totalCount;
           setTotalFlowers(total);
           
-          // Update visible flowers
-          setFlowers(prev => prev.map((flower, index) => ({
-            ...flower,
-            isVisible: index < Math.min(total, 48)
-          })));
+          // 创建并保存固定的花朵显示
+          const newDisplayedFlowers = Array.from({ length: Math.min(total, 48) }, (_, index) => ({
+            id: index + 1,
+            isVisible: true,
+            flowerType: getRandomFlower()
+          }));
+          setDisplayedFlowers(newDisplayedFlowers);
         }
       } catch (err) {
         setError('Failed to fetch records');
@@ -91,30 +130,36 @@ const FlowerPage: React.FC = () => {
   }, [roomData]);
 
   const handleOfferFlower = async () => {
-    if (!username.trim() || !selectedFlower || loading || !roomData) return;
+    if (!username.trim() || loading || !roomData) return;
     
     setLoading(true);
     setError('');
     
     try {
+      const randomFlower = getRandomFlower();
       const response = await axios.post(`${SERVER_URL}/api/interactive/flower/${roomData.roomId}`, {
         username: username.trim(),
-        flowerType: selectedFlower
+        flowerType: randomFlower
       });
       
       if (response.data.success) {
         const newTotal = response.data.totalCount;
         setTotalFlowers(newTotal);
         
-        // Update visible flowers
-        setFlowers(prev => prev.map((flower, index) => ({
-          ...flower,
-          isVisible: index < Math.min(newTotal, 48)
-        })));
+        // 添加新的花朵到显示列表
+        if (newTotal <= 48) {
+          setDisplayedFlowers(prev => [
+            ...prev,
+            {
+              id: newTotal,
+              isVisible: true,
+              flowerType: randomFlower
+            }
+          ]);
+        }
         
         setRecords(prev => [response.data.record, ...prev]);
         setUsername('');
-        setSelectedFlower('');
       }
     } catch (err) {
       setError('Failed to offer flower. Please try again.');
@@ -138,12 +183,12 @@ const FlowerPage: React.FC = () => {
       {/* Hero Section */}
       <section className="hero-section">
         <img 
-          src={roomData.deceasedImage || roomData.backgroundImage} 
-          alt={roomData.name} 
+          src={roomData?.deceasedImage || roomData?.backgroundImage} 
+          alt={roomData?.deceasedName || roomData?.name} 
           className="hero-image" 
         />
-        <h1 className="hero-name">{roomData.name}</h1>
-        <p className="hero-subtitle">Room ID: {roomData.roomId}</p>
+        <h1 className="hero-name">{roomData?.deceasedName || roomData?.name}</h1>
+        <p className="hero-subtitle">Room ID: {roomData?.roomId}</p>
       </section>
 
       {/* Title Section */}
@@ -155,14 +200,12 @@ const FlowerPage: React.FC = () => {
       {/* Flowers Display */}
       <section className="flowers-container">
         <div className="flowers-grid">
-          {flowers.map((flower) => (
+          {displayedFlowers.map((flower) => (
             <div 
               key={flower.id} 
-              className={`flower-item ${flower.isVisible ? 'visible' : ''}`}
+              className="flower-item visible"
             >
-              {flower.isVisible && (
-                <div className="flower-emoji">{getRandomFlower()}</div>
-              )}
+              <div className="flower-emoji">{flower.flowerType}</div>
             </div>
           ))}
         </div>
@@ -178,20 +221,10 @@ const FlowerPage: React.FC = () => {
             value={username}
             onChange={e => setUsername(e.target.value)}
           />
-          <select
-            className="flower-select"
-            value={selectedFlower}
-            onChange={e => setSelectedFlower(e.target.value)}
-          >
-            <option value="">Select a flower</option>
-            {FLOWER_TYPES.map((flower) => (
-              <option key={flower} value={flower}>{flower}</option>
-            ))}
-          </select>
           <button
             className="action-button"
             onClick={handleOfferFlower}
-            disabled={!username.trim() || !selectedFlower || loading}
+            disabled={!username.trim() || loading}
           >
             {loading ? 'Laying...' : 'Lay Flowers'}
           </button>
