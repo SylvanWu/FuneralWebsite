@@ -30,7 +30,7 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true }); // Ensure directory exists
 
 /* ──────────── Common Middleware ──────────── */
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://13.239.225.209'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
     exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length'],
@@ -97,7 +97,7 @@ mongoose
         // Initialize Socket.IO
         const io = new Server(httpServer, {
             cors: {
-                origin: "http://localhost:5173",
+                origin: ['http://localhost:5173', 'http://13.239.225.209'],
                 methods: ["GET", "POST"],
                 credentials: true
             },

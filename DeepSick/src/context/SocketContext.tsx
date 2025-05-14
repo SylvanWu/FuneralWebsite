@@ -4,8 +4,20 @@ import { io, Socket } from 'socket.io-client';
 // Create a context for the socket instance
 const SocketContext = createContext<Socket | null>(null);
 
-// Get server URL from environment variable or use default
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
+// 根据不同环境获取服务器URL
+const getServerURL = () => {
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return import.meta.env.VITE_SERVER_URL || 'http://localhost:5001';
+  } else {
+    // 部署环境，使用相同的域名但保持端口号
+    return `${window.location.protocol}//${host}:5001`;
+  }
+};
+
+// Get server URL based on environment
+const SERVER_URL = getServerURL();
+console.log('Using Socket SERVER_URL:', SERVER_URL);
 
 // Provider component to wrap the app and provide the socket instance
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

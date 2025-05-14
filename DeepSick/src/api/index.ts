@@ -4,7 +4,21 @@
 // src/api/index.ts
 import axios, { AxiosRequestHeaders } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// 根据不同环境设置不同的baseURL
+const getBaseURL = () => {
+  // 检查是否在部署环境
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+  } else {
+    // 部署环境，使用相同域名的API地址
+    return `${window.location.protocol}//${host}:5001/api`;
+  }
+};
+
+const baseURL = getBaseURL();
+console.log('Using API baseURL:', baseURL);
+
 const API = axios.create({
     baseURL,
     timeout: 30000,
