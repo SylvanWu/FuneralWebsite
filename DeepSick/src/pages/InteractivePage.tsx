@@ -14,6 +14,7 @@ import { ChatBox } from '../components/ChatBox';
 import '../App.css';
 import './InteractivePage.css';
 import DreamShrink from '../components/DreamList/DreamShrink';
+import MusicPlayer from '../components/MusicPlayer';
 
 // Password modal component props
 interface PasswordModalProps {
@@ -355,6 +356,9 @@ const InteractivePage: React.FC = () => {
         onSubmit={handlePasswordSubmit}
         error={passwordError || undefined}
       />
+
+      {/* Music Player at the bottom */}
+      <MusicPlayer />
     </div>
   );
 };
