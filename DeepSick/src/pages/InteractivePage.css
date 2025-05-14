@@ -14,21 +14,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 1.5rem;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .hero-image-container {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   overflow: hidden;
-  margin-bottom: 1.5rem;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+  border: 3px solid #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .hero-image {
@@ -42,7 +42,7 @@
 }
 
 .hero-name {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #333;
   margin: 0;
@@ -50,7 +50,7 @@
 }
 
 .hero-subtitle {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #666;
   margin: 0;
 }
@@ -1155,4 +1155,15 @@
 
 .embedded-player {
   width: 100%;
+}
+
+/* Direct hero image styles (for pages not using container) */
+.hero-section img.hero-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 3px solid #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
