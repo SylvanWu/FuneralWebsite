@@ -16,7 +16,25 @@ const HallPage: React.FC = () => {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [name, setName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const role = localStorage.getItem('role');
+  const [userRole, setUserRole] = useState<string | null>(null);
+  
+  // 获取用户角色
+  useEffect(() => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setUserRole(user.userType);
+      } else {
+        // 如果没有user对象，尝试从role中获取
+        const roleStr = localStorage.getItem('role');
+        setUserRole(roleStr);
+      }
+    } catch (err) {
+      console.error('Failed to parse user data:', err);
+      setUserRole(null);
+    }
+  }, []);
   
   useEffect(() => {
     (async () => {
@@ -94,6 +112,9 @@ const HallPage: React.FC = () => {
     }
   };
 
+  // 检查是否是管理员
+  const isOrganizer = userRole === 'organizer' || userRole === 'admin';
+
   return (
     <div className="hall-container">
       {/* Two-column layout main section */}
@@ -142,7 +163,7 @@ const HallPage: React.FC = () => {
         <Timeline
           memories={memories}
           onDeleteMemory={handleDeleteMemory}
-          canDelete={role === 'admin'}
+          canDelete={isOrganizer}
         />
       </div>
     </div>

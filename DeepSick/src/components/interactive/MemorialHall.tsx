@@ -24,7 +24,25 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const role = localStorage.getItem('role');
+  const [userRole, setUserRole] = useState<string | null>(null);
+  
+  // 获取用户角色
+  useEffect(() => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setUserRole(user.userType);
+      } else {
+        // 如果没有user对象，尝试从role中获取
+        const roleStr = localStorage.getItem('role');
+        setUserRole(roleStr);
+      }
+    } catch (err) {
+      console.error('Failed to parse user data:', err);
+      setUserRole(null);
+    }
+  }, []);
   
   // 获取特定房间的回忆
   useEffect(() => {
@@ -237,6 +255,9 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
     }
   };
 
+  // 检查是否是管理员或组织者
+  const isOrganizer = userRole === 'organizer' || userRole === 'admin';
+
   return (
     <div className="memorial-hall-container">
       {/* 上传区域和用户信息 */}
@@ -277,7 +298,7 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
           <Timeline
             memories={memories}
             onDeleteMemory={handleDeleteMemory}
-            canDelete={role === 'admin'}
+            canDelete={isOrganizer}
           />
         )}
       </div>
