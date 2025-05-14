@@ -47,7 +47,7 @@ export default function ProfilePage() {
       if (avatarFile) {
         const formData = new FormData();
         formData.append('file', avatarFile);
-        const uploadRes = await API.post('/api/auth/avatar', formData, {
+        const uploadRes = await API.post('/auth/avatar', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         avatarUrl = uploadRes.data.url;

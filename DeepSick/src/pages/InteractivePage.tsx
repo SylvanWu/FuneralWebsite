@@ -18,6 +18,7 @@ import WillForm from '../components/WillForm';
 import WillList from '../components/WillList';
 import { Will } from '../components/WillForm'; // Will 类型从 WillForm 导入
 import { getWills, deleteWill, updateWill } from '../api'; // 导入 API 函数
+import MusicPlayer from '../components/MusicPlayer';
 
 // Password modal component props
 interface PasswordModalProps {
@@ -491,6 +492,9 @@ const InteractivePage: React.FC = () => {
         onSubmit={handlePasswordSubmit}
         error={passwordError || undefined}
       />
+
+      {/* Music Player at the bottom */}
+      <MusicPlayer />
     </div>
   );
 };

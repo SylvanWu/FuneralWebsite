@@ -40,20 +40,20 @@ interface PasswordModalProps {
 }
 
 // Password modal component
-const PasswordModal: React.FC<PasswordModalProps> = ({
-  show, roomId, onClose, onSubmit, error
+const PasswordModal: React.FC<PasswordModalProps> = ({ 
+  show, roomId, onClose, onSubmit, error 
 }) => {
   const [password, setPassword] = useState('');
-
+  
   // Reset password when modal is opened/closed
   useEffect(() => {
     if (show) {
       setPassword('');
     }
   }, [show]);
-
+  
   if (!show) return null;
-
+  
   return (
     <div className="password-modal-overlay">
       <div className="password-modal">
@@ -74,14 +74,14 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
           {error && <p className="error-message">{error}</p>}
         </div>
         <div className="password-modal-footer">
-          <button
-            className="cancel-btn"
+          <button 
+            className="cancel-btn" 
             onClick={onClose}
           >
             Cancel
           </button>
-          <button
-            className="submit-btn"
+          <button 
+            className="submit-btn" 
             onClick={() => onSubmit(password)}
             disabled={!password}
           >
@@ -244,12 +244,12 @@ const FuneralRoomHallPage: React.FC = () => {
 
   // User role status
   const [isOrganizer, setIsOrganizer] = useState(false);
-
+  
   // The state of the room access modal box
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<FuneralRoom | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-
+  
   // Edit the state of the modal box
   const [showEditModal, setShowEditModal] = useState(false);
   const [roomToEdit, setRoomToEdit] = useState<FuneralRoom | null>(null);
@@ -275,7 +275,7 @@ const FuneralRoomHallPage: React.FC = () => {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     const roleStr = localStorage.getItem('role');
-
+    
     if (!token || !userStr) {
       // Redirect to login if not authenticated
       navigate('/login');
@@ -287,7 +287,7 @@ const FuneralRoomHallPage: React.FC = () => {
       setIsOrganizer(true);
     }
   }, [navigate]);
-
+  
   // Check server status first
   useEffect(() => {
     const checkServerStatus = async () => {
@@ -301,20 +301,20 @@ const FuneralRoomHallPage: React.FC = () => {
         setDebugInfo(`Server connection error: ${error instanceof Error ? error.message : String(error)}`);
       }
     };
-
+    
     checkServerStatus();
   }, []);
-
+  
   // Fetch all funeral rooms on component mount and when server is online
   useEffect(() => {
     if (serverStatus !== 'online') return;
-
+    
     const fetchRooms = async () => {
       setIsLoading(true);
       try {
         const rooms = await getAllFuneralRooms();
         console.log('Rooms data received:', rooms);
-
+        
         setRooms(rooms);
         setError(null);
         setDebugInfo(null);
@@ -326,24 +326,24 @@ const FuneralRoomHallPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+    
     fetchRooms();
   }, [serverStatus]);
-
+  
   // Handle room card click (enter room)
   const handleRoomClick = (room: FuneralRoom) => {
     setSelectedRoom(room);
     setShowPasswordModal(true);
     setPasswordError(null);
   };
-
+  
   // Handle modal close
   const handleCloseModal = () => {
     setShowPasswordModal(false);
     setSelectedRoom(null);
     setPasswordError(null);
   };
-
+  
   // Handle password submit for entering a room
   const handlePasswordSubmit = async (password: string) => {
     if (!selectedRoom) return;
@@ -358,7 +358,7 @@ const FuneralRoomHallPage: React.FC = () => {
         // Set room with password for navigation state
         const roomWithPassword = {
           ...selectedRoom,
-          password,
+            password,
           isOrganizer: true // Mark as organizer
         };
         
@@ -501,13 +501,13 @@ const FuneralRoomHallPage: React.FC = () => {
       setFeedback(prev => ({ ...prev, visible: false }));
     }, 3000);
   };
-
+  
   // Force reload data
   const handleRetry = async () => {
     setIsLoading(true);
     setError(null);
     setDebugInfo(null);
-
+    
     try {
       // Check server status again
       try {
@@ -517,7 +517,7 @@ const FuneralRoomHallPage: React.FC = () => {
         setServerStatus('offline');
         throw new Error(`Server is offline: ${error instanceof Error ? error.message : String(error)}`);
       }
-
+      
       // If server is online, fetch rooms
       const rooms = await getAllFuneralRooms();
       setRooms(rooms);
@@ -529,33 +529,33 @@ const FuneralRoomHallPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
+  
   // Mock data creation for testing UI without backend
   const createMockData = () => {
     // Use the mock data from the service
     const mockRooms = getMockFuneralRooms();
-
+    
     setRooms(mockRooms);
     setIsLoading(false);
     setError(null);
     setServerStatus('online'); // Pretend we're connected
     setDebugInfo('Using mock data for testing. For testing purposes, use password: "password1" for room1, "password2" for room2, etc.');
   };
-
+  
   return (
     <div className="funeral-hall-container">
       <div className="funeral-hall-header">
         <h1>Memorial Hall</h1>
         <p>Click on a room to enter and pay respects</p>
       </div>
-
+      
       {/* Feedback message */}
       {feedback.visible && (
         <div className={`feedback-message ${feedback.type}`}>
           {feedback.message}
         </div>
       )}
-
+      
       {serverStatus === 'checking' ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
@@ -570,7 +570,7 @@ const FuneralRoomHallPage: React.FC = () => {
           </div>
           <div className="mock-button-container">
             <p>You can continue testing with mock data:</p>
-            <button
+            <button 
               onClick={createMockData}
               className="mock-button large"
             >
@@ -578,7 +578,7 @@ const FuneralRoomHallPage: React.FC = () => {
             </button>
           </div>
           <div className="button-group">
-            <button
+            <button 
               onClick={handleRetry}
               className="retry-button"
             >
@@ -602,7 +602,7 @@ const FuneralRoomHallPage: React.FC = () => {
           )}
           <div className="mock-button-container">
             <p>You can continue testing with mock data:</p>
-            <button
+            <button 
               onClick={createMockData}
               className="mock-button large"
             >
@@ -610,7 +610,7 @@ const FuneralRoomHallPage: React.FC = () => {
             </button>
           </div>
           <div className="button-group">
-            <button
+            <button 
               onClick={handleRetry}
               className="retry-button"
             >
@@ -625,15 +625,15 @@ const FuneralRoomHallPage: React.FC = () => {
           isOrganizer={isOrganizer}
           onRoomEdit={isOrganizer ? handleRoomEdit : undefined}
           onRoomDelete={isOrganizer ? handleRoomDelete : undefined}
-        />
+              />
       )}
-
+      
       {debugInfo && rooms.length > 0 && (
         <div className="debug-info-footer">
           <pre>{debugInfo}</pre>
         </div>
       )}
-
+      
       {/* Room entry password modal */}
       <PasswordModal
         show={showPasswordModal}

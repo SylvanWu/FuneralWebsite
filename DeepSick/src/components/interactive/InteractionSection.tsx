@@ -130,14 +130,14 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
   return (
     <div className={`interaction-section ${className}`}>
       <h2 className="section-title">Interactive Memorial Features</h2>
-
+      
       {/* Tab selector */}
-      <TabSelector
-        tabs={tabs}
-        activeTabId={activeTabId}
-        onChange={handleTabChange}
+      <TabSelector 
+        tabs={tabs} 
+        activeTabId={activeTabId} 
+        onChange={handleTabChange} 
       />
-
+      
       {/* Tab content */}
       <TabContentSection activeTabId={activeTabId}>
         {/* Interactive cards */}
@@ -166,7 +166,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             Choose an interactive feature to pay your respects or share memories
           </p>
         </TabContent>
-
+        
         {/* Drawing canvas - integrated SharedCanvas component */}
         <TabContent id="canvas" className="canvas-container" activeId={activeTabId}>
           <div className="shared-canvas-wrapper">
@@ -177,7 +177,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             <SharedCanvas roomId={roomData.roomId} />
           </div>
         </TabContent>
-
+        
         {/* Chat section */}
         <TabContent id="chat" className="chat-container" activeId={activeTabId}>
           <div className="chat-wrapper">
@@ -198,7 +198,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             })()}
           </div>
         </TabContent>
-
+        
         {/* Memorial Hall tab content */}
         <TabContent id="memorial" className="memorial-container" activeId={activeTabId}>
           <MemorialHall roomData={roomData} />
@@ -215,7 +215,7 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
             </p>
             
             {isOrganizer && (
-              <div className="will-form-container">
+            <div className="will-form-container">
                 <WillForm
                   roomId={roomData.roomId}
                   onCreated={handleLocalWillCreated}

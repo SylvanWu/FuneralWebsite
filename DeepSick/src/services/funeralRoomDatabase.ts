@@ -20,6 +20,7 @@ export interface FuneralRoom {
   backgroundImage: string;
   deceasedImage?: string;
   canvasItems?: any[]; // For storing items on the canvas
+  canvasImage?: string; // Base64 encoded PNG image of the canvas
   isOrganizer?: boolean;
   createdAt: number;
   updatedAt: number;
@@ -195,6 +196,7 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
       backgroundImage: data.backgroundImage || '',
       deceasedImage: data.deceasedImage || '',
       canvasItems: data.canvasItems || [],
+      canvasImage: data.canvasImage || '',
       isOrganizer: data.isOrganizer || false,
       createdAt: new Date(data.createdAt).getTime(),
       updatedAt: new Date(data.updatedAt).getTime(),
@@ -225,14 +227,27 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
 };
 
 // Update canvas items only
-export const updateCanvasItems = async (roomId: string, canvasItems: CanvasItem[], password?: string): Promise<boolean> => {
+export const updateCanvasItems = async (
+  roomId: string, 
+  canvasItems: CanvasItem[], 
+  password?: string,
+  canvasImage?: string
+): Promise<boolean> => {
   try {
     const url = password 
       ? `${API_URL}/room/${roomId}/canvas?password=${encodeURIComponent(password)}`
       : `${API_URL}/room/${roomId}/canvas`;
     
     console.log(`Updating canvas items for room: ${roomId}`);
-    await axios.patch(url, { canvasItems }, axiosConfig);
+    
+    // Create payload object - include canvasImage only if provided
+    const payload: { canvasItems: CanvasItem[], canvasImage?: string } = { canvasItems };
+    if (canvasImage) {
+      payload.canvasImage = canvasImage;
+      console.log(`Including canvasImage in update (length: ${canvasImage.length})`);
+    }
+    
+    await axios.patch(url, payload, axiosConfig);
     return true;
   } catch (error: any) {
     console.error('Error updating canvas items:', error);
@@ -316,6 +331,7 @@ export const editFuneralRoom = async (roomId: string, password: string, updates:
       backgroundImage: data.backgroundImage || '',
       deceasedImage: data.deceasedImage || '',
       canvasItems: data.canvasItems || [],
+      canvasImage: data.canvasImage || '',
       createdAt: new Date(data.createdAt).getTime(),
       updatedAt: new Date(data.updatedAt).getTime(),
     };
@@ -370,6 +386,7 @@ export const getMockFuneralRooms = (): FuneralRoom[] => {
       backgroundImage: '',
       deceasedImage: '',
       canvasItems: [],
+      canvasImage: '',
       createdAt: Date.now(),
       updatedAt: Date.now()
     },
@@ -381,6 +398,7 @@ export const getMockFuneralRooms = (): FuneralRoom[] => {
       backgroundImage: '',
       deceasedImage: '',
       canvasItems: [],
+      canvasImage: '',
       createdAt: Date.now(),
       updatedAt: Date.now()
     },
@@ -392,6 +410,7 @@ export const getMockFuneralRooms = (): FuneralRoom[] => {
       backgroundImage: '',
       deceasedImage: '',
       canvasItems: [],
+      canvasImage: '',
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
