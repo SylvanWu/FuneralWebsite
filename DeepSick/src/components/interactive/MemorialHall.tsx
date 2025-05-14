@@ -34,7 +34,7 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
         const user = JSON.parse(userStr);
         setUserRole(user.userType);
       } else {
-        // 如果没有user对象，尝试从role中获取
+        // If no user object, try to get from role
         const roleStr = localStorage.getItem('role');
         setUserRole(roleStr);
       }
@@ -110,7 +110,7 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
 
     // Prevent the file from being too large
     if (file.size > 10 * 1024 * 1024) {
-      setUploadError('文件太大，请上传10MB以下的文件');
+      setUploadError('File is too large, please upload files smaller than 10MB');
       setIsUploading(false);
       return;
     }
@@ -253,33 +253,6 @@ const MemorialHall: React.FC<MemorialHallProps> = ({ roomData }) => {
 
   return (
     <div className="memorial-hall-container">
-      {/* Display deceased image and funeral picture if available */}
-      {(roomData.deceasedImage || roomData.funeralPicture) && (
-        <div className="memorial-hall-images">
-          {roomData.deceasedImage && (
-            <div className="deceased-image-section">
-              <h3 className="image-section-title">Deceased Image</h3>
-              <img 
-                src={roomData.deceasedImage} 
-                alt={roomData.name}
-                className="deceased-image"
-              />
-            </div>
-          )}
-          
-          {roomData.funeralPicture && (
-            <div className="funeral-picture-section">
-              <h3 className="image-section-title">Funeral Room Picture</h3>
-              <img 
-                src={roomData.funeralPicture} 
-                alt="Funeral Room"
-                className="funeral-picture"
-              />
-            </div>
-          )}
-        </div>
-      )}
-      
       {/* Upload the area and user information */}
       <div className="memorial-hall-header">
         <div className="upload-section">

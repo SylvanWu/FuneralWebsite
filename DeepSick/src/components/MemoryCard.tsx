@@ -399,9 +399,9 @@ const MemoryCard: React.FC<MemoryCardProps> = ({
                         {videoError ? (
                             <div className="text-red-500 p-4 bg-red-50 rounded-lg">
                                 <p>Unable to load the video</p>
-                                <p className="text-xs overflow-auto max-w-md">{memory.preview || '没有视频URL'}</p>
+                                <p className="text-xs overflow-auto max-w-md">{memory.preview || 'No video URL'}</p>
                                 {videoSrc && videoSrc !== memory.preview && (
-                                    <p className="text-xs overflow-auto max-w-md">尝试过: {videoSrc}</p>
+                                    <p className="text-xs overflow-auto max-w-md">Tried: {videoSrc}</p>
                                 )}
                                 <button
                                     className="mt-2 px-2 py-1 bg-blue-500 text-white text-xs rounded"
