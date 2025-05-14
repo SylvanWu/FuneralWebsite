@@ -59,55 +59,57 @@ const DreamEditor = () => {
   };
 
   return (
-    <div style={{ paddingLeft: '400px', paddingTop: '20px' }}>
-      <div > <h1  >Edit Dreams with Style ✨</h1>
-      </div>
-      <div className="editor-container">
-        {/* Left: Editor area */}
-        <div className="editor-left">
-          {editableDreams.map((dream, index) => (
-            <div key={dream._id} style={{ marginBottom: '30px' }}>
-              <RichTextEditor
-                content={dream.content}
-                onChange={(newContent) => handleDreamChange(index, newContent)}
-              />
-            </div>
-          ))}
-        </div>
+    <div > <h1  >Edit Dreams with Style ✨</h1>
 
-        {/* Right: Merge preview area */}
-        <div
-          className="dream-card"
-          style={{
-            width: '400px',
-            marginTop: '150px', // down
-            marginLeft: '500px', // right
-            backgroundColor: '#f5f5f5',
-            padding: '10px',
-            border: '1px solid #ccc',
-            flexShrink: 0,
-          }}
-        >
-          <h2>Wish List</h2>
-          <div className="dream-list-content">
-            {editableDreams.map((dream) => (
-              <div
-                key={dream._id}
-                className="dream-item"
-                style={{ marginBottom: '10px' }}
-                dangerouslySetInnerHTML={{ __html: dream.content }}
-              />
+      <div style={{ paddingLeft: '400px', paddingTop: '20px' }}>
+
+        <div className="editor-container">
+          {/* Left: Editor area */}
+          <div className="editor-left">
+            {editableDreams.map((dream, index) => (
+              <div key={dream._id} style={{ marginBottom: '30px' }}>
+                <RichTextEditor
+                  content={dream.content}
+                  onChange={(newContent) => handleDreamChange(index, newContent)}
+                />
+              </div>
             ))}
+          </div>
+
+          {/* Right: Merge preview area */}
+          <div
+            className="dream-card"
+            style={{
+              width: '400px',
+              marginTop: '150px', // down
+              marginLeft: '500px', // right
+              backgroundColor: '#f5f5f5',
+              padding: '10px',
+              border: '1px solid #ccc',
+              flexShrink: 0,
+            }}
+          >
+            <h2>Wish List</h2>
+            <div className="dream-list-content">
+              {editableDreams.map((dream) => (
+                <div
+                  key={dream._id}
+                  className="dream-item"
+                  style={{ marginBottom: '10px' }}
+                  dangerouslySetInnerHTML={{ __html: dream.content }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-
       {/* Operation button */}
       <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
         <button onClick={handleSave}>💾 Save All</button>
         <span> </span>
         <button onClick={handleCancel}>❌ Cancel</button>
       </div>
+
     </div>
   );
 
