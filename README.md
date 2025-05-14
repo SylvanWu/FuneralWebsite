@@ -4,6 +4,9 @@
 
 The Digital Memorial Hall is a full-stack project that allows users to upload and view images, videos, and text memories to commemorate the deceased.
 
+# Project Deployment
+http://13.239.225.209
+
 ## Team Members
 - XingYuan Zhou _(xzho158@aucklanduni.ac.nz)_
 - Weijing Zhang _(wzha211@aucklanduni.ac.nz)_
