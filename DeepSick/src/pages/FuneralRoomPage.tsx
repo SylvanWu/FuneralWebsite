@@ -58,8 +58,8 @@ const CROP_IMAGE_SIZE = 128;
 const DECORATION_ITEM_SIZE = 50; // 50x50px
 
 // Define the selection threshold for resize handles
-const ANCHOR_STROKE_WIDTH = 1;
-const RESIZE_HANDLE_SIZE = 8;
+const ANCHOR_STROKE_WIDTH = 2;
+const RESIZE_HANDLE_SIZE = 12;
 
 // Function to create an image from a file
 const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -236,6 +236,9 @@ const FuneralRoomPage: React.FC = () => {
   // State to track items that are currently loading
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   
+  // Add state for tracking item position during dragging
+  const [dragPosition, setDragPosition] = useState<{id: string, x: number, y: number, width: number, height: number} | null>(null);
+  
   // Function to get background image, with fallback to mapping if needed
   const getBackgroundImage = useCallback(() => {
     // Check if we have state.funeralType and it exists in the mapping
@@ -279,26 +282,41 @@ const FuneralRoomPage: React.FC = () => {
         // Get password from location state if available
         const initialPassword = locationState?.password || '';
         
-        // Get funeral room data from the MongoDB API
-        const roomData = await getFuneralRoomById(roomId, initialPassword);
-        
-        if (roomData) {
-          // Update state with room data
+        try {
+          // Get funeral room data from the MongoDB API
+          const roomData = await getFuneralRoomById(roomId, initialPassword);
+          
+          if (roomData) {
+            // Update state with room data
+            dispatch({
+              type: 'SET_ALL',
+              payload: {
+                name: roomData.deceasedName,
+                password: roomData.password,
+                backgroundImage: roomData.backgroundImage,
+                funeralType: roomData.funeralType,
+                deceasedImage: roomData.deceasedImage,
+              }
+            });
+            
+            // Set canvas items if they exist
+            if (roomData.canvasItems && Array.isArray(roomData.canvasItems)) {
+              setCanvasItems(roomData.canvasItems);
+            }
+          }
+        } catch (apiError) {
+          console.error('API Error loading funeral room:', apiError);
+          // Set default values to prevent UI from breaking
           dispatch({
             type: 'SET_ALL',
             payload: {
-              name: roomData.deceasedName,
-              password: roomData.password,
-              backgroundImage: roomData.backgroundImage,
-              funeralType: roomData.funeralType,
-              deceasedImage: roomData.deceasedImage,
+              name: locationState?.name || 'New Funeral',
+              password: initialPassword,
+              backgroundImage: '',
+              funeralType: locationState?.funeralType || 'church',
+              deceasedImage: '',
             }
           });
-          
-          // Set canvas items if they exist
-          if (roomData.canvasItems && Array.isArray(roomData.canvasItems)) {
-            setCanvasItems(roomData.canvasItems);
-          }
         }
       } catch (error) {
         console.error('Error loading funeral room:', error);
@@ -354,21 +372,52 @@ const FuneralRoomPage: React.FC = () => {
         } 
         // Otherwise use a preset background based on funeral type
         else if (state.funeralType) {
-          imageSrc = backgroundImageMap[state.funeralType as keyof typeof backgroundImageMap] || '';
+          const type = state.funeralType as keyof typeof backgroundImageMap;
+          imageSrc = backgroundImageMap[type] || churchImage; // Fallback to church image
         }
         
-        if (!imageSrc) return;
+        if (!imageSrc) {
+          console.warn('No background image source available, using default');
+          imageSrc = churchImage; // Final fallback
+        }
         
         // Create a new image and wait for it to load
-        const img = await createImage(imageSrc);
+        const img = new Image();
+        
+        // Set up a Promise to handle success and error scenarios
+        const imageLoadPromise = new Promise<HTMLImageElement>((resolve, reject) => {
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load image: ${imageSrc}`));
+          img.src = imageSrc;
+        });
+        
+        // Wrap with timeout to avoid hanging
+        const imgWithTimeout = Promise.race([
+          imageLoadPromise,
+          new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Image load timed out')), 10000); // 10 second timeout
+          })
+        ]);
         
         // Set the loaded image to state
-        setBackgroundImg(img);
+        const loadedImg = await imgWithTimeout;
+        setBackgroundImg(loadedImg);
         
         // Trigger a resize to update canvas dimensions
         setTimeout(handleResize, 0);
       } catch (error) {
         console.error('Error loading background image:', error);
+        // Try to load the default church image as fallback
+        try {
+          const fallbackImg = new Image();
+          fallbackImg.src = churchImage;
+          fallbackImg.onload = () => {
+            setBackgroundImg(fallbackImg);
+            setTimeout(handleResize, 0);
+          };
+        } catch (fallbackError) {
+          console.error('Failed to load fallback image:', fallbackError);
+        }
       }
     };
     
@@ -595,53 +644,159 @@ const FuneralRoomPage: React.FC = () => {
     }
   }, [roomId, state.password]);
   
-  // Update transformer whenever selection changes
+  // Add a transform listener to update delete button position during resize
   useEffect(() => {
-    if (transformerRef.current && selectedItemId) {
-      // Find the selected node by id
-      const stage = stageRef.current;
-      if (!stage) return;
+    if (!transformerRef.current || !selectedItemId) return;
+    
+    // Add transform event listener
+    const transformer = transformerRef.current as any;
+    transformer.on('transform', () => {
+      // Get the first selected node (there should only be one)
+      const nodes = transformer.nodes();
+      if (nodes && nodes.length > 0) {
+        const node = nodes[0];
+        // Update dragPosition to move the delete button during transform
+        setDragPosition({
+          id: selectedItemId,
+          x: node.x(),
+          y: node.y(),
+          width: node.width() * node.scaleX(),
+          height: node.height() * node.scaleY()
+        });
+      }
+    });
+    
+    // Cleanup function
+    return () => {
+      transformer.off('transform');
+    };
+  }, [selectedItemId]);
+  
+  // UseEffect for transformer update when selectedItemId changes
+  useEffect(() => {
+    // Make sure transformer ref exists before trying to use it
+    if (!transformerRef.current) return;
+    
+    // Find the selected node
+    if (selectedItemId) {
+      const selectedNode = stageRef.current?.findOne(`#${selectedItemId}`);
       
-      const selectedNode = stage.findOne(`#${selectedItemId}`);
       if (selectedNode) {
         // Attach transformer to the selected node
         transformerRef.current.nodes([selectedNode]);
-        transformerRef.current.getLayer().batchDraw();
+        transformerRef.current.getLayer()?.batchDraw();
       }
-    } else if (transformerRef.current) {
-      // Clear transformer if no selection
+    } else {
+      // No selection - clear transformer
       transformerRef.current.nodes([]);
-      transformerRef.current.getLayer().batchDraw();
+      transformerRef.current.getLayer()?.batchDraw();
     }
+    
+    // Clear drag position when selection changes
+    setDragPosition(null);
+    
   }, [selectedItemId]);
   
+  // Function to handle node transform end
+  const handleTransformEnd = (id: string, e: any) => {
+    // Get the node that was transformed
+    const node = e.target;
+    if (!node) return;
+    
+    // Clear drag position
+    setDragPosition(null);
+    
+    // Calculate the new dimensions based on scale
+    const newWidth = node.width() * node.scaleX();
+    const newHeight = node.height() * node.scaleY();
+    
+    // Update the item in the canvasItems array
+    const updatedItems = canvasItems.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          x: node.x(),
+          y: node.y(),
+          width: newWidth,
+          height: newHeight
+        };
+      }
+      return item;
+    });
+    
+    // Update state and save
+    setCanvasItems(updatedItems);
+    saveToDatabase(updatedItems).catch(err => 
+      console.error('Error saving after transform:', err)
+    );
+    
+    // Reset scale to avoid accumulating
+    node.scaleX(1);
+    node.scaleY(1);
+    node.width(newWidth);
+    node.height(newHeight);
+    
+    console.log(`Item ${id} transform completed: new size ${newWidth}x${newHeight}`);
+  };
+  
   // Function to remove a selected item with delete icon
-  const handleRemoveSelectedItem = useCallback(() => {
+  const handleRemoveSelectedItem = () => {
     if (!selectedItemId) return;
     
+    console.log(`Attempting to remove item: ${selectedItemId}`);
+    
+    // Clear the drag position
+    setDragPosition(null);
+    
+    // Clear transformer nodes
+    if (transformerRef.current) {
+      transformerRef.current.nodes([]);
+      transformerRef.current.getLayer()?.batchDraw();
+    }
+    
+    // Filter out the selected item
     const updatedItems = canvasItems.filter(item => item.id !== selectedItemId);
+    
+    // Update state
     setCanvasItems(updatedItems);
     setSelectedItemId(null);
     
-    // Auto-save when removing an item
+    // Save to database
     saveToDatabase(updatedItems).catch(err => 
-      console.error('Error saving after item removal:', err)
+      console.error('Error saving after removing item:', err)
     );
-  }, [selectedItemId, canvasItems, saveToDatabase]);
+    
+    console.log(`Item ${selectedItemId} removed from canvas`);
+    
+    // Force stage update
+    if (stageRef.current) {
+      stageRef.current.batchDraw();
+    }
+  };
   
   // Add keyboard event listener for deleting items with Delete key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' && selectedItemId) {
+      // Only process Delete key press when we have a selected item
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedItemId) {
+        console.log('Delete key pressed with selected item:', selectedItemId);
+        e.preventDefault(); // Prevent default browser action
         handleRemoveSelectedItem();
       }
     };
+    
+    // Add event listener to stage container if available
+    const stageContainer = stageRef.current?.container();
+    if (stageContainer) {
+      stageContainer.tabIndex = 1; // Make sure the stage can receive focus
+      stageContainer.focus(); // Set focus to the stage
+    }
     
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedItemId, handleRemoveSelectedItem]);
+  }, [selectedItemId]);
   
   // Function to save the funeral room data to the database
   const handleSave = async () => {
@@ -734,73 +889,64 @@ const FuneralRoomPage: React.FC = () => {
     setIsToolbarCollapsed(isCollapsed);
   };
 
-  // Handle item transform complete
-  const handleTransformEnd = (id: string, e: any) => {
-    // Get the node that was transformed
-    const node = e.target;
-    
-    // Update the item with the new position and size
-    const updatedItems = canvasItems.map(item => {
-      if (item.id === id) {
-        return {
-          ...item,
-          x: node.x(),
-          y: node.y(),
-          width: node.width() * node.scaleX(),
-          height: node.height() * node.scaleY()
-        };
-      }
-      return item;
-    });
-    
-    // Update state and save
-    setCanvasItems(updatedItems);
-    saveToDatabase(updatedItems).catch(err => 
-      console.error('Error saving after transform:', err)
-    );
-    
-    // Reset scale to avoid accumulating
-    if (node) {
-      node.scaleX(1);
-      node.scaleY(1);
-    }
-  };
-
   // Add item delete button component
-  const DeleteButton = ({ visible, x, y, onClick }: { 
+  const DeleteButton = ({ visible, x, y, onClick, itemId }: { 
     visible: boolean, 
     x: number, 
     y: number, 
-    onClick: () => void 
+    onClick: () => void,
+    itemId: string
   }) => {
     if (!visible) return null;
     
+    // Use drag position if available and matches this item
+    const buttonX = dragPosition && dragPosition.id === itemId 
+      ? dragPosition.x + dragPosition.width 
+      : x;
+    
+    const buttonY = dragPosition && dragPosition.id === itemId
+      ? dragPosition.y - 14  // Position it above the item with some spacing
+      : y - 14;
+    
     return (
-      <Group x={x} y={y}>
+      <Group 
+        x={buttonX} 
+        y={buttonY}
+        listening={true}
+      >
         <Circle 
-          radius={10}
+          radius={14}
           fill="red"
           stroke="white"
-          strokeWidth={1}
+          strokeWidth={2}
         />
         <Text 
           text="×" 
           fill="white"
-          fontSize={16}
+          fontSize={20}
           align="center"
           verticalAlign="middle"
-          x={-6}
-          y={-8}
+          x={-8}
+          y={-10}
           fontStyle="bold"
         />
-        <Rect 
-          width={20} 
-          height={20} 
-          x={-10} 
-          y={-10}
-          opacity={0}
+        <Circle 
+          radius={16}
+          fill="transparent"
           onClick={onClick}
           onTap={onClick}
+          onMouseEnter={(e) => {
+            const container = e.target.getStage()?.container();
+            if (container) {
+              container.style.cursor = 'pointer';
+            }
+          }}
+          onMouseLeave={(e) => {
+            const container = e.target.getStage()?.container();
+            if (container) {
+              container.style.cursor = 'default';
+            }
+          }}
         />
       </Group>
     );
@@ -1085,6 +1231,13 @@ const FuneralRoomPage: React.FC = () => {
                       width: '100%',
                       height: '100%'
                     }}
+                    onMouseDown={(e) => {
+                      // Deselect when clicking on empty area
+                      const clickedOnEmpty = e.target === e.target.getStage();
+                      if (clickedOnEmpty) {
+                        setSelectedItemId(null);
+                      }
+                    }}
                   >
                     <Layer>
                       {/* background image - ensure it completely fills the 16:9 container */}
@@ -1127,7 +1280,32 @@ const FuneralRoomPage: React.FC = () => {
                                   width={item.width}
                                   height={item.height}
                                   draggable
+                                  onMouseEnter={(e) => {
+                                    const container = e.target.getStage()?.container();
+                                    if (container) {
+                                      container.style.cursor = 'move';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    const container = e.target.getStage()?.container();
+                                    if (container) {
+                                      container.style.cursor = 'default';
+                                    }
+                                  }}
+                                  onDragMove={(e) => {
+                                    // Update drag position for the delete button to follow
+                                    setDragPosition({
+                                      id: item.id,
+                                      x: e.target.x(),
+                                      y: e.target.y(),
+                                      width: item.width,
+                                      height: item.height
+                                    });
+                                  }}
                                   onDragEnd={(e) => {
+                                    // Clear drag position
+                                    setDragPosition(null);
+                                    
                                     const updatedItems = canvasItems.map((i) => {
                                       if (i.id === item.id) {
                                         return {
@@ -1142,8 +1320,14 @@ const FuneralRoomPage: React.FC = () => {
                                     // Auto-save when moving an item
                                     saveToDatabase(updatedItems);
                                   }}
-                                  onClick={() => setSelectedItemId(item.id)}
-                                  onTap={() => setSelectedItemId(item.id)}
+                                  onClick={() => {
+                                    setSelectedItemId(item.id);
+                                    console.log(`Selected item: ${item.id}`);
+                                  }}
+                                  onTap={() => {
+                                    setSelectedItemId(item.id);
+                                    console.log(`Selected item: ${item.id}`);
+                                  }}
                                   onTransformEnd={(e) => handleTransformEnd(item.id, e)}
                                 />
                                 
@@ -1151,8 +1335,9 @@ const FuneralRoomPage: React.FC = () => {
                                 <DeleteButton 
                                   visible={isSelected}
                                   x={item.x + item.width}
-                                  y={item.y - 10}
+                                  y={item.y - 14}
                                   onClick={handleRemoveSelectedItem}
+                                  itemId={item.id}
                                 />
                               </>
                             ) : (
@@ -1166,7 +1351,32 @@ const FuneralRoomPage: React.FC = () => {
                                   fill={item.color}
                                   cornerRadius={5}
                                   draggable
+                                  onMouseEnter={(e) => {
+                                    const container = e.target.getStage()?.container();
+                                    if (container) {
+                                      container.style.cursor = 'move';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    const container = e.target.getStage()?.container();
+                                    if (container) {
+                                      container.style.cursor = 'default';
+                                    }
+                                  }}
+                                  onDragMove={(e) => {
+                                    // Update drag position for the delete button to follow
+                                    setDragPosition({
+                                      id: item.id,
+                                      x: e.target.x(),
+                                      y: e.target.y(),
+                                      width: item.width,
+                                      height: item.height
+                                    });
+                                  }}
                                   onDragEnd={(e) => {
+                                    // Clear drag position
+                                    setDragPosition(null);
+                                    
                                     const updatedItems = canvasItems.map((i) => {
                                       if (i.id === item.id) {
                                         return {
@@ -1181,8 +1391,14 @@ const FuneralRoomPage: React.FC = () => {
                                     // Auto-save when moving an item
                                     saveToDatabase(updatedItems);
                                   }}
-                                  onClick={() => setSelectedItemId(item.id)}
-                                  onTap={() => setSelectedItemId(item.id)}
+                                  onClick={() => {
+                                    setSelectedItemId(item.id);
+                                    console.log(`Selected item: ${item.id}`);
+                                  }}
+                                  onTap={() => {
+                                    setSelectedItemId(item.id);
+                                    console.log(`Selected item: ${item.id}`);
+                                  }}
                                   onTransformEnd={(e) => handleTransformEnd(item.id, e)}
                                 />
                                 
@@ -1190,8 +1406,9 @@ const FuneralRoomPage: React.FC = () => {
                                 <DeleteButton 
                                   visible={isSelected}
                                   x={item.x + item.width}
-                                  y={item.y - 10}
+                                  y={item.y - 14}
                                   onClick={handleRemoveSelectedItem}
+                                  itemId={item.id}
                                 />
                               </>
                             )}
@@ -1214,13 +1431,18 @@ const FuneralRoomPage: React.FC = () => {
                         anchorSize={RESIZE_HANDLE_SIZE}
                         anchorStrokeWidth={ANCHOR_STROKE_WIDTH}
                         borderStroke="#0096FF"
-                        borderStrokeWidth={1}
+                        borderStrokeWidth={2}
                         borderDash={[4, 4]}
                         rotateEnabled={true}
+                        padding={4}
+                        keepRatio={false}
                         enabledAnchors={[
                           'top-left', 'top-right', 
-                          'bottom-left', 'bottom-right'
+                          'bottom-left', 'bottom-right',
+                          'middle-left', 'middle-right',
+                          'top-center', 'bottom-center'
                         ]}
+                        anchorCornerRadius={2}
                       />
                     </Layer>
                   </Stage>
