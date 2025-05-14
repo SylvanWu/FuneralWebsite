@@ -2,7 +2,20 @@
 // src/components/WillList.tsx
 import { useRef, useState } from 'react';
 
-const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+// Set different baseURL based on environment
+const getBaseURL = () => {
+  // Check if in development environment
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+  } else {
+    // Production environment, use same domain but keep port consistent
+    return `${window.location.protocol}//${host}:5001`;
+  }
+};
+
+const apiBase = getBaseURL();
+console.log('WillList using API baseURL:', apiBase);
 
 export interface Will {
     _id: string;
@@ -36,74 +49,112 @@ export default function WillList({ wills, onDelete, onUpdate }: Props) {
      * Initialize the camera and return a MediaRecorder with bound ondata/onstop
      */
     const initCamera = async (): Promise<MediaRecorder> => {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (videoRef.current) {
-            videoRef.current.srcObject = stream;
+        console.log('[WillList] Initializing camera...');
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            console.log('[WillList] Camera access successful');
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+
+            const rec = new MediaRecorder(stream);
+            rec.ondataavailable = e => {
+                console.log('[WillList] Recording data available, size:', e.data.size);
+                if (e.data.size) recordedChunks.current.push(e.data);
+            };
+            rec.onstop = () => {
+                console.log('[WillList] Recording stopped, creating video Blob');
+                const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
+                console.log('[WillList] Blob created successfully, size:', blob.size);
+                setPreviewBlob(blob);
+                setPreviewURL(URL.createObjectURL(blob));
+                recordedChunks.current = [];
+            };
+
+            setMediaRecorder(rec);
+            return rec;
+        } catch (err) {
+            console.error('[WillList] Failed to initialize camera:', err);
+            alert('Cannot access camera/microphone. Please ensure you have granted permission and the devices are working properly.');
+            throw err;
         }
-
-        const rec = new MediaRecorder(stream);
-        rec.ondataavailable = e => {
-            if (e.data.size) recordedChunks.current.push(e.data);
-        };
-        rec.onstop = () => {
-            const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
-            setPreviewBlob(blob);
-            setPreviewURL(URL.createObjectURL(blob));
-            recordedChunks.current = [];
-        };
-
-        setMediaRecorder(rec);
-        return rec;
     };
 
     /**
      * Start recording: the first time it will await initCamera
      */
     const startRec = async () => {
+        console.log('[WillList] Starting recording...');
         recordedChunks.current = [];
         setPreviewBlob(null);
         setPreviewURL('');
 
-        const rec = mediaRecorder ?? await initCamera();
-        rec.start();
-        setMediaRecorder(rec);
-        setRecording(true);
+        try {
+            const rec = mediaRecorder ?? await initCamera();
+            rec.start();
+            console.log('[WillList] Recording started');
+            setMediaRecorder(rec);
+            setRecording(true);
+        } catch (err) {
+            console.error('[WillList] Failed to start recording:', err);
+            alert('Cannot start recording. Please check camera permissions.');
+        }
     };
 
     /** Stop recording */
     const stopRec = () => {
+        console.log('[WillList] Stopping recording');
         mediaRecorder?.stop();
         setRecording(false);
     };
 
     /* ============= Enter / Exit edit mode ============= */
     const enterEdit = (w: Will) => {
+        console.log('[WillList] Entering edit mode, will ID:', w._id);
         setEditingId(w._id);
         setEditName(w.uploaderName);
         setEditMsg(w.farewellMessage);
         const videoUrl = `${apiBase}/uploads/${w.videoFilename}`;
+        console.log('[WillList] Setting video preview URL:', videoUrl);
         setPreviewURL(videoUrl);
         setPreviewBlob(null);
     };
 
     const cancelEdit = () => {
+        console.log('[WillList] Canceling edit');
         setEditingId(null);
         setPreviewURL('');
         setPreviewBlob(null);
         // Close camera stream
-        (videoRef.current?.srcObject as MediaStream | null)
-            ?.getTracks()
-            .forEach(t => t.stop());
+        const stream = videoRef.current?.srcObject as MediaStream | null;
+        if (stream) {
+            console.log('[WillList] Closing camera stream');
+            stream.getTracks().forEach(t => t.stop());
+        }
         setMediaRecorder(null);
     };
 
-    const save = (id: string) => {
-        onUpdate?.(
-            id,
-            { uploaderName: editName, farewellMessage: editMsg },
-            previewBlob || undefined
-        );
-        cancelEdit();
+    const save = async (id: string) => {
+        console.log('[WillList] Saving edit, will ID:', id);
+        console.log('[WillList] Edit data:', {
+            name: editName,
+            message: editMsg,
+            hasNewVideo: !!previewBlob,
+            videoBlobSize: previewBlob?.size || 0
+        });
+        
+        try {
+            await onUpdate?.(
+                id,
+                { uploaderName: editName, farewellMessage: editMsg },
+                previewBlob || undefined
+            );
+            console.log('[WillList] Save successful');
+            cancelEdit();
+        } catch (err) {
+            console.error('[WillList] Save failed:', err);
+            alert('Save failed, please try again later');
+        }
     };
 
     /* ============= Render ============= */

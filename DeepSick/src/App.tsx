@@ -35,6 +35,8 @@ import OrganizerDashboard from './pages/OrganizerDashboard';
 import VisitorDashboard from './pages/VisitorDashboard';
 
 import DreamEditor from './components/DreamList/DreamEditor';  // Dream Editor component
+import SettingsPage from './pages/SettingsPage';
+import UserDebug from './components/debug/UserDebug'; // 导入调试组件
 
 import './App.css';
 import { SocketProvider } from './context/SocketContext';
@@ -121,6 +123,9 @@ export default function App() {
           <Route element={<Layout onLogout={handleLogout} />}>
             {/* Homepage */}
             <Route path="/" element={<HomePage />} />
+
+            {/* 添加调试路由 */}
+            <Route path="/debug/user" element={<UserDebug />} />
 
             {/* Other public pages */}
             <Route path="/hall" element={<Navigate to="/interactive" replace />} />

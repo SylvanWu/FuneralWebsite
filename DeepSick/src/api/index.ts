@@ -115,8 +115,45 @@ export const deleteMemory = (id: string) => API.delete(`/memories/${id}`);
 /* ---------- Wills ---------- */
 export const getWills = (roomId: string) => API.get(`/wills?roomId=${roomId}`).then(r => r.data);
 export const createWill = (roomId: string, fd: FormData) => {
-    fd.append('roomId', roomId); 
-    return API.post('/wills', fd).then(r => r.data);
+    // 检查FormData中是否已包含roomId，避免重复添加
+    let hasRoomId = false;
+    try {
+        // 尝试检查FormData是否已有roomId
+        hasRoomId = fd.has('roomId');
+        console.log('[API] createWill - FormData检查 - roomId已存在:', hasRoomId);
+    } catch (e) {
+        console.error('[API] 无法检查FormData:', e);
+    }
+    
+    // 仅在不存在时添加roomId
+    if (!hasRoomId) {
+        console.log('[API] createWill - 添加roomId到FormData:', roomId);
+        fd.append('roomId', roomId);
+    }
+
+    // 打印FormData内容的调试信息
+    console.log('[API] createWill - 准备发送FormData，roomId:', roomId);
+    
+    return API.post('/wills', fd, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        timeout: 60000 // Longer timeout for video uploads
+    })
+    .then(r => {
+        console.log('Will creation success:', r.data);
+        return r.data;
+    })
+    .catch(error => {
+        console.error('Will creation error:', error.response || error);
+        console.error('Will creation error details:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+        });
+        throw error;
+    });
 };
 export const deleteWill = (id: string) => API.delete(`/wills/${id}`);
 
@@ -126,17 +163,34 @@ export const deleteWill = (id: string) => API.delete(`/wills/${id}`);
  * @param data     Plain JSON or FormData
  * @param isForm   If true, the data must be FormData and will automatically use multipart/form-data
  */
-export const updateWill = (
+export const updateWill = async (
     id: string,
     data: Partial<{ uploaderName: string; farewellMessage: string }> | FormData,
     isForm = false,
 ) => {
-    if (isForm && data instanceof FormData) {
-        return API.patch(`/wills/${id}`, data, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        }).then(r => r.data);
+    console.log('[API] updateWill 开始, id:', id, 'isForm:', isForm);
+    try {
+        let response;
+        if (isForm && data instanceof FormData) {
+            console.log('[API] updateWill 使用FormData，上传视频');
+            response = await API.patch(`/wills/${id}`, data, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 60000 // 增加超时时间，上传视频可能需要更长时间
+            });
+        } else {
+            console.log('[API] updateWill 使用普通JSON数据');
+            response = await API.patch(`/wills/${id}`, data);
+        }
+        console.log('[API] updateWill 成功:', response.data);
+        return response.data;
+    } catch (err: any) {
+        console.error('[API] updateWill 失败:', err);
+        console.error('[API] 错误详情:', {
+            message: err.message,
+            response: err.response?.data || '无响应数据'
+        });
+        throw err;
     }
-    return API.patch(`/wills/${id}`, data).then(r => r.data);
 };
 
 /* ---------- Auth ---------- */

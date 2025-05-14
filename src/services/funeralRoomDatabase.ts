@@ -27,18 +27,6 @@ export interface FuneralRoom {
   updatedAt: number;
 }
 
-// Canvas item interface
-export interface CanvasItem {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-  name: string;
-  image?: string;
-}
-
 // Add timeout and headers to requests
 const axiosConfig = {
   timeout: 10000, // 10 seconds
@@ -206,63 +194,60 @@ export const getFuneralRoomById = async (roomId: string, password?: string): Pro
       createdAt: new Date(data.createdAt).getTime(),
       updatedAt: new Date(data.updatedAt).getTime(),
     };
-
-    console.log('[getFuneralRoomById] Converted room data:', {
+    
+    console.log('[getFuneralRoomById] Processed result:', {
       roomId: result.roomId,
       deceasedName: result.deceasedName,
-      title: result.title,
       funeralType: result.funeralType,
       isOrganizer: result.isOrganizer
     });
-
+    
     return result;
   } catch (error: any) {
-    if (error?.response?.status === 404) {
-      return null;
-    }
-    console.error('Error getting funeral room:', error);
+    console.error('Error getting funeral room by ID:', error);
     console.error('Error details:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
       roomId
     });
-    throw error;
+    return null;
   }
 };
 
-// Update canvas items only
-export const updateCanvasItems = async (
-  roomId: string, 
-  canvasItems: CanvasItem[], 
-  password?: string,
-  canvasImage?: string
-): Promise<boolean> => {
+// Verify a funeral room password
+export const verifyRoomPassword = async (roomId: string, password: string): Promise<{valid: boolean, isOrganizer: boolean}> => {
   try {
-    const url = password 
-      ? `${API_URL}/room/${roomId}/canvas?password=${encodeURIComponent(password)}`
-      : `${API_URL}/room/${roomId}/canvas`;
+    console.log(`[verifyRoomPassword] 验证房间密码: ${roomId}`);
+    const response = await axios.post(`${API_URL}/room/verify`, {
+      roomId,
+      password
+    }, axiosConfig);
     
-    console.log(`Updating canvas items for room: ${roomId}`);
+    // 记录后端返回的isOrganizer值
+    console.log(`[verifyRoomPassword] 房间 ${roomId} 密码验证结果:`, response.data);
     
-    // Create payload object - include canvasImage only if provided
-    const payload: { canvasItems: CanvasItem[], canvasImage?: string } = { canvasItems };
-    if (canvasImage) {
-      payload.canvasImage = canvasImage;
-      console.log(`Including canvasImage in update (length: ${canvasImage.length})`);
-    }
+    // 确保从后端正确提取isOrganizer的值
+    const isOrganizerValue = response.data.isOrganizer === true;
     
-    await axios.patch(url, payload, axiosConfig);
-    return true;
+    console.log(`[verifyRoomPassword] 权限状态: 
+      后端返回isOrganizer: ${response.data.isOrganizer}
+      转换后的isOrganizer: ${isOrganizerValue}
+    `);
+    
+    return {
+      valid: response.data.valid,
+      isOrganizer: isOrganizerValue // 使用后端返回的isOrganizer值
+    };
   } catch (error: any) {
-    console.error('Error updating canvas items:', error);
-    console.error('Error details:', {
+    console.error('[verifyRoomPassword] 验证密码发生错误:', error);
+    console.error('[verifyRoomPassword] 错误详情:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
       roomId
     });
-    return false;
+    return {valid: false, isOrganizer: false};
   }
 };
 
@@ -351,77 +336,4 @@ export const editFuneralRoom = async (roomId: string, password: string, updates:
     });
     return null;
   }
-};
-
-// Verify a funeral room password
-export const verifyRoomPassword = async (roomId: string, password: string): Promise<{valid: boolean, isOrganizer: boolean}> => {
-  try {
-    console.log(`Verifying password for room: ${roomId}`);
-    const response = await axios.post(`${API_URL}/room/verify`, {
-      roomId,
-      password
-    }, axiosConfig);
-    
-    // 记录后端返回的isOrganizer值
-    console.log(`[verifyRoomPassword] Room ${roomId} password verification result:`, response.data);
-    
-    return {
-      valid: response.data.valid,
-      isOrganizer: response.data.isOrganizer === true // 使用后端返回的isOrganizer值
-    };
-  } catch (error: any) {
-    console.error('Error verifying room password:', error);
-    console.error('Error details:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      roomId
-    });
-    return {valid: false, isOrganizer: false};
-  }
-};
-
-// Generate mock funeral rooms for testing
-export const getMockFuneralRooms = (): FuneralRoom[] => {
-  return [
-    {
-      roomId: 'room1',
-      password: 'password1',
-      deceasedName: 'John Smith',
-      funeralType: 'church',
-      backgroundImage: '',
-      deceasedImage: '',
-      funeralPicture: '',
-      canvasItems: [],
-      canvasImage: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      roomId: 'room2',
-      password: 'password2',
-      deceasedName: 'Mary Johnson',
-      funeralType: 'garden',
-      backgroundImage: '',
-      deceasedImage: '',
-      funeralPicture: '',
-      canvasItems: [],
-      canvasImage: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    },
-    {
-      roomId: 'room3',
-      password: 'password3',
-      deceasedName: 'David Williams',
-      funeralType: 'forest',
-      backgroundImage: '',
-      deceasedImage: '',
-      funeralPicture: '',
-      canvasItems: [],
-      canvasImage: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    }
-  ];
 }; 

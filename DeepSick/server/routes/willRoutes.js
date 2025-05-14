@@ -110,6 +110,7 @@ router.get(
 /* ───── PATCH  /api/wills/:id  Edit a Will (Text + Optional New Video) ───── */
 router.patch(
   '/:id',
+  authMiddleware('organizer'),
   upload.single('video'),
   async (req, res) => {
     console.log('--- PATCH /api/wills/:id ---');
@@ -141,6 +142,7 @@ router.patch(
 /* ───── DELETE  /api/wills/:id  Delete a Will ───── */
 router.delete(
   '/:id',
+  authMiddleware('organizer'),
   async (req, res) => {
     try {
       const deleted = await Will.findOneAndDelete({

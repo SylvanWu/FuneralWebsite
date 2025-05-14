@@ -83,15 +83,30 @@ const PasswordModal: React.FC<PasswordModalProps> = ({
 
 // A utility for converting the FuneralRoom type to the RoomData type
 const convertToRoomData = (funeralRoom: FuneralRoom) => {
-  return {
+  // 添加调试日志
+  console.log('[convertToRoomData] Input funeralRoom:', {
+    roomId: funeralRoom.roomId,
+    isOrganizer: funeralRoom.isOrganizer
+  });
+  
+  const result = {
     roomId: funeralRoom.roomId,
     password: funeralRoom.password || '',
     funeralType: funeralRoom.funeralType,
     backgroundImage: funeralRoom.backgroundImage,
     name: funeralRoom.deceasedName,
     deceasedImage: funeralRoom.deceasedImage,
-    funeralPicture: funeralRoom.funeralPicture
+    funeralPicture: funeralRoom.funeralPicture,
+    isOrganizer: funeralRoom.isOrganizer === true
   };
+  
+  // 添加调试日志
+  console.log('[convertToRoomData] Converted result:', {
+    roomId: result.roomId,
+    isOrganizer: result.isOrganizer
+  });
+  
+  return result;
 };
 
 // Cache validity period (milliseconds)
@@ -241,34 +256,40 @@ const InteractivePage: React.FC = () => {
     if (!selectedRoomForPassword) return;
 
     try {
-      const isValid = await verifyRoomPassword(selectedRoomForPassword.roomId, password);
+      console.log(`[handlePasswordSubmit] 验证房间密码: ${selectedRoomForPassword.roomId}`);
+      const verifyResult = await verifyRoomPassword(selectedRoomForPassword.roomId, password);
 
-      if (isValid) {
+      console.log(`[handlePasswordSubmit] 验证结果:`, verifyResult);
 
+      if (verifyResult.valid) {
         setShowPasswordModal(false);
-
 
         const roomWithPassword = {
           ...selectedRoomForPassword,
-          password
+          password,
+          isOrganizer: verifyResult.isOrganizer // 使用API返回的isOrganizer值
         };
+        
+        console.log(`[handlePasswordSubmit] 设置房间数据:`, {
+          roomId: roomWithPassword.roomId,
+          isOrganizer: roomWithPassword.isOrganizer
+        });
+        
         setCurrentRoom(roomWithPassword);
-
 
         navigate(`/interactive/${selectedRoomForPassword.roomId}`, {
           replace: true,
           state: roomWithPassword
         });
 
-
         setError(null);
         setRoomNotFound(false);
       } else {
-        setPasswordError('Invalid password. Please try again.');
+        setPasswordError('密码错误，请重试。');
       }
     } catch (err) {
       console.error('Failed to verify password:', err);
-      setPasswordError('An error occurred. Please try again.');
+      setPasswordError('验证过程中发生错误，请稍后重试。');
     }
   };
 
