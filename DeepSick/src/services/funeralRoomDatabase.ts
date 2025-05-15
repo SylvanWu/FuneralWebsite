@@ -4,9 +4,22 @@
 import axios from 'axios';
 
 // Base API URL - use environment variable if available, otherwise fallback to default
-const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api/funerals` 
-  : 'http://localhost:5001/api/funerals';
+const getApiUrl = () => {
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return import.meta.env.VITE_API_URL 
+      ? `${import.meta.env.VITE_API_URL}/api/funerals` 
+      : 'http://localhost:5001/api/funerals';
+  } else if (host === '13.239.225.209') {
+    // AWS EC2部署
+    return `${window.location.protocol}//${host}:5001/api/funerals`;
+  } else {
+    // 其他部署环境
+    return `${window.location.protocol}//${host}:5001/api/funerals`;
+  }
+};
+
+const API_URL = getApiUrl();
 
 console.log('Using API URL:', API_URL);
 

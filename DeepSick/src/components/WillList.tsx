@@ -8,6 +8,9 @@ const getBaseURL = () => {
   const host = window.location.hostname;
   if (host === 'localhost' || host === '127.0.0.1') {
     return import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+  } else if (host === '13.239.225.209') {
+    // AWS EC2 deployment
+    return `${window.location.protocol}//${host}:5001`;
   } else {
     // Production environment, use same domain but keep port consistent
     return `${window.location.protocol}//${host}:5001`;
