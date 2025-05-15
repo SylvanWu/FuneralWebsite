@@ -39,7 +39,7 @@ const CreateFuneralPage: React.FC = () => {
     
     // Prompt for password
     const password = window.prompt('Please set a room password:');
-    const name = window.prompt('Please set the name of dead people:');
+    const name = window.prompt('Please set the name of the one who journeyed on:');
     
     // If user cancels the prompt, don't proceed
     if (!password) return;
