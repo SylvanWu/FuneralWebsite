@@ -10,11 +10,8 @@ const getBaseURL = () => {
   const host = window.location.hostname;
   if (host === 'localhost' || host === '127.0.0.1') {
     return import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-  } else if (host === '13.239.225.209') {
-    // 特定的AWS EC2服务器部署环境
-    return `${window.location.protocol}//${host}:5001/api`;
   } else {
-    // 其他部署环境，使用相同域名的API地址
+    // 部署环境，使用相同域名的API地址
     return `${window.location.protocol}//${host}:5001/api`;
   }
 };

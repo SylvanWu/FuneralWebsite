@@ -47,7 +47,7 @@ const upload = multer({
 
 /* ──────────── Common Middleware ──────────── */
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://13.239.225.209', 'http://13.239.225.209:5173', 'http://13.239.225.209:5001'],
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://13.239.225.209'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With', 'Origin', 'Accept'],
     exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length'],
@@ -188,7 +188,7 @@ mongoose
         // Initialize Socket.IO
         const io = new Server(httpServer, {
             cors: {
-                origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://13.239.225.209', 'http://13.239.225.209:5173', 'http://13.239.225.209:5001'],
+                origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://13.239.225.209'],
                 methods: ["GET", "POST"],
                 credentials: true
             },
