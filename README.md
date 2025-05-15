@@ -99,7 +99,7 @@ yarn install
 ```
 
 3. Set up environment variables
-Create a `.env` file in the root directory with the following variables:
+Create a `.env` file in the /server directory with the following variables:
 ```
 MONGO_URI=mongodb://localhost:27017/deepsick
 PORT=5001
