@@ -4,7 +4,7 @@
 
 The Digital Memorial Hall is a full-stack project that allows users to upload and view images, videos, and text memories to commemorate the deceased.
 
-## Project Deployment
+# Project Deployment
 http://13.239.225.209
 
 ## Team Members
