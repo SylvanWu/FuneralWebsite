@@ -2,72 +2,90 @@
 
 A comprehensive digital memorial platform that allows users to create, customize, and participate in virtual memorial spaces for honoring and remembering the deceased.
 
+
 ## Overview
 
-The Digital Memorial Hall is a full-stack application designed to provide a dignified, interactive online environment for memorial services. It combines traditional memorial elements with modern digital interactions, allowing friends and family members to come together virtually to honor and remember their loved ones.
+DeepSick Digital Memorial Hall is a full-stack web application designed to provide a dignified, interactive online environment for memorial services. Our platform combines traditional memorial elements with modern digital interactions, creating a space where friends and family members can come together virtually to honor and remember their loved ones.
+
+In today's increasingly digital world, we recognize the need for memorial services that can transcend geographical limitations while maintaining the solemnity and respect of traditional ceremonies. Our platform aims to fill this gap by offering a comprehensive digital solution for memorial services.
+
+## Team Members
+- XingYuan Zhou _(xzho158@aucklanduni.ac.nz)_
+- Weijing Zhang _(wzha211@aucklanduni.ac.nz)_
+- Haoran Li _(hli598@aucklanduni.ac.nz)_
+- Yue Wu _(ywu426@aucklanduni.ac.nz)_
+- Huiyu Zhang _(hzha635@aucklanduni.ac.nz)_
+- Can Zhao _(czha564@aucklanduni.ac.nz)_
+
+## Features
+
+### Memorial Room Creation and Management
+- Create customized memorial spaces with unique room IDs
+- Password protection for private memorial rooms
+- Personalize with customizable backgrounds and memorial themes
+- Comprehensive deceased information display
+- Organizer dashboard for memorial management
+
+### Interactive Memorial Elements
+- **Virtual Flower Offering**: Place digital flowers at the memorial
+- **Virtual Candle Lighting**: Light digital candles in remembrance
+- **Message Board**: Leave condolences and share memories
+- **Memorial Timeline**: Chronological display of all visitor interactions
+- **Real-time Collaboration**: Multiple visitors can interact simultaneously
+
+### Media Management
+- **Memorial Photo Hall**: Upload and display cherished photographic memories
+- **Collaborative Drawing Canvas**: Create memorial art together
+- **Background Music**: Set the ambiance with appropriate music
+- **Video Tributes**: Upload and play video memories
+
+### Personal Legacy Features
+- **Farewell Will**: Record and share video farewell messages
+- **Dream List**: Document and share unfulfilled wishes or goals of the departed
+- **Interactive Memorial Layout**: Tab-based organization of memorial features
+- **Responsive Design**: Full functionality on both desktop and mobile devices
+
+### User System
+- **Role-based Access Control**: Different permissions for organizers and visitors
+- **User Profiles**: Personalized user experiences
+- **Secure Authentication**: JWT-based security system
 
 ## Tech Stack
 
 ### Frontend
-- **Framework**: React 18, TypeScript
-- **Styling**: CSS, CSS Modules
-- **State Management**: React Context API
+- **Core**: React 18 with TypeScript
 - **Routing**: React Router v6
+- **Animation**: Framer Motion
+- **Text Editing**: TipTap rich text editor
+- **Drawing**: React Konva for canvas interactions
+- **State Management**: React Context API
+- **Styling**: CSS Modules and custom styling
 - **Real-time Communication**: Socket.IO Client
 
 ### Backend
-- **Server**: Express.js, Node.js
+- **Server**: Express.js running on Node.js
 - **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (JSON Web Tokens)
-- **File Handling**: Multer for memory uploads
+- **Authentication**: JWT (JSON Web Tokens) with bcrypt
+- **File Storage**: Multer for handling media uploads
 - **Real-time Server**: Socket.IO
+- **Logging**: Morgan
 
-## Key Features
+### Development & Testing
+- **Build Tool**: Vite
+- **Testing**: Vitest for unit tests, Cypress for E2E testing
+- **Linting**: ESLint
+- **Type Checking**: TypeScript
 
-### Memorial Room Creation
-- Custom memorial room generation with unique room IDs
-- Password protection for private memorial spaces
-- Customizable backgrounds and memorial themes
-- Support for deceased information and memorial details
-
-### Interactive Elements
-- **Flower Offering**: Virtual flower placement to pay respects
-- **Candle Lighting**: Light virtual candles in memory of the deceased
-- **Message Board**: Leave condolences or memories for the family
-- **Memorial Timeline**: Chronological display of all visitor interactions
-
-### Media Features
-- **Memorial Photo Hall**: Upload and display photo memories
-- **Drawing Canvas**: Collaborative drawing board for memorial art
-- **Music Player**: Background music for the memorial atmosphere
-- **Video Tributes**: Upload and play video memories
-
-### Additional Features
-- **Farewell Will**: Record video farewell messages
-- **Dream List**: Create and share unfulfilled wishes or goals of the departed
-- **Interactive Layout**: Tab-based organization of memorial features
-- **Responsive Design**: Works on desktop and mobile devices
-
-## Component Structure
-
-### Key Components
-- `InteractionSection`: Central component managing all interactive features
-- `MemorialHall`: Photo and video memory display component
-- `SharedCanvas`: Collaborative drawing component
-- `MusicPlayer`: Background music management
-- `WillForm`: Video farewell message recording
-- `DreamShrink`: Dream list component for unfulfilled wishes
-
-## Installation and Setup
+## Getting Started
 
 ### Prerequisites
-- Node.js (v16+)
-- MongoDB (local or remote)
+- Node.js (v16.0.0 or higher)
+- MongoDB (local installation or MongoDB Atlas account)
 - npm or yarn package manager
 
-### Installation Steps
+### Installation
 
-1. Clone the project
+1. Clone the repository
 ```bash
 git clone https://github.com/your-username/DeepSick.git
 cd DeepSick
@@ -80,12 +98,12 @@ npm install
 yarn install
 ```
 
-3. Configure environment variables
-Create a `.env` file in the root directory with:
+3. Set up environment variables
+Create a `.env` file in the root directory with the following variables:
 ```
-MONGO_URI=mongodb://localhost:27017/memorialhall
+MONGO_URI=mongodb://localhost:27017/deepsick
 PORT=5001
-VITE_API_URL=http://localhost:5001/api
+JWT_SECRET=your_jwt_secret_key
 ```
 
 4. Start the development servers
@@ -101,65 +119,152 @@ npm run server
 yarn server
 ```
 
-The application will run on http://localhost:5173 (frontend) and http://localhost:5001 (backend API).
+The application will be available at:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5001
 
-## API Endpoints
+### Testing
 
-### Room Management
-- `GET /api/rooms` - Retrieve all available memorial rooms
+The project includes comprehensive test suites:
+
+```bash
+# Run all tests
+npm test
+
+# Run frontend tests with watch mode
+npm run test:watch
+
+# Run test coverage
+npm run test:coverage
+
+# Run end-to-end tests
+npm run test:e2e
+
+# Run API tests
+npm run test:api
+```
+
+## Usage Guide
+
+### For Memorial Organizers
+
+1. **Create an Account**
+   - Register as an organizer
+   - Verify your email address
+
+2. **Create a Memorial Room**
+   - Provide information about the deceased
+   - Upload a profile photo
+   - Choose memorial theme and settings
+   - Set privacy options (public or password-protected)
+
+3. **Customize the Memorial**
+   - Upload photos and videos
+   - Add biographical information
+   - Record farewell will videos
+   - Add dream list items
+   - Configure background music
+
+4. **Share Access**
+   - Distribute the unique room ID
+   - Share the access password (if protected)
+   - Invite friends and family via email
+
+5. **Monitor and Moderate**
+   - View visitor interactions
+   - Moderate messages
+   - Update memorial content
+
+### For Memorial Visitors
+
+1. **Access a Memorial**
+   - Enter the room ID provided by the organizer
+   - Input access password if required
+
+2. **Pay Respects**
+   - Light virtual candles
+   - Place virtual flowers
+   - Leave condolence messages
+   - View the memorial photo hall
+   - Participate in the shared drawing canvas
+
+3. **Engage with the Community**
+   - View messages from other visitors
+   - See the memorial timeline
+   - Participate in group remembrance
+
+## API Reference
+
+The DeepSick platform provides a comprehensive REST API:
+
+### Authentication Endpoints
+- `POST /api/auth/register` - Create a new user account
+- `POST /api/auth/login` - Authenticate user and receive token
+- `GET /api/auth/profile` - Get current user profile
+
+### Memorial Room Endpoints
+- `GET /api/rooms` - List all accessible memorial rooms
 - `GET /api/rooms/:roomId` - Get details for a specific room
 - `POST /api/rooms` - Create a new memorial room
 - `PUT /api/rooms/:roomId` - Update room details
 - `DELETE /api/rooms/:roomId` - Delete a memorial room
 
-### Memory Management
-- `GET /api/memories/:roomId` - Get all memories for a specific room
-- `POST /api/memories` - Create a new memory (with file upload)
-- `DELETE /api/memories/:id` - Delete a specific memory
+### Memorial Content Endpoints
+- `GET /api/memories/:roomId` - Get all media memories for a room
+- `POST /api/memories` - Upload a new memory (image/video)
+- `DELETE /api/memories/:id` - Remove a specific memory
+- `POST /api/wills` - Create a farewell will video
+- `GET /api/wills/:roomId` - Get farewell wills for a room
+- `POST /api/dreams` - Add a dream list item
+- `GET /api/dreams/:roomId` - Get dream list for a room
 
-### User Interaction
+### Interactive Feature Endpoints
 - `POST /api/interactions/flowers` - Place a virtual flower
 - `POST /api/interactions/candles` - Light a virtual candle
 - `POST /api/interactions/messages` - Leave a message
 - `GET /api/interactions/:roomId` - Get all interactions for a room
 
-### Will and Dreams
-- `POST /api/wills` - Create a farewell will video
-- `GET /api/wills/:roomId` - Get wills for a specific room
-- `POST /api/dreams` - Add a dream list item
-- `GET /api/dreams/:roomId` - Get dream list for a room
-
-## User Guide
-
-### Creating a Memorial Room
-1. Navigate to the home page and select "Create Memorial Room"
-2. Enter the deceased's information and choose memorial settings
-3. Set a password for the room if desired
-4. Share the generated room ID with friends and family
-
-### Participating in a Memorial
-1. Enter the room ID provided by the memorial organizer
-2. Input the password if required
-3. Navigate through the tabs to access different memorial features
-4. Leave messages, flowers, candles, or other tributes as desired
-
 ## Deployment
 
-The application can be deployed using services like:
-- **Frontend**: Vercel, Netlify, or GitHub Pages
-- **Backend**: Heroku, DigitalOcean, AWS, or Google Cloud Platform
-- **Database**: MongoDB Atlas for cloud database hosting
+The application can be deployed using various services:
 
-## Future Enhancements
-- Live video memorial service integration
-- Enhanced security features
-- Multi-language support
-- Mobile application version
-- AI-enhanced memorial experience
+### Frontend Deployment
+- Vercel
+- Netlify
+- GitHub Pages
+
+### Backend Deployment
+- Heroku
+- DigitalOcean
+- AWS Elastic Beanstalk
+- Google Cloud Run
+
+### Database
+- MongoDB Atlas
+
+## Roadmap
+
+Future enhancements planned for the DeepSick Digital Memorial Hall:
+
+- Live video memorial service streaming
+- AR/VR memorial experiences
+- AI-powered memorial assistance
+- Multi-language support for global accessibility
+- Mobile application versions (iOS and Android)
+- Enhanced analytics for memorial organizers
+- Integration with funeral home services
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions to the DeepSick Digital Memorial Hall project. To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please ensure your code follows our style guidelines and passes all tests.
 
 ## License
 
@@ -167,5 +272,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgements
 
-- Thanks to all contributors and testers
-- Special thanks to the open-source community for their invaluable tools and libraries
+- The open-source community for providing invaluable tools and libraries
+- All contributors and testers who have helped shape this project
+- Feedback from funeral directors and memorial service professionals
+- The families who have trusted our platform for their memorial needs
