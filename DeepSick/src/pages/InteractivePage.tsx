@@ -15,6 +15,8 @@ import '../App.css';
 import './InteractivePage.css';
 import DreamShrink from '../components/DreamList/DreamShrink';
 import MusicPlayer from '../components/MusicPlayer';
+import { getWills, deleteWill, updateWill } from '../api';
+import { Will } from '../components/WillForm';
 
 // Password modal component props
 interface PasswordModalProps {
@@ -121,6 +123,10 @@ const InteractivePage: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedRoomForPassword, setSelectedRoomForPassword] = useState<FuneralRoom | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // 添加遗嘱相关状态
+  const [wills, setWills] = useState<Will[]>([]);
+  const [isLoadingWills, setIsLoadingWills] = useState(false);
 
   // Obtain all room functions - Use caching to avoid frequent API calls
   const fetchAllRooms = useCallback(async (forceRefresh: boolean = false) => {
@@ -277,6 +283,71 @@ const InteractivePage: React.FC = () => {
     fetchAllRooms(true); // Force refresh
   };
 
+  // 加载遗嘱数据
+  const fetchWills = useCallback(async (roomId: string) => {
+    if (!roomId) return;
+    
+    setIsLoadingWills(true);
+    try {
+      console.log('[InteractivePage] Fetching wills for roomId:', roomId);
+      const result = await getWills(roomId);
+      console.log('[InteractivePage] Fetched wills:', result);
+      setWills(Array.isArray(result) ? result : []);
+    } catch (error) {
+      console.error('[InteractivePage] Failed to fetch wills:', error);
+      setWills([]);
+    } finally {
+      setIsLoadingWills(false);
+    }
+  }, []);
+  
+  // 遗嘱数据处理函数
+  const handleDeleteWill = async (willId: string) => {
+    if (!currentRoom?.roomId) return;
+    try {
+      await deleteWill(willId);
+      await fetchWills(currentRoom.roomId); // 重新加载数据
+    } catch (error) {
+      console.error('[InteractivePage] Failed to delete will:', error);
+    }
+  };
+  
+  const handleUpdateWill = async (
+    willId: string,
+    fields: Partial<Will>,
+    videoBlob?: Blob,
+  ) => {
+    if (!currentRoom?.roomId) return;
+    try {
+      if (videoBlob) {
+        const fd = new FormData();
+        if (fields.uploaderName !== undefined) fd.append('uploaderName', fields.uploaderName);
+        if (fields.farewellMessage !== undefined) fd.append('farewellMessage', fields.farewellMessage);
+        fd.append('video', new File([videoBlob], 'farewell.webm', { type: 'video/webm' }));
+        await updateWill(willId, fd, true);
+      } else {
+        await updateWill(willId, fields);
+      }
+      await fetchWills(currentRoom.roomId); // 重新加载数据
+    } catch (error) {
+      console.error('[InteractivePage] Failed to update will:', error);
+    }
+  };
+  
+  // 当成功创建遗嘱后的回调
+  const handleWillCreated = useCallback(() => {
+    if (currentRoom?.roomId) {
+      console.log('[InteractivePage] Will created, refreshing wills for roomId:', currentRoom.roomId);
+      fetchWills(currentRoom.roomId);
+    }
+  }, [currentRoom, fetchWills]);
+  
+  // 当当前房间变化时，加载该房间的遗嘱
+  useEffect(() => {
+    if (currentRoom?.roomId) {
+      fetchWills(currentRoom.roomId);
+    }
+  }, [currentRoom, fetchWills]);
 
   if (isLoadingCurrentRoom) {
     return (
@@ -346,7 +417,14 @@ const InteractivePage: React.FC = () => {
           </section>
 
           {/* Interactive function area - Now includes a drawing board and a music player */}
-          <InteractionSection roomData={convertToRoomData(currentRoom)} />
+          <InteractionSection 
+            roomData={convertToRoomData(currentRoom)}
+            wills={wills}
+            isLoadingWills={isLoadingWills}
+            onDeleteWill={handleDeleteWill}
+            onUpdateWill={handleUpdateWill}
+            onWillSuccessfullyCreated={handleWillCreated}
+          />
         </>
       ) : (
 

@@ -1,19 +1,22 @@
 // Will page component, displays the user's list of wills and provides create, edit, and delete functionality.
 // src/pages/WillsPage.tsx
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import WillForm, { Will }           from '../components/WillForm';
 import WillList                     from '../components/WillList';
 import { getWills, deleteWill, updateWill } from '../api';
 
 export default function WillsPage() {
+    const { roomId } = useParams(); // 假设路由是 /wills/:roomId
     const [wills,   setWills]   = useState<Will[]>([]);
     const [loading, setLoading] = useState(true);
 
     /* --------- Initial load --------- */
     useEffect(() => {
+        if (!roomId) return;
         (async () => {
             try {
-                const result = await getWills();
+                const result = await getWills(roomId);
                 setWills(Array.isArray(result) ? result : []);
             } catch (e) {
                 console.error('Failed to fetch wills list', e);
@@ -22,7 +25,7 @@ export default function WillsPage() {
                 setLoading(false);
             }
         })();
-    }, []);
+    }, [roomId]);
 
     /* --------- Callback after creation --------- */
     const handleCreated = (w:Will) => setWills(prev => [w, ...prev]);
@@ -72,7 +75,7 @@ export default function WillsPage() {
 
             {/* Create form */}
             <div className="mb-8">
-                <WillForm onCreated={handleCreated} />
+                <WillForm onCreated={handleCreated} roomId={roomId!} />
             </div>
 
             {/* List / Loading */}

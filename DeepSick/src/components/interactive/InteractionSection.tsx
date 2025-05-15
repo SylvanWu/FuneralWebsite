@@ -206,19 +206,15 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
           <div className="will-wrapper">
             <h3>Farewell Messages</h3>
             <p className="will-description">
-              {isOrganizer
-                ? "Create a video farewell message or will to share your memories and wishes"
-                : "View farewell messages left by others"}
+              所有人都可以创建、编辑和删除视频留言或遗嘱，分享你的回忆和祝福
             </p>
 
-            {isOrganizer && (
-              <div className="will-form-container">
-                <WillForm
-                  roomId={roomData.roomId}
-                  onCreated={handleLocalWillCreated}
-                />
-              </div>
-            )}
+            <div className="will-form-container">
+              <WillForm
+                roomId={roomData.roomId}
+                onCreated={handleLocalWillCreated}
+              />
+            </div>
 
             <div className="mt-12 p-6 bg-gray-50 rounded-lg shadow">
               <h2 className="text-3xl font-bold text-center text-gray-700 mb-8">
@@ -233,8 +229,8 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
               ) : wills.length > 0 ? (
                 <WillList
                   wills={wills}
-                  onDelete={isOrganizer ? onDeleteWill : undefined}
-                  onUpdate={isOrganizer ? onUpdateWill : undefined}
+                  onDelete={onDeleteWill}
+                  onUpdate={onUpdateWill}
                 />
               ) : (
                 <p className="text-center text-gray-500 py-4">

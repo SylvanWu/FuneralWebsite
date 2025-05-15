@@ -33,7 +33,7 @@ const upload = multer({ storage });
 /* ───── POST  /api/wills  Create a Will ───── */
 router.post(
   '/',
-  authMiddleware('organizer'),
+  authMiddleware(),
   upload.single('video'),
   async (req, res) => {
     try {
