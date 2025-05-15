@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
-import multer from 'multer';
 /* Routes */
 import authRoutes from './routes/auth.js';
 import memoriesRouter from './routes/memories.js';
@@ -29,53 +28,26 @@ const __dirname = path.dirname(fileURLToPath(
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true }); // Ensure directory exists
 
-// 配置 multer 用于文件上传
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'debug-' + uniqueSuffix + path.extname(file.originalname || '.txt'));
-  }
-});
-
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
-});
-
 /* ──────────── Common Middleware ──────────── */
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://13.239.225.209'],
+    origin: ['http://localhost:5173', 'http://13.239.225.209'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Range', 'X-Requested-With', 'Origin', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
     exposedHeaders: ['Accept-Ranges', 'Content-Range', 'Content-Length'],
-    credentials: true,
-    maxAge: 86400 // 24 hours
+    credentials: true
 }));
 
-// Additional OPTIONS handler for preflight requests
-app.options('*', cors());
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
+// Increase JSON payload size limit to handle large base64 encoded images
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use((req, res, next) => {
-  console.log(`[${req.method}] ${req.originalUrl}`);
-  next();
+    console.log(`[${req.method}] ${req.originalUrl}`);
+    next();
 });
 
-// 确保uploads目录正确挂载为静态资源
-console.log('[SERVER] 设置静态文件服务: uploads目录路径:', UPLOAD_DIR);
 app.use('/uploads',
-    express.static(UPLOAD_DIR, { 
-      acceptRanges: false,
-      immutable: true,
-      maxAge: '1d',
-      index: false,
-      fallthrough: false
-    })
+    express.static(UPLOAD_DIR, { acceptRanges: false })
 );
 
 /* ──────────── Business Routes ──────────── */
@@ -106,81 +78,20 @@ app.get('/api/health', (req, res) => {
 /* Default root route (Health check) */
 app.get('/', (_, res) => res.send('Digital Memorial Hall API'));
 
-/* 404 handler for unmatched routes */
-app.use((req, res, next) => {
-    console.log(`[404] Route not found: ${req.method} ${req.originalUrl}`);
-    res.status(404).json({
-        status: 404,
-        message: `Route ${req.method} ${req.originalUrl} not found`,
-        timestamp: new Date().toISOString()
-    });
-});
-
 /* Error handler middleware */
 app.use((err, req, res, next) => {
     console.error('API Error:', err);
-    
-    // Log detailed error information
-    console.error({
-        url: req.originalUrl,
-        method: req.method,
-        errorName: err.name,
-        errorMessage: err.message,
-        errorStack: err.stack,
-        body: req.body
-    });
-    
-    // Don't expose stack traces in production
-    const errorDetails = process.env.NODE_ENV === 'production' ? {} : { stack: err.stack };
-    
     res.status(err.status || 500).json({
         message: err.message || 'Internal Server Error',
-        status: err.status || 500,
-        timestamp: new Date().toISOString(),
-        path: req.originalUrl,
-        ...errorDetails
+        status: err.status || 500
     });
 });
 
 /* ──────────── Connect to MongoDB and Start Server ──────────── */
-// More detailed connection options for MongoDB
-const mongoOptions = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 10000, // Wait 10 seconds before timing out
-    family: 4, // Use IPv4, avoid IPv6 issues
-    maxPoolSize: 10, // Maintain up to 10 socket connections
-    minPoolSize: 1, // Maintain at least 1 socket connection
-};
-
-console.log('Attempting to connect to MongoDB at:', process.env.MONGO_URI || 'mongodb://localhost:27017/memorial');
-
 mongoose
-    .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/memorial', mongoOptions)
+    .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/memorial')
     .then(() => {
-        console.log('Connected to MongoDB successfully');
-
-        // Set up mongoose debug logging in development
-        if (process.env.NODE_ENV !== 'production') {
-            mongoose.set('debug', true);
-        }
-
-        // Handle MongoDB connection events
-        mongoose.connection.on('error', (err) => {
-            console.error('MongoDB connection error:', err);
-        });
-
-        mongoose.connection.on('disconnected', () => {
-            console.log('MongoDB disconnected');
-        });
-
-        // Handle process termination - close database connection
-        process.on('SIGINT', () => {
-            mongoose.connection.close(() => {
-                console.log('MongoDB connection closed due to app termination');
-                process.exit(0);
-            });
-        });
+        console.log('Connected to MongoDB');
 
         // Create HTTP server
         const httpServer = createServer(app);
@@ -188,7 +99,7 @@ mongoose
         // Initialize Socket.IO
         const io = new Server(httpServer, {
             cors: {
-                origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://13.239.225.209'],
+                origin: ['http://localhost:5173', 'http://13.239.225.209'],
                 methods: ["GET", "POST"],
                 credentials: true
             },

@@ -67,15 +67,11 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
   const navigate = useNavigate();
   const [activeTabId, setActiveTabId] = useState<string>('interact');
 
-  // 使用roomData中的isOrganizer值，而不是从props传入的
-  const effectiveIsOrganizer = roomData.isOrganizer === true;
-
   // Add the debugging log
   console.log('[InteractionSection] Props:', {
     roomId: roomData.roomId,
     roomDataIsOrganizer: roomData.isOrganizer,
     propsIsOrganizer: isOrganizer,
-    effectiveIsOrganizer,
     hasDeleteFunction: !!onDeleteWill,
     hasUpdateFunction: !!onUpdateWill,
     willsCount: wills.length
@@ -118,8 +114,15 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
 
   // Handle successful will creation
   const handleLocalWillCreated = (will: any) => {
+    console.log('[InteractionSection] Local will created successfully:', will);
     onWillSuccessfullyCreated?.();
   };
+
+  // --- The debugging log has been moved here ---
+  if (activeTabId === 'will') {
+    console.log('[InteractionSection] Rendering "will" tab. roomData.roomId:', roomData?.roomId, 'roomData:', JSON.stringify(roomData));
+  }
+  // --- The debugging log is over. ---
 
   return (
     <div className={`interaction-section ${className}`}>
@@ -203,12 +206,12 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
           <div className="will-wrapper">
             <h3>Farewell Messages</h3>
             <p className="will-description">
-              {effectiveIsOrganizer
-                ? "Create video farewell messages or wills, share your memories and wishes"
+              {isOrganizer
+                ? "Create a video farewell message or will to share your memories and wishes"
                 : "View farewell messages left by others"}
             </p>
 
-            {effectiveIsOrganizer && (
+            {isOrganizer && (
               <div className="will-form-container">
                 <WillForm
                   roomId={roomData.roomId}
@@ -225,17 +228,17 @@ const InteractionSection: React.FC<InteractionSectionProps> = ({
               {isLoadingWills ? (
                 <div className="text-center py-4">
                   <div className="loading-spinner-small mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading...</p>
+                  <p className="mt-2 text-gray-600">Loading messages...</p>
                 </div>
               ) : wills.length > 0 ? (
                 <WillList
                   wills={wills}
-                  onDelete={effectiveIsOrganizer ? onDeleteWill : undefined}
-                  onUpdate={effectiveIsOrganizer ? onUpdateWill : undefined}
+                  onDelete={isOrganizer ? onDeleteWill : undefined}
+                  onUpdate={isOrganizer ? onUpdateWill : undefined}
                 />
               ) : (
                 <p className="text-center text-gray-500 py-4">
-                  No farewell messages in this room yet.
+                  No farewell messages have been left for this room yet.
                 </p>
               )}
             </div>

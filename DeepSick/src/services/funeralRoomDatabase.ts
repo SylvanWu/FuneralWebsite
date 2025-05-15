@@ -363,11 +363,11 @@ export const verifyRoomPassword = async (roomId: string, password: string): Prom
     }, axiosConfig);
     
     // 记录后端返回的isOrganizer值
-    console.log(`[verifyRoomPassword] Room ${roomId} password verification result:`, response.data);
+    console.log(`[verifyRoomPassword] Room ${roomId} isOrganizer:`, response.data.isOrganizer);
     
     return {
       valid: response.data.valid,
-      isOrganizer: response.data.isOrganizer === true // 使用后端返回的isOrganizer值
+      isOrganizer: response.data.valid === true // 密码正确即为组织者
     };
   } catch (error: any) {
     console.error('Error verifying room password:', error);

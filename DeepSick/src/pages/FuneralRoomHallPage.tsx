@@ -344,7 +344,7 @@ const FuneralRoomHallPage: React.FC = () => {
     setPasswordError(null);
   };
   
-  // Handle password submission
+  // Handle password submit for entering a room
   const handlePasswordSubmit = async (password: string) => {
     if (!selectedRoom) return;
     
@@ -358,14 +358,13 @@ const FuneralRoomHallPage: React.FC = () => {
         // Set room with password for navigation state
         const roomWithPassword = {
           ...selectedRoom,
-          password,
-          isOrganizer: verifyResult.isOrganizer // 使用API返回的正确isOrganizer值
+            password,
+          isOrganizer: true // Mark as organizer
         };
         
-        console.log('[FuneralRoomHallPage] Navigating to room:', {
+        console.log('[FuneralRoomHallPage] Navigating to room with isOrganizer=true:', {
           roomId: roomWithPassword.roomId,
-          isOrganizer: roomWithPassword.isOrganizer,
-          verifyResult
+          isOrganizer: roomWithPassword.isOrganizer
         });
         
         // Navigate to room
@@ -373,11 +372,11 @@ const FuneralRoomHallPage: React.FC = () => {
           state: roomWithPassword
         });
       } else {
-        setPasswordError('密码错误，请重试。');
+        setPasswordError('Invalid password. Please try again.');
       }
     } catch (err) {
       console.error('Failed to verify password:', err);
-      setPasswordError('验证过程中发生错误，请稍后重试。');
+      setPasswordError('An error occurred. Please try again.');
     }
   };
 

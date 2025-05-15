@@ -256,15 +256,8 @@ router.post('/room/verify', async(req, res) => {
     try {
         const { roomId, password } = req.body;
 
-        console.log(`[API] Verifying password for room: ${roomId}`);
-
         if (!roomId || !password) {
-            console.log(`[API] Missing roomId or password`);
-            return res.status(400).json({ 
-                message: 'Room ID and password are required',
-                valid: false,
-                isOrganizer: false
-            });
+            return res.status(400).json({ message: 'Room ID and password are required' });
         }
 
         // Find the room
@@ -281,34 +274,20 @@ router.post('/room/verify', async(req, res) => {
         }
 
         if (!funeral) {
-            console.log(`[API] Room not found: ${roomId}`);
-            return res.status(404).json({ 
-                message: 'Funeral room not found', 
-                valid: false,
-                isOrganizer: false
-            });
+            return res.status(404).json({ message: 'Funeral room not found', valid: false });
         }
 
         // Check if the password matches
         const isValid = funeral.password === password;
-        
-        // 只有在密码验证成功时才设置isOrganizer为true
-        const isOrganizer = isValid;
-        
-        console.log(`[API] Room ${roomId} password verification: valid=${isValid}, isOrganizer=${isOrganizer}`);
 
-        // Return verification result
+        // If the password verification is successful, return the isOrganizer flag as true
         res.json({
             valid: isValid,
-            isOrganizer: isOrganizer
+            isOrganizer: isValid
         });
     } catch (error) {
         console.error('Password verification error:', error);
-        res.status(500).json({ 
-            message: 'Server error while verifying password', 
-            valid: false,
-            isOrganizer: false
-        });
+        res.status(500).json({ message: 'Server error while verifying password', valid: false });
     }
 });
 

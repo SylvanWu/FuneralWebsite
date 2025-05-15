@@ -1,7 +1,6 @@
 // src/components/WillForm.tsx
 import React, { useEffect, useRef, useState } from 'react';
-import { createWill, getWills, deleteWill, updateWill } from '../api';
-import WillList from './WillList';
+import { createWill } from '../api';
 
 /* ---------------- Types ---------------- */
 export interface Will {
@@ -29,8 +28,6 @@ export default function WillForm({ onCreated, roomId }: Props) {
     const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
     const [previewURL, setPreviewURL] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [willsList, setWillsList] = useState<Will[]>([]);
-    const [loading, setLoading] = useState(false);
 
     /* ---------- Open camera ---------- */
     /* Prevent black screen caused by double invocation in React 18 StrictMode */
@@ -87,16 +84,16 @@ export default function WillForm({ onCreated, roomId }: Props) {
     /* ---------- Submit ---------- */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+        console.log('[WillForm] handleSubmit. Current roomId via prop:', roomId);
         if (!roomId) {
             alert("Room ID is missing. Cannot submit will.");
+            console.error('[WillForm] handleSubmit ERROR: roomId is missing. Value:', roomId);
             return;
         }
 
         const fd = new FormData();
         fd.append('uploaderName', uploaderName || 'Anonymous');
         fd.append('farewellMessage', farewellMessage);
-        fd.append('roomId', roomId); // Ensure roomId is in FormData
         if (recordedBlob) {
             fd.append('video', new File([recordedBlob], 'farewell.webm', { type: 'video/webm' }));
         }
@@ -108,134 +105,12 @@ export default function WillForm({ onCreated, roomId }: Props) {
             setFarewellMsg('');
             setRecordedBlob(null);
             setPreviewURL('');
-            
-            // Automatically refresh list after successful creation
-            fetchWills();
-            
-            alert('Submission successful!');
-        } catch (err: any) {
-            // Core error handling
+            alert('Submitted successfully!');
+        } catch (err) {
             console.error('Submission failed:', err);
-            
-            const statusCode = err.response?.status || 'unknown';
-            const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
-            
-            let userFriendlyMessage = `Submission failed (${statusCode}): ${errorMessage}`;
-            
-            // Provide more useful information for specific errors
-            if (statusCode === 403) {
-                userFriendlyMessage = "Insufficient permissions. You may need to login as an organizer or re-verify the room password.";
-            } else if (statusCode === 401) {
-                userFriendlyMessage = "Your login has expired. Please login again and try once more.";
-            }
-            
-            alert(userFriendlyMessage);
+            alert('Submission failed, please try again later.');
         }
     };
-
-    /* Get will list for this room */
-    const fetchWills = async () => {
-        if (!roomId) {
-            return;
-        }
-        
-        setLoading(true);
-        try {
-            const wills = await getWills(roomId);
-            setWillsList(wills);
-        } catch (err) {
-            console.error('Failed to fetch list:', err);
-            alert('Failed to fetch list. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Delete a will record
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
-            return;
-        }
-        
-        setLoading(true);
-        try {
-            console.log('[WillForm] Deleting will:', id);
-            await deleteWill(id);
-            console.log('[WillForm] Will deleted successfully');
-            
-            // Refresh list
-            fetchWills();
-            
-        } catch (err) {
-            console.error('[WillForm] Failed to delete will:', err);
-            alert('Delete failed. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Update a will record
-    const handleUpdate = async (
-        id: string, 
-        fields: Partial<Will>, 
-        videoBlob?: Blob
-    ) => {
-        setLoading(true);
-        try {
-            console.log('[WillForm] Updating will:', id, 'with fields:', fields);
-            
-            if (videoBlob) {
-                console.log('[WillForm] Including new video in update, size:', videoBlob.size);
-                // Use FormData to upload files
-                const fd = new FormData();
-                
-                if (fields.uploaderName) {
-                    fd.append('uploaderName', fields.uploaderName);
-                }
-                
-                if (fields.farewellMessage) {
-                    fd.append('farewellMessage', fields.farewellMessage);
-                }
-                
-                fd.append('video', new File([videoBlob], 'farewell.webm', { type: 'video/webm' }));
-                
-                await updateWill(id, fd, true);
-            } else {
-                // No video, directly update text fields
-                await updateWill(id, fields);
-            }
-            
-            console.log('[WillForm] Will updated successfully');
-            
-            // Refresh list
-            fetchWills();
-            
-        } catch (err) {
-            console.error('[WillForm] Failed to update will:', err);
-            alert('Update failed. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    // Initialize list on load and set up auto-refresh
-    useEffect(() => {
-        if (roomId) {
-            // Initial load
-            fetchWills();
-            
-            // Set up auto-refresh every 30 seconds
-            const refreshInterval = setInterval(() => {
-                // Auto-refresh list
-                fetchWills();
-            }, 30000); // 30 seconds
-            
-            // Clean up timer
-            return () => {
-                clearInterval(refreshInterval);
-            };
-        }
-    }, [roomId]); // Only reset when roomId changes
 
     /* ---------- UI ---------- */
     return (
@@ -300,40 +175,6 @@ export default function WillForm({ onCreated, roomId }: Props) {
                     Submit Farewell Message
                 </button>
             </form>
-
-            {/* Farewell Messages List */}
-            <div className="mt-8">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium">Saved Farewell Messages</h3>
-                    <button 
-                        type="button" 
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={fetchWills}
-                        disabled={loading}
-                    >
-                        {loading ? 'Loading...' : 'Refresh List'}
-                    </button>
-                </div>
-
-                {/* Using the complete WillList component */}
-                {willsList.length > 0 ? (
-                    <WillList 
-                        wills={willsList} 
-                        onDelete={handleDelete}
-                        onUpdate={handleUpdate}
-                    />
-                ) : (
-                    <div className="text-center py-8 bg-gray-50 rounded">
-                        <p className="text-gray-500">No farewell messages yet</p>
-                        <button 
-                            className="mt-2 text-blue-500 hover:underline"
-                            onClick={fetchWills}
-                        >
-                            Click to refresh
-                        </button>
-                    </div>
-                )}
-            </div>
         </div>
     );
 }
