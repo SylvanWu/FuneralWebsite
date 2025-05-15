@@ -143,25 +143,20 @@ app.use((err, req, res, next) => {
 });
 
 /* ──────────── Connect to MongoDB and Start Server ──────────── */
-// MongoDB Atlas optimized connection options
+// More detailed connection options for MongoDB
 const mongoOptions = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 15000, // Wait 15 seconds before timing out for Atlas
-    heartbeatFrequencyMS: 30000, // How often to send heartbeats
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    serverSelectionTimeoutMS: 10000, // Wait 10 seconds before timing out
     family: 4, // Use IPv4, avoid IPv6 issues
     maxPoolSize: 10, // Maintain up to 10 socket connections
     minPoolSize: 1, // Maintain at least 1 socket connection
-    retryWrites: true, // Enable retryable writes
-    w: 'majority', // Write concern level
 };
 
-const MONGODB_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/memorial';
-console.log('Attempting to connect to MongoDB at:', MONGODB_URI.replace(/:([^:@]+)@/, ':****@')); // Hide password in logs
+console.log('Attempting to connect to MongoDB at:', process.env.MONGO_URI || 'mongodb://localhost:27017/memorial');
 
 mongoose
-    .connect(MONGODB_URI, mongoOptions)
+    .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/memorial', mongoOptions)
     .then(() => {
         console.log('Connected to MongoDB successfully');
 
